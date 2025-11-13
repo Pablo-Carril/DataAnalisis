@@ -25,7 +25,7 @@ def health_check() -> Dict[str, str]:
     return {"status": "ok", "service": "FastAPI Backend activo"}
 
 #Endpoint Principal de Datos
-@app.get("/api/v1/item/{item_id}", response_model=ItemResponse)
+@app.get("/api/item/{item_id}", response_model=ItemResponse)
 def read_item(item_id: int) -> ItemResponse:
     """
     Retorna datos de ejemplo basados en el ID solicitado.
@@ -53,24 +53,39 @@ def read_item(item_id: int) -> ItemResponse:
         
     return ItemResponse(**data)
 
-#Endpoint para cargar y servir el CSV
+#Cargar y servir el CSV
 CSV_TRANSACCIONES_PATH = os.path.join(os.path.dirname(__file__), "Transacciones 506 julio.csv")
-@app.get("/api/v1/dashboard/data", response_model=List[Dict[str, Any]])
+# Usar Pandas para leer el archivo CSV
+df = pd.read_csv(CSV_TRANSACCIONES_PATH, delimiter=';')  
+print("ARCHIVO CARGADO")  
+# 1. Procesamiento Opcional: Agregar una columna nueva
+#df['Margen'] = df['Ventas'] * 0.20
+
+@app.get("/api/dashboard/data")  #, response_model=List[Dict[str, Any]])
+
 def get_csv_data():
-    """
-    Carga el CSV usando Pandas y devuelve los datos como una lista de diccionarios.
-    """
     try:
-        # Usar Pandas para leer el archivo CSV
-        df = pd.read_csv(CSV_TRANSACCIONES_PATH)
-        
-        # 1. Procesamiento Opcional: Agregar una columna nueva
-        df['Margen'] = df['Ventas'] * 0.20
+       
+        df_primeros_20 = df.head(20)   #primeras 20 filas
+
+       
+        if 'Ramal' in df.columns and 'Tarifa Cobrada' in df.columns and not df['Ramal'].empty:
+            recuento_por_ramal = df.groupby('Ramal')['Tarifa Cobrada'].count()
+            if not recuento_por_ramal.empty:
+                print("Recuento total de transacciones por cada Ramal:")
+                print(recuento_por_ramal.to_string())
+            else:
+                print("No hay datos válidos en las columnas 'Ramal' o 'Tarifa Cobrada' para realizar el recuento.")
+        else:
+            print("Las columnas 'Ramal' o 'Tarifa Cobrada' no se encuentran o no tienen datos.")
+       
         
         # 2. Conversión a formato JSON compatible (lista de diccionarios)
         # 'records' es un formato eficiente para enviar a un frontend
-        data_to_send = df.to_dict(orient='records')
+        #data_to_send = df_primeros_20.to_dict(orient='records')
         
+        data_to_send = recuento_por_ramal.to_dict()
+
         return data_to_send
     
     except FileNotFoundError:
