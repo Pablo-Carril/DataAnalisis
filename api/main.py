@@ -14,7 +14,7 @@ class ItemResponse(BaseModel):
     
 #Inicialización de FastAPI
 app = FastAPI(
-    title="API de Backend con FastAPI para Dashboard",
+    title="API Backend con FastAPI para DataAnalisis",
     version="1.0.0",
 )
 
@@ -55,13 +55,14 @@ def read_item(item_id: int) -> ItemResponse:
 
 #Cargar y servir el CSV
 CSV_TRANSACCIONES_PATH = os.path.join(os.path.dirname(__file__), "Transacciones 506 julio.csv")
+
 # Usar Pandas para leer el archivo CSV
 df = pd.read_csv(CSV_TRANSACCIONES_PATH, delimiter=';')  
 print("ARCHIVO CARGADO")  
 # 1. Procesamiento Opcional: Agregar una columna nueva
 #df['Margen'] = df['Ventas'] * 0.20
 
-@app.get("/api/dashboard/data")  #, response_model=List[Dict[str, Any]])
+@app.get("/api/dashboard/data")  #, response_model=List[Dict[str, Any]]) #RUTA PRINCIPAL DE LA API
 
 def get_csv_data():
     try:

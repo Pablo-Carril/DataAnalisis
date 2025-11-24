@@ -64,7 +64,7 @@ if st.sidebar.button("Buscar en Backend (FastAPI)"):
                 
             with col2:
                 st.subheader("Respuesta JSON Cruda")
-                st.json(data)
+                #st.json(data)
                 
         else:
             log_footer.error(f"❌ Error al conectar o recibir datos de la API. Código de estado: {response.status_code}")
@@ -90,11 +90,9 @@ def fetch_data_from_api():
             # Convertimos la lista de diccionarios (JSON) a un DataFrame de Pandas
             #df = pd.DataFrame(data_list)
             #return df
-            df_recuento = pd.DataFrame(
-                data_list.items(), # Convierte claves y valores a filas
-                columns=['Ramal', 'Recuento de Tarifas']
-            )
-            return df_recuento
+            datos = pd.DataFrame(data_list.items(), columns=['Ramal', 'Recuento de Tarifas']) # Convierte claves y valores a filas
+            return datos
+        
         else:
             log_footer.error(f"Error al obtener datos. Código: {response.status_code}")
             return pd.DataFrame() # Devuelve un DF vacío en caso de error
@@ -104,23 +102,38 @@ def fetch_data_from_api():
         return pd.DataFrame()
 
 # --- Cargar y Mostrar Datos ---
-
 df_ventas = fetch_data_from_api()
 
 if not df_ventas.empty:
     log_footer.success(f"✅ Datos cargados correctamente. Se recibieron {len(df_ventas)} filas.")
     
     # 1. Mostrar la tabla de datos
-    st.subheader("Datos Crudos del CSV (Desde FastAPI)")
+    st.subheader("Datos del CSV")
     st.dataframe(df_ventas, use_container_width=True)
     
     # 2. Visualización y Análisis (Usando Pandas en Streamlit para el gráfico)
-    #st.subheader("Ventas por Región")
+    st.subheader("Pasajeros por Ramal")
     
     # Agrupamos los datos localmente en Streamlit para el gráfico
     #ventas_por_region = df_ventas.groupby('Region')['Ventas'].sum().reset_index()
     
-    #st.bar_chart(ventas_por_region, x='Region', y='Ventas')
+    st.bar_chart(df_ventas, x='Ramal', y='Recuento de Tarifas')
+
+    #probando plotly:
+    fig = px.bar(
+        df_ventas, 
+        x='Ramal', 
+        y='Recuento de Tarifas',
+        title='Recuento de Tarifas por Ramal', # Título del gráfico Plotly
+        color='Ramal', # Opcional: colorea las barras según el ramal
+        labels={'Recuento de Tarifas': 'Tarifas Contadas'} # Etiquetas más limpias
+    )
+    # Opcional: Mejorar la interactividad y el diseño
+    fig.update_layout(xaxis_title="Ramal de Servicio", yaxis_title="Número de Servicios")
+    fig.update_traces(marker_line_width=1.5, marker_line_color='black') # Añadir bordes a las barras
+    
+    st.plotly_chart(fig, use_container_width=True)
+    
     
 else:
     log_footer.info("Esperando que el servidor FastAPI esté disponible para cargar los datos.")
