@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 st.set_page_config(
     page_title="Dashboard",
     layout="wide",
+    initial_sidebar_state="expanded",
     page_icon="💻"
 )
 
@@ -32,16 +33,19 @@ item_id = st.sidebar.number_input(
     step=1
 )
 
+log_footer = st.sidebar.empty()
+log_footer.info("Listo")
+
 if st.sidebar.button("Buscar en Backend (FastAPI)"):
     try:
-        with st.spinner(f"Buscando ítem #{item_id} en FastAPI..."):
+        with st.spinner(f"Buscando..."):
             # 1. Hacemos la llamada HTTP a la API
             response = requests.get(f"{API_URL_BASE}")   #{item_id}") lo saco por ahora
         
         # 2. Verificamos el estado de la respuesta
         if response.status_code == 200:
             data = response.json()
-            st.success(f"✅ ¡Datos recibidos de FastAPI para el ítem: ")  #{data['id']}!")
+            log_footer.success(f"✅ ¡Datos recibidos de FastAPI para el ítem: ")  #{data['id']}!")
             
             # 3. Mostramos los datos
             col1, col2 = st.columns(2)
@@ -50,24 +54,24 @@ if st.sidebar.button("Buscar en Backend (FastAPI)"):
                 #st.header(data['nombre'])
                 #st.info(f"ID: {data['id']}")
                 #st.markdown(f"**Descripción:** {data['descripcion']}")
-                st.title("💸 Total de Ventas Calculadas por FastAPI")
+                #st.title("💸 Total de Ventas Calculadas por FastAPI")
 
                 # Muestra el resultado usando el formato st.metric
-                #st.metric(
-                #label=f"Suma Total de Ventas (Top {num_rows} Filas)",
-                #value=f"${total_ventas_obtenidas:,.2f}" # Formato de moneda
-                #)
+                st.metric(
+                label=f"Suma Total de Ventas", # (Top {num_rows} Filas)",
+                value=f"2"     #${total_ventas_obtenidas:,.2f}" # Formato de moneda
+                )
                 
             with col2:
                 st.subheader("Respuesta JSON Cruda")
                 st.json(data)
                 
         else:
-            st.error(f"❌ Error al conectar o recibir datos de la API. Código de estado: {response.status_code}")
-            st.warning("Asegúrate de que el servidor FastAPI esté corriendo en http://localhost:8000.")
+            log_footer.error(f"❌ Error al conectar o recibir datos de la API. Código de estado: {response.status_code}")
+            log_footer.warning("Asegúrate de que el servidor FastAPI esté corriendo en http://localhost:8000.")
             
     except requests.exceptions.ConnectionError:
-        st.error("❌ Error de Conexión: No se pudo conectar al servidor FastAPI. Asegúrate de que esté ejecutándose.")
+        log_footer.error("❌ Error de Conexión: No se pudo conectar al servidor FastAPI. Asegúrate de que esté ejecutándose.")
         
 #st.markdown("---")
 #st.caption("Recuerda: FastAPI corre en 8000, Streamlit en 8501.")
@@ -92,11 +96,11 @@ def fetch_data_from_api():
             )
             return df_recuento
         else:
-            st.error(f"Error al obtener datos. Código: {response.status_code}")
+            log_footer.error(f"Error al obtener datos. Código: {response.status_code}")
             return pd.DataFrame() # Devuelve un DF vacío en caso de error
             
     except requests.exceptions.ConnectionError:
-        st.error("❌ Error de Conexión: Asegúrate de que el servidor FastAPI esté corriendo en http://localhost:8000.")
+        log_footer.error("❌ Error de Conexión: Asegúrate de que el servidor FastAPI esté corriendo en http://localhost:8000.")
         return pd.DataFrame()
 
 # --- Cargar y Mostrar Datos ---
@@ -104,7 +108,7 @@ def fetch_data_from_api():
 df_ventas = fetch_data_from_api()
 
 if not df_ventas.empty:
-    st.success(f"✅ Datos cargados correctamente. Se recibieron {len(df_ventas)} filas.")
+    log_footer.success(f"✅ Datos cargados correctamente. Se recibieron {len(df_ventas)} filas.")
     
     # 1. Mostrar la tabla de datos
     st.subheader("Datos Crudos del CSV (Desde FastAPI)")
@@ -119,4 +123,4 @@ if not df_ventas.empty:
     #st.bar_chart(ventas_por_region, x='Region', y='Ventas')
     
 else:
-    st.info("Esperando que el servidor FastAPI esté disponible para cargar los datos.")
+    log_footer.info("Esperando que el servidor FastAPI esté disponible para cargar los datos.")
