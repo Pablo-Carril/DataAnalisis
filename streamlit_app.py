@@ -13,6 +13,23 @@ st.set_page_config(
     page_icon="💻"
 )
 
+# Inyectar CSS para ocultar el menú 
+hide_menu_style = """
+        <style>
+       /* #MainMenu {visibility: hidden;} */
+       /* header {visibility: hidden;} */
+        footer {visibility: hidden;}
+        /* Quitar el espacio superior del contenedor principal */
+            .block-container {
+                padding-top: 1rem;
+                padding-bottom: 0rem;
+                padding-left: 3rem;
+                padding-right: 3rem;
+            }
+        </style>
+        """
+st.markdown(hide_menu_style, unsafe_allow_html=True)
+
 # FastAPI se ejecutará en el puerto 8000 por defecto
 API_URL_BASE = "http://localhost:8000/api/dashboard/data"  #"http://localhost:8000/api/item/"
 #API_URL_DATA = "http://localhost:8000/api/dashboard/data"
