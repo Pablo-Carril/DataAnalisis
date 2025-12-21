@@ -12,4 +12,4 @@ __pycache__/
 *.so
 
 # Archivos generados por Streamlit
-.streamlit/
+#.streamlit/  (que lo suba también por ahora)
