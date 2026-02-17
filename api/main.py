@@ -11,6 +11,7 @@ class ItemResponse(BaseModel):
     id: int
     nombre: str
     descripcion: str
+    valor: float
     
 #Inicialización de FastAPI
 app = FastAPI(
@@ -33,10 +34,12 @@ def read_item(item_id: int) -> ItemResponse:
     
     # Lógica de negocio simulada (ej. buscar en una base de datos)
     if item_id == 1:
+        totalVentas = df["Tarifa Cobrada"].sum()
         data = {
             "id": 1,
-            "nombre": "Reporte de Ventas Q4",
-            "descripcion": "Datos agregados de las ventas trimestrales con métricas clave."
+            "nombre": "Total Ventas",
+            "descripcion": "total de ventas de todo el df.",
+            "valor": totalVentas
         }
     elif item_id == 2:
         data = {
@@ -57,7 +60,7 @@ def read_item(item_id: int) -> ItemResponse:
 CSV_TRANSACCIONES_PATH = os.path.join(os.path.dirname(__file__), "Transacciones 506 julio.csv")
 
 # Usar Pandas para leer el archivo CSV
-df = pd.read_csv(CSV_TRANSACCIONES_PATH, delimiter=';')  
+df = pd.read_csv(CSV_TRANSACCIONES_PATH, delimiter=';', decimal=',', encoding='utf-8', parse_dates=['Fecha Hora'], dayfirst=True)  
 print("ARCHIVO CARGADO")  
 # 1. Procesamiento Opcional: Agregar una columna nueva
 #df['Margen'] = df['Ventas'] * 0.20
