@@ -150,7 +150,7 @@ if st.sidebar.button("Pasajeros por Ramal"):
         
         
     else:
-        log_footer.info("Esperando que el servidor FastAPI esté disponible para cargar los datos.")
+        log_footer.error("Esperando que el servidor FastAPI esté disponible para cargar los datos.")
 
 
 
