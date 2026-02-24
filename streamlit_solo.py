@@ -40,21 +40,17 @@ def load_data():
     Aquí es donde cargarías tu archivo consolidado.
     Si usas Parquet, es extremadamente rápido.
     """
-    path_archivo = os.path.join(os.path.dirname(__file__), "./api/Transacciones 506 julio.csv")
+    #path_archivo = os.path.join(os.path.dirname(__file__), "./api/Transacciones 506 julio.csv")
+    path_archivo = "Transacciones.parquet"
     
     if not os.path.exists(path_archivo):
         # Datos de prueba si el archivo no existe
         update_footer_log("Archivo no encontrado.", "warning")
-       # df_demo = pd.DataFrame({
-         #   'Ramal': ['Ramal A', 'Ramal B', 'Ramal C', 'Ramal D'],
-         #   'Pasajeros': [4500, 3200, 5800, 2100],
-         #   'Valor_Venta': [15000, 12000, 19000, 8500]
-        #})
-        #return df_demo
     
     try:
-        df = pd.read_csv(path_archivo, delimiter=';', decimal=',', encoding='utf-8', parse_dates=['Fecha Hora'], dayfirst=True)
-        # si es Parquet:  df = pd.read_parquet(path_archivo)
+        #df = pd.read_csv(path_archivo, delimiter=';', decimal=',', encoding='utf-8', parse_dates=['Fecha Hora'], dayfirst=True)
+        df = pd.read_parquet(path_archivo)  #este si es Parquet
+
         update_footer_log("Base de datos sincronizada", "success")
         return df
     except Exception as e:
