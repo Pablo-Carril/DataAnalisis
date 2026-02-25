@@ -34,6 +34,16 @@ def calcular_vectores_flujo(df):
     # Ordenar cronológicamente por tarjeta
     df = df.sort_values(['Tarjeta', 'Fecha Hora'])
     
+    # INVERTIMOS Latitud y Longitud porque en el CSV/Parquet vienen invertidos.
+    df = df.rename(columns={
+        'Latitud': 'Long_Original', # Latitud es Longitud y
+        'Longitud': 'Lat_Original'  # Longitud es Latitud
+    })
+    df = df.rename(columns={        # volvemos a los nombres
+        'Long_Original': 'Longitud', 
+        'Lat_Original': 'Latitud'
+    })
+    
     # Creamos columnas desplazadas (shift) dentro de cada grupo de tarjeta
     # Esto busca el 'Siguiente Evento' de esa misma persona
     df_sorted = df.groupby('Tarjeta').apply(lambda x: x.assign(
@@ -132,8 +142,9 @@ if archivo_subido:
         )
 
         # Usamos una estructura más simple para el Deck
-        r = pdk.Deck(
-            map_style=None,
+        Config_pydeck = pdk.Deck(
+            map_provider="Mapbox",
+            map_style='light',
             initial_view_state=view_state,
             layers=[ layer_arcos],
             tooltip={
@@ -143,9 +154,11 @@ if archivo_subido:
                 "style": {"color": "white"}
             }
         )
+        
+        st.subheader("Primero:")
+        st.pydeck_chart(Config_pydeck)
 
-        st.pydeck_chart(r)
-
+        st.subheader("Segundo:")
         st.pydeck_chart(pdk.Deck(
             map_provider="carto", # Cambiamos de Mapbox a Carto (Gratis)
             map_style="light",    # O "dark"
@@ -155,43 +168,42 @@ if archivo_subido:
         
 
         # FOLIUM:
-        if not df_flujos.empty:
-            st.subheader("Visualización de Flujos (Calles Reales)")
+           # if not df_flujos.empty:
+           # st.subheader("Visualización de Flujos (Calles Reales)")
             
-            # 1. Preparar el mapa base
-            centro_lat = df_flujos["Latitud"].mean()
-            centro_lon = df_flujos["Longitud"].mean()
+           # # 1. Preparar el mapa base
+           # centro_lat = df_flujos["Latitud"].mean()
+          #  centro_lon = df_flujos["Longitud"].mean()
             
-            # Creamos el mapa con OpenStreetMap (Infalible)
-            m = folium.Map(location=[centro_lat, centro_lon], zoom_start=13, tiles="OpenStreetMap")
+           # # Creamos el mapa con OpenStreetMap (Infalible)
+           # m = folium.Map(location=[centro_lat, centro_lon], zoom_start=13, tiles="OpenStreetMap")
 
-            # 2. Agregar los vectores
-            # Usamos los datos ya procesados en dict_arcos
-            for flow in dict_arcos:
-                # Puntos
-                punto_subida = [flow["Latitud"], flow["Longitud"]]
-                punto_bajada = [flow["Lat_Destino"], flow["Lon_Destino"]]
-                
-                # Línea de flujo
-                folium.PolyLine(
-                    locations=[punto_subida, punto_bajada],
-                    color="#FF4500", # Naranja fuerte
-                    weight=2,
-                    opacity=0.5,
-                    tooltip=f"Tarjeta: {flow['Tarjeta']} | {flow['Sentido']} -> {flow['Sentido_Siguiente']}"
-                ).add_to(m)
+           # # 2. Agregar los vectores
+           # # Usamos los datos ya procesados en dict_arcos
+           #     # Puntos
+           #     punto_subida = [flow["Latitud"], flow["Longitud"]]
+           #     punto_bajada = [flow["Lat_Destino"], flow["Lon_Destino"]]
+           #     
+          # #     # Línea de flujo
+           #     folium.PolyLine(
+           #         locations=[punto_subida, punto_bajada],
+           #         color="#FF4500", # Naranja fuerte
+           #         weight=2,
+           #         opacity=0.5,
+           #         tooltip=f"Tarjeta: {flow['Tarjeta']} | {flow['Sentido']} -> {flow['Sentido_Siguiente']}"
+           #     ).add_to(m)
+#
+           #     # Marcador circular en la subida para dar contexto
+           #     folium.CircleMarker(
+           #         location=punto_subida,
+           #         radius=2,
+           #         color="blue",
+           #         fill=True,
+           #         opacity=0.4
+           #     ).add_to(m)
 
-                # Marcador circular en la subida para dar contexto
-                folium.CircleMarker(
-                    location=punto_subida,
-                    radius=2,
-                    color="blue",
-                    fill=True,
-                    opacity=0.4
-                ).add_to(m)
-
-            # 3. Renderizar el mapa en Streamlit
-            st_folium(m, width=1000, height=600)
+           # # 3. Renderizar el mapa en Streamlit
+           # st_folium(m, width=1000, height=600)
 
         # OTRA PRUEBA
         if not df_flujos.empty:
@@ -205,23 +217,23 @@ if archivo_subido:
             st.map(df_map_native)
             
             # 2. Intento con Folium usando un servidor de mapas alternativo
-            st.subheader("Mapa con Folium (Servidor Stamen/Carto)")
-            
-            centro_lat = df_flujos["Latitud"].mean()
-            centro_lon = df_flujos["Longitud"].mean()
-            
-            # Usamos 'cartodbpositron' que es muy liviano y rara vez falla
-            m = folium.Map(location=[centro_lat, centro_lon], zoom_start=12, tiles='cartodbpositron')
+           # st.subheader("Mapa con Folium (Servidor Stamen/Carto)")
+           # 
+           # centro_lat = df_flujos["Latitud"].mean()
+           # centro_lon = df_flujos["Longitud"].mean()
+           # 
+           # # Usamos 'cartodbpositron' que es muy liviano y rara vez falla
+           # m = folium.Map(location=[centro_lat, centro_lon], zoom_start=12, tiles='cartodbpositron')
 
-            for flow in dict_arcos:
-                folium.PolyLine(
-                    locations=[[flow["Latitud"], flow["Longitud"]], [flow["Lat_Destino"], flow["Lon_Destino"]]],
-                    color="red",
-                    weight=2,
-                    opacity=0.4
-                ).add_to(m)
+           # for flow in dict_arcos:
+           #     folium.PolyLine(
+           #         locations=[[flow["Latitud"], flow["Longitud"]], [flow["Lat_Destino"], flow["Lon_Destino"]]],
+           #         color="red",
+           #         weight=2,
+           #         opacity=0.4
+           #     ).add_to(m)
 
-            st_folium(m, width=1000, height=500)
+           # st_folium(m, width=1000, height=500)
 
 
 
