@@ -1,19 +1,14 @@
 import streamlit as st
 import pandas as pd
 import pydeck as pdk
+import numpy as np
 
 # Configuración de página
 st.set_page_config(page_title="Análisis de Flujos de Transporte", layout="wide")
 
-# --- 0. MEMORIA DE MAPA ---
+# --- 0. INICIALIZAR MEMORIA ---
 if 'map_view' not in st.session_state:
-    st.session_state.map_view = {
-        "latitude": -34.921,
-        "longitude": -57.954,
-        "zoom": 12,
-        "pitch": 45,
-        "bearing": 0
-    }
+    st.session_state.map_view = {"latitude": -34.921, "longitude": -57.954, "zoom": 12, "pitch": 45, "bearing": 0}
 
 st.title("📊 Mapa de Flujos de Pasajeros")
 st.markdown("""
@@ -30,38 +25,26 @@ def cargar_datos(archivo):
         df = df.drop(columns=['Fecha'])
     df['Fecha'] = df['Fecha Hora'].dt.date
     df['Hora_Int'] = df['Fecha Hora'].dt.hour
-    
-    # --- LIMPIEZA DE COORDENADAS CERO (ÁFRICA) ---
-    # Filtramos ceros tanto en Latitud como en Longitud
     df = df[(df['Latitud'] != 0) & (df['Longitud'] != 0)]
-    
     df = df.dropna(subset=['Latitud', 'Longitud'])
     return df
 
-# --- 2. LÓGICA DE PROCESAMIENTO (OPTIMIZADA) ---
+# --- 2. LÓGICA DE PROCESAMIENTO ---
 @st.cache_data
 def calcular_vectores_flujo(df):
     df = df.sort_values(['Tarjeta', 'Fecha Hora'])
-    
-    # Inversión de coordenadas (Lógica original)
     df = df.rename(columns={'Latitud': 'Long_Original', 'Longitud': 'Lat_Original'})
     df = df.rename(columns={'Long_Original': 'Longitud', 'Lat_Original': 'Latitud'})
-    
-    # Aseguramos coordenadas negativas para Argentina
     df['Latitud'] = df['Latitud'].apply(lambda x: -abs(x) if x != 0 else x)
     df['Longitud'] = df['Longitud'].apply(lambda x: -abs(x) if x != 0 else x)
 
-    # Verificamos que el desplazamiento sea sobre la misma tarjeta
     mask_misma_tarjeta = df['Tarjeta'] == df['Tarjeta'].shift(-1)
-    
     df['Lat_Destino'] = df['Latitud'].shift(-1)
     df['Lon_Destino'] = df['Longitud'].shift(-1)
     df['Sentido_Siguiente'] = df['Sentido'].shift(-1)
     df['Fecha_Siguiente'] = df['Fecha'].shift(-1)
 
-    # También filtramos si el DESTINO es (0,0) por si acaso
     mask_cero_destino = (df['Lat_Destino'] != 0) & (df['Lon_Destino'] != 0)
-
     mask = (
         mask_misma_tarjeta &
         mask_cero_destino &
@@ -71,7 +54,7 @@ def calcular_vectores_flujo(df):
     )
     return df[mask].copy()
 
-# --- 3. AGRUPACIÓN POR CERCANÍA ---
+# --- 3. AGRUPACIÓN ---
 @st.cache_data
 def agrupar_por_zonas(df, precision=3):
     df_agg = df.copy()
@@ -79,7 +62,6 @@ def agrupar_por_zonas(df, precision=3):
     df_agg['lon_ori'] = df_agg['Longitud'].round(precision)
     df_agg['lat_des'] = df_agg['Lat_Destino'].round(precision)
     df_agg['lon_des'] = df_agg['Lon_Destino'].round(precision)
-    
     df_zonas = df_agg.groupby(['lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido']).size().reset_index(name='Pasajeros')
     return df_zonas
 
@@ -100,11 +82,14 @@ if archivo_subido:
     st.sidebar.markdown("---")
     st.sidebar.header("Filtros de Visualización")
     
-    hora_rango = st.sidebar.slider("Rango Horario (Subida)", 0, 23, (0, 23))
-    sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"])
-    prec_sel = st.sidebar.slider("Precisión de agrupación", 2, 4, 3)
-    mostrar_puntos = st.sidebar.toggle("Mostrar Transacciones Únicas (Puntos)", value=False)
+    # Consolidación de filtros para evitar DuplicateElementId y NameError
+    hora_rango = st.sidebar.slider("Rango Horario (Subida)", 0, 23, (0, 23), key="slider_h")
+    sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"], key="radio_s")
+    prec_sel = st.sidebar.slider("Precisión de agrupación", 2, 4, 3, key="slider_p")
+    mostrar_puntos = st.sidebar.toggle("Mostrar Transacciones Únicas (Puntos)", value=False, key="toggle_ptos")
+    min_pasajeros = st.sidebar.number_input("Ocultar flujos menores a:", 1, 1000, value=1, key="num_i")
 
+    # Aplicación de filtros
     df_filtrado = df_raw.copy()
     if fecha_sel != "Todo el mes":
         fecha_obj = pd.to_datetime(fecha_sel).date()
@@ -113,9 +98,10 @@ if archivo_subido:
         df_filtrado = df_filtrado[df_filtrado['Ramal'] == ramal_sel]
     
     with st.spinner('Procesando vectores de flujo...'):
-        df_flujos = calcular_vectores_flujo(df_filtrado)
+        df_flujos = calcular_vectors_flujo(df_filtrado) if 'calcular_vectors_flujo' in locals() else calcular_vectores_flujo(df_filtrado)
 
     if not df_flujos.empty:
+        # Filtros de Mapa aplicados sobre los vectores
         df_mapa = df_flujos.copy()
         df_mapa = df_mapa[(df_mapa['Hora_Int'] >= hora_rango[0]) & (df_mapa['Hora_Int'] <= hora_rango[1])]
         if sentido_sel != "Ambos":
@@ -123,73 +109,56 @@ if archivo_subido:
 
         if not df_mapa.empty:
             df_zonas = agrupar_por_zonas(df_mapa, precision=prec_sel)
-            
-            st.sidebar.markdown("---")
-            st.sidebar.header("Filtro de Intensidad")
-            min_pasajeros = st.sidebar.slider(
-                "Ocultar flujos menores a:", 
-                1, int(df_zonas['Pasajeros'].max()), 2
-            )
-            
-            if st.sidebar.button("Centrar Mapa en Datos"):
-                st.session_state.map_view["latitude"] = float(df_zonas["lat_ori"].mean())
-                st.session_state.map_view["longitude"] = float(df_zonas["lon_ori"].mean())
-                st.session_state.map_view["zoom"] = 12
-            
-            df_zonas_filtradas = df_zonas[df_zonas['Pasajeros'] >= min_pasajeros].copy()
+            df_zonas = df_zonas[df_zonas['Pasajeros'] >= min_pasajeros]
 
-            if not df_zonas_filtradas.empty:
-                max_p = df_zonas_filtradas['Pasajeros'].max()
+            if not df_zonas.empty:
+                max_p = int(df_zonas['Pasajeros'].max())
                 
-                # --- RECUPERAMOS EL COLOR ROJO ---
-                def get_red_color(x):
-                    ratio = x / max_p if max_p > 0 else 0
-                    # Naranja [255, 165, 0] -> Rojo [255, 0, 0]
+                # Escala Logarítmica para el color
+                def color_log(x):
+                    ratio = np.log1p(x) / np.log1p(max_p) if max_p > 1 else 0
                     return [255, int(165 * (1 - ratio)), 0, 200]
 
-                df_zonas_filtradas['color_ori'] = df_zonas_filtradas['Pasajeros'].apply(get_red_color)
-                df_zonas_filtradas['color_des'] = [[0, 200, 255, 200]] * len(df_zonas_filtradas)
-                df_zonas_filtradas['grosor_final'] = df_zonas_filtradas['Pasajeros'].clip(upper=40)
+                df_zonas['color_ori'] = df_zonas['Pasajeros'].apply(color_log)
+                df_zonas['color_des'] = [[0, 200, 255, 200]] * len(df_zonas)
+                df_zonas['grosor_final'] = df_zonas['Pasajeros'].clip(upper=40).astype(float)
 
                 capas = [
                     pdk.Layer(
                         "ArcLayer",
-                        df_zonas_filtradas.to_dict(orient='records'),
+                        df_zonas.to_dict(orient='records'),
                         get_source_position=["lon_ori", "lat_ori"],
                         get_target_position=["lon_des", "lat_des"],
                         get_source_color="color_ori",
                         get_target_color="color_des",
                         get_width="grosor_final",
                         pickable=True,
-                        auto_highlight=True, # <--- RECUPERAMOS EL RESALTADO VIOLETA
                     )
                 ]
 
                 if mostrar_puntos:
-                    df_pts = df_mapa[['Latitud', 'Longitud']].copy()
+                    df_puntos_limpios = df_mapa[['Latitud', 'Longitud']].copy().astype(float)
                     capas.append(pdk.Layer(
                         "ScatterplotLayer",
-                        df_pts.to_dict(orient='records'),
+                        df_puntos_limpios.to_dict(orient='records'),
                         get_position=["Longitud", "Latitud"],
                         get_color=[255, 255, 255, 60],
                         get_radius=20,
                     ))
 
-                st.subheader(f"Análisis: {ramal_sel} | Umbral: >= {min_pasajeros} pasajeros")
-                
-                view_state = pdk.ViewState(
-                    latitude=st.session_state.map_view["latitude"],
-                    longitude=st.session_state.map_view["longitude"],
-                    zoom=st.session_state.map_view["zoom"],
-                    pitch=st.session_state.map_view["pitch"],
-                    bearing=st.session_state.map_view["bearing"]
-                )
-
+                # Renderizado
+                st.subheader(f"Análisis: {ramal_sel} | Máx: {max_p} pasajeros")
                 st.pydeck_chart(pdk.Deck(
-                    map_provider="carto", map_style="light",
-                    initial_view_state=view_state,
+                    map_provider="carto",
+                    map_style="light",
+                    initial_view_state=pdk.ViewState(
+                        latitude=float(df_zonas["lat_ori"].mean()),
+                        longitude=float(df_zonas["lon_ori"].mean()),
+                        zoom=12,
+                        pitch=45
+                    ),
                     layers=capas,
-                    tooltip={"html": "<b>Sentido:</b> {Sentido}<br><b>Pasajeros:</b> {Pasajeros}"}
+                    tooltip={"html": "<b>Pasajeros:</b> {Pasajeros}"}
                 ))
             else:
                 st.warning("No hay flujos para el umbral seleccionado.")
