@@ -71,7 +71,8 @@ def agrupar_por_zonas(df, precision=3):
     return df_zonas
 
 # --- 4. INTERFAZ DE USUARIO ---
-archivo_subido = st.sidebar.file_uploader("Cargar archivo Parquet", type=["parquet"])
+#archivo_subido = st.sidebar.file_uploader("Cargar archivo Parquet", type=["parquet"])
+archivo_subido = "Transacciones saes octubre.parquet"
 
 if archivo_subido:
     df_raw = cargar_datos(archivo_subido)
