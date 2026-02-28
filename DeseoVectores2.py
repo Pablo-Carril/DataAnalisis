@@ -24,6 +24,12 @@ def cargar_datos(archivo):
     if 'Fecha' in df.columns:
         df = df.drop(columns=['Fecha'])
     df['Fecha'] = df['Fecha Hora'].dt.date
+    
+    # Optimización de memoria: float64 -> float32
+    for col in ['Latitud', 'Longitud']:
+        if col in df.columns:
+            df[col] = df[col].astype('float32')
+            
     df['Hora_Int'] = df['Fecha Hora'].dt.hour
     df = df[(df['Latitud'] != 0) & (df['Longitud'] != 0)]
     df = df.dropna(subset=['Latitud', 'Longitud'])
@@ -57,17 +63,23 @@ def calcular_vectores_flujo(df):
 # --- 3. AGRUPACIÓN ---
 @st.cache_data
 def agrupar_por_zonas(df, precision=3):
-    df_agg = df.copy()
-    
-    # Usamos un factor matemático para permitir precisiones decimales (ej: 2.5)
+    # Optimización: No copiamos el DF entero. Calculamos series al vuelo.
     factor = 10 ** precision
     
-    df_agg['lat_ori'] = (df_agg['Latitud'] * factor).round().astype(int) / factor
-    df_agg['lon_ori'] = (df_agg['Longitud'] * factor).round().astype(int) / factor
-    df_agg['lat_des'] = (df_agg['Lat_Destino'] * factor).round().astype(int) / factor
-    df_agg['lon_des'] = (df_agg['Lon_Destino'] * factor).round().astype(int) / factor
+    # Redondeo vectorizado directo
+    lat_ori = (df['Latitud'] * factor).round() / factor
+    lon_ori = (df['Longitud'] * factor).round() / factor
+    lat_des = (df['Lat_Destino'] * factor).round() / factor
+    lon_des = (df['Lon_Destino'] * factor).round() / factor
     
-    df_zonas = df_agg.groupby(['lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido']).size().reset_index(name='Pasajeros')
+    df_zonas = df.groupby([
+        lat_ori.rename('lat_ori'), 
+        lon_ori.rename('lon_ori'), 
+        lat_des.rename('lat_des'), 
+        lon_des.rename('lon_des'), 
+        'Sentido'
+    ]).size().reset_index(name='Pasajeros')
+    
     return df_zonas
 
 # --- 4. INTERFAZ DE USUARIO ---
@@ -90,15 +102,15 @@ if archivo_subido:
     
     # Consolidación de filtros para evitar DuplicateElementId y NameError
     hora_rango = st.sidebar.slider("Rango Horario (Subida)", 0, 23, (0, 23), key="slider_h")
-    sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"], key="radio_s")
+    sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"], index=1, key="radio_s")
     
     # Cambio: Slider en Metros en lugar de precisión abstracta
-    metros_sel = st.sidebar.select_slider("Tamaño de zona (metros aprox)", options=[50, 100, 200, 300, 400, 500, 800, 1000, 1500, 2000], value=300, key="slider_m")
+    metros_sel = st.sidebar.select_slider("Tamaño de zona (metros aprox)", options=[50, 100, 200, 300, 400, 500, 800, 1000, 1500, 2000], value=100, key="slider_m")
     # Cálculo inverso: Convertir metros a precisión decimal (1 grado lat ~ 111,111 metros)
     prec_sel = np.log10(111111 / metros_sel)
     
-    mostrar_puntos = st.sidebar.toggle("Mostrar Transacciones Únicas (Puntos)", value=False, key="toggle_ptos")
-    min_pasajeros = st.sidebar.number_input("Ocultar flujos menores a:", 1, 1000, value=1, key="num_i")
+    mostrar_puntos = st.sidebar.toggle("Mostrar Transacciones Únicas (Puntos)", value=True, key="toggle_ptos")
+    min_pasajeros = st.sidebar.number_input("Ocultar flujos menores a:", 1, 1000, value=2, key="num_i")
 
     # Aplicación de filtros
     df_filtrado = df_raw.copy()
@@ -113,8 +125,10 @@ if archivo_subido:
 
     if not df_flujos.empty:
         # Filtros de Mapa aplicados sobre los vectores
-        df_mapa = df_flujos.copy()
-        df_mapa = df_mapa[(df_mapa['Hora_Int'] >= hora_rango[0]) & (df_mapa['Hora_Int'] <= hora_rango[1])]
+        # Optimización: Filtrado directo sin copia inicial
+        mask_hora = (df_flujos['Hora_Int'] >= hora_rango[0]) & (df_flujos['Hora_Int'] <= hora_rango[1])
+        df_mapa = df_flujos[mask_hora]
+        
         if sentido_sel != "Ambos":
             df_mapa = df_mapa[df_mapa['Sentido'] == sentido_sel]
 
@@ -132,16 +146,16 @@ if archivo_subido:
                     return [255, int(165 * (1 - ratio)), 0, 200]
 
                 df_zonas['color_ori'] = df_zonas['Pasajeros'].apply(color_log)
-                df_zonas['color_des'] = [[0, 200, 255, 200]] * len(df_zonas)
+                # Eliminamos la columna 'color_des' para ahorrar memoria, usamos constante en el Layer
                 df_zonas['grosor_final'] = df_zonas['Pasajeros'].clip(upper=40).astype(float)
 
                 capas.append(pdk.Layer(
                     "ArcLayer",
-                    df_zonas.to_dict(orient='records'),
+                    df_zonas, # Pasamos el DataFrame DIRECTAMENTE
                     get_source_position=["lon_ori", "lat_ori"],
                     get_target_position=["lon_des", "lat_des"],
                     get_source_color="color_ori",
-                    get_target_color="color_des",
+                    get_target_color=[0, 200, 255, 200], # Color constante
                     get_width="grosor_final",
                     pickable=True,
                     auto_highlight=True,
@@ -149,10 +163,9 @@ if archivo_subido:
 
             # 2. Capa de Puntos (Transacciones)
             if mostrar_puntos:
-                df_puntos_limpios = df_mapa[['Latitud', 'Longitud']].copy().astype(float)
                 capas.append(pdk.Layer(
                     "ScatterplotLayer",
-                    df_puntos_limpios.to_dict(orient='records'),
+                    df_mapa[['Latitud', 'Longitud']], # Pasamos DataFrame directo
                     get_position=["Longitud", "Latitud"],
                     get_color=[0, 0, 0, 80], # Negro para mejor visibilidad en mapa claro
                     get_radius=20,
