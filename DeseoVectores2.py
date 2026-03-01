@@ -25,7 +25,7 @@ def cargar_datos(archivo):
         df = df.drop(columns=['Fecha'])
     df['Fecha'] = df['Fecha Hora'].dt.date
     
-    # Optimización de memoria: float64 -> float32
+    #Optimización de memoria: float64 -> float32
     for col in ['Latitud', 'Longitud']:
         if col in df.columns:
             df[col] = df[col].astype('float32')
@@ -82,6 +82,29 @@ def agrupar_por_zonas(df, precision=3):
     
     return df_zonas
 
+@st.cache_data
+def calcular_estadisticas_nodos(df, precision=3):
+    factor = 10 ** precision
+    
+    # Redondeo de coordenadas
+    lat_ori = (df['Latitud'] * factor).round() / factor
+    lon_ori = (df['Longitud'] * factor).round() / factor
+    lat_des = (df['Lat_Destino'] * factor).round() / factor
+    lon_des = (df['Lon_Destino'] * factor).round() / factor
+    
+    # Agrupación
+    df_sub = pd.DataFrame({'lat': lat_ori, 'lon': lon_ori})
+    df_baj = pd.DataFrame({'lat': lat_des, 'lon': lon_des})
+    
+    sub = df_sub.groupby(['lat', 'lon']).size().reset_index(name='Subieron')
+    baj = df_baj.groupby(['lat', 'lon']).size().reset_index(name='Bajaron')
+    
+    # Merge
+    nodos = pd.merge(sub, baj, on=['lat', 'lon'], how='outer').fillna(0)
+    nodos['Subieron'] = nodos['Subieron'].astype(int)
+    nodos['Bajaron'] = nodos['Bajaron'].astype(int)
+    return nodos
+
 # --- 4. INTERFAZ DE USUARIO ---
 #archivo_subido = st.sidebar.file_uploader("Cargar archivo Parquet", type=["parquet"])
 archivo_subido = "Transacciones saes octubre.parquet"
@@ -109,7 +132,8 @@ if archivo_subido:
     # Cálculo inverso: Convertir metros a precisión decimal (1 grado lat ~ 111,111 metros)
     prec_sel = np.log10(111111 / metros_sel)
     
-    mostrar_puntos = st.sidebar.toggle("Mostrar Transacciones Únicas (Puntos)", value=True, key="toggle_ptos")
+    mostrar_puntos = st.sidebar.toggle("Mostrar Puntos", value=True, key="toggle_ptos")
+    mostrar_grilla = st.sidebar.toggle("Mostrar Grilla", value=False, key="toggle_grid")
     min_pasajeros = st.sidebar.number_input("Ocultar flujos menores a:", 1, 1000, value=2, key="num_i")
 
     # Aplicación de filtros
@@ -135,7 +159,29 @@ if archivo_subido:
         if not df_mapa.empty:
             capas = []
             df_zonas = agrupar_por_zonas(df_mapa, precision=prec_sel)
-            df_zonas = df_zonas[df_zonas['Pasajeros'] >= min_pasajeros]
+            df_zonas = df_zonas[df_zonas['Pasajeros'] >= min_pasajeros].reset_index(drop=True)
+            selected_indices = []
+
+            # Calcular estadísticas de nodos (Subidas/Bajadas)
+            df_nodos = calcular_estadisticas_nodos(df_mapa, precision=prec_sel)
+
+            # 0. Capa de Grilla (Fondo)
+            if mostrar_grilla:
+                capas.append(pdk.Layer(
+                    "GridLayer",
+                    df_mapa[['Latitud', 'Longitud']],
+                    get_position=["Longitud", "Latitud"],
+                    cell_size=metros_sel,
+                    extruded=False,
+                    pickable=False,
+                    color_range=[
+                        [255, 255, 0, 20],
+                        [255, 255, 0, 100],
+                        [255, 255, 0, 200],
+                        [255, 255, 0, 255]
+                    ],
+                    coverage=0.9,
+                ))
 
             # 1. Capa de Arcos (Flujos)
             if not df_zonas.empty:
@@ -149,13 +195,22 @@ if archivo_subido:
                 # Eliminamos la columna 'color_des' para ahorrar memoria, usamos constante en el Layer
                 df_zonas['grosor_final'] = df_zonas['Pasajeros'].clip(upper=40).astype(float)
 
+                # Campos vacíos para tooltip consistente
+                df_zonas['Subieron'] = ""
+                df_zonas['Bajaron'] = ""
+
+                # Recuperar selección previa para resaltar
+                selection_state = st.session_state.get("deck_map", {}).get("selection", {})
+                selected_indices = selection_state.get("arcos", [])
+
                 capas.append(pdk.Layer(
                     "ArcLayer",
                     df_zonas, # Pasamos el DataFrame DIRECTAMENTE
+                    id="arcos",
                     get_source_position=["lon_ori", "lat_ori"],
                     get_target_position=["lon_des", "lat_des"],
                     get_source_color="color_ori",
-                    get_target_color=[0, 200, 255, 200], # Color constante
+                    get_target_color=[0, 150, 255, 200], # Color constante
                     get_width="grosor_final",
                     pickable=True,
                     auto_highlight=True,
@@ -167,9 +222,23 @@ if archivo_subido:
                     "ScatterplotLayer",
                     df_mapa[['Latitud', 'Longitud']], # Pasamos DataFrame directo
                     get_position=["Longitud", "Latitud"],
-                    get_color=[0, 0, 0, 80], # Negro para mejor visibilidad en mapa claro
+                    get_color=[140, 140, 140, 100], # Gris
                     get_radius=20,
                 ))
+
+                # Puntos agrupados con estadísticas
+                if not df_nodos.empty:
+                    # Campos vacíos para tooltip consistente
+                    df_nodos['Pasajeros'] = ""
+
+                    capas.append(pdk.Layer(
+                        "ScatterplotLayer",
+                        df_nodos,
+                        get_position=["lon", "lat"],
+                        get_color=[20, 150, 0, 120], # verde 
+                        get_radius=30,
+                        pickable=True,
+                    ))
 
             # 3. Renderizado del mapa si hay capas que mostrar
             if capas:
@@ -193,8 +262,19 @@ if archivo_subido:
                         pitch=45
                     ),
                     layers=capas,
-                    tooltip={"html": "<b>Pasajeros:</b> {Pasajeros}"}
-                ))
+                    tooltip={
+                        "html": "<b>Pasajeros:</b> {Pasajeros}<br/>"
+                                "<b>Subieron:</b> {Subieron}<br/>"
+                                "<b>Bajaron:</b> {Bajaron}"
+                    }
+                ), on_select="rerun", selection_mode="multi-object", key="deck_map")
+
+                # Mostrar información de la selección
+                if selected_indices and not df_zonas.empty:
+                    try:
+                        st.info(f"Flujos seleccionados: {len(selected_indices)}")
+                        st.dataframe(df_zonas.iloc[selected_indices][['Pasajeros', 'lat_ori', 'lon_ori', 'lat_des', 'lon_des']])
+                    except: pass
             else:
                 st.warning("No se encontraron flujos ni transacciones para los filtros aplicados.")
         else:
