@@ -9,7 +9,9 @@ st.set_page_config(page_title="Análisis de Flujos de Transporte", layout="wide"
 # --- 0. INICIALIZAR MEMORIA ---
 # Guardamos el estado de la vista del mapa para que no se reinicie con cada filtro
 if 'view_state' not in st.session_state: # Solo se inicializa una vez por sesión
-    st.session_state.view_state = None 
+    st.session_state.view_state = None
+if 'last_major_filters' not in st.session_state:
+    st.session_state.last_major_filters = None
 
 st.title("📊 Mapa de Flujos de Pasajeros")
 st.markdown("""
@@ -153,31 +155,23 @@ if archivo_subido:
     with st.spinner('Procesando vectores de flujo...'):
         df_flujos = calcular_vectores_flujo(df_filtrado)
 
-    # --- LÓGICA DE VISTA DE MAPA PERSISTENTE (ENFOQUE DEFINITIVO) ---
-    # 1. Feedback Loop (Máxima Prioridad): Capturar la vista del usuario desde el navegador.
-    #    Si el usuario movió el mapa, su última posición se guarda en `st.session_state.deck_map`.
-    #    La leemos y la establecemos como la vista para el próximo renderizado.
-    if "deck_map" in st.session_state and st.session_state.deck_map and "view_state" in st.session_state.deck_map:
-        view_state_dict = st.session_state.deck_map.get("view_state")
-        if view_state_dict: # Asegurarse de que no esté vacío
-            st.session_state.view_state = pdk.ViewState(
-                latitude=view_state_dict["latitude"],
-                longitude=view_state_dict["longitude"],
-                zoom=view_state_dict["zoom"],
-                pitch=view_state_dict["pitch"],
-                bearing=view_state_dict["bearing"]
-            )
+    # --- LÓGICA DE VISTA DE MAPA ESTABLE ---
+    # Se define qué filtros fuerzan un reseteo del centro del mapa.
+    current_major_filters = (fecha_sel, ramal_sel)
 
-    # 2. Centrado Inicial (Baja Prioridad): Si, y solo si, no tenemos una vista definida
-    #    (porque es la primera carga o se pulsó "Resetear"), calculamos una.
-    if st.session_state.view_state is None:
+    # Se recalcula el centro SÓLO si:
+    # 1. Es la primera carga o se ha pulsado el botón de reseteo (view_state is None).
+    # 2. Han cambiado los filtros principales (fecha o ramal).
+    if st.session_state.view_state is None or st.session_state.last_major_filters != current_major_filters:
         if not df_flujos.empty:
             lat_centro = float(df_flujos["Latitud"].mean())
             lon_centro = float(df_flujos["Longitud"].mean())
             st.session_state.view_state = pdk.ViewState(
                 latitude=lat_centro, longitude=lon_centro, zoom=12, pitch=45, bearing=0
             )
-        else: # Fallback si no hay datos en la primera carga
+            # Se guarda la configuración de filtros con la que se calculó este centro.
+            st.session_state.last_major_filters = current_major_filters
+        elif st.session_state.view_state is None: # Fallback solo para la primera carga si no hay datos
              st.session_state.view_state = pdk.ViewState(latitude=-34.921, longitude=-57.954, zoom=12, pitch=45, bearing=0)
 
     if not df_flujos.empty:
@@ -193,7 +187,6 @@ if archivo_subido:
             capas = []
             df_zonas = agrupar_por_zonas(df_mapa, precision=prec_sel)
             df_zonas = df_zonas[df_zonas['Pasajeros'] >= min_pasajeros].reset_index(drop=True)
-            selected_indices = []
 
             # Calcular estadísticas de nodos (Subidas/Bajadas)
             df_nodos = calcular_estadisticas_nodos(df_mapa, precision=prec_sel)
@@ -231,10 +224,6 @@ if archivo_subido:
                 # Campos vacíos para tooltip consistente
                 df_zonas['Subieron'] = ""
                 df_zonas['Bajaron'] = ""
-
-                # Recuperar selección previa
-                selection_state = st.session_state.get("deck_map", {}).get("selection", {})
-                selected_indices = selection_state.get("arcos", [])
 
                 capas.append(pdk.Layer(
                     "ArcLayer",
@@ -288,14 +277,9 @@ if archivo_subido:
                                 "<b>Subieron:</b> {Subieron}<br/>"
                                 "<b>Bajaron:</b> {Bajaron}"
                     }
-                ), on_select="rerun", selection_mode="multi-object", key="deck_map")
+                ), key="deck_map")
 
-                # Mostrar información de la selección
-                if selected_indices and not df_zonas.empty:
-                    try:
-                        st.info(f"Flujos seleccionados: {len(selected_indices)}")
-                        st.dataframe(df_zonas.iloc[selected_indices][['Pasajeros', 'lat_ori', 'lon_ori', 'lat_des', 'lon_des']])
-                    except: pass
+                # La funcionalidad de selección se ha desactivado temporalmente para estabilizar el zoom.
             else:
                 st.warning("No se encontraron flujos ni transacciones para los filtros aplicados.")
         else:
