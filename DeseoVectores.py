@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import pydeck as pdk
-import folium
-from streamlit_folium import st_folium
+#import folium
+#from streamlit_folium import st_folium
 
 # Configuración de página
 st.set_page_config(page_title="Análisis de Flujos de Transporte", layout="wide")

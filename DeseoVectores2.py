@@ -7,8 +7,9 @@ import numpy as np
 st.set_page_config(page_title="Análisis de Flujos de Transporte", layout="wide")
 
 # --- 0. INICIALIZAR MEMORIA ---
-if 'map_view' not in st.session_state:
-    st.session_state.map_view = {"latitude": -34.921, "longitude": -57.954, "zoom": 12, "pitch": 45, "bearing": 0}
+# Guardamos el estado de la vista del mapa para que no se reinicie con cada filtro
+if 'view_state' not in st.session_state: # Solo se inicializa una vez por sesión
+    st.session_state.view_state = None 
 
 st.title("📊 Mapa de Flujos de Pasajeros")
 st.markdown("""
@@ -121,6 +122,11 @@ if archivo_subido:
     ramal_sel = st.sidebar.selectbox("Seleccionar Ramal", ramales)
 
     st.sidebar.markdown("---")
+    # Botón para resetear la vista del mapa
+    if st.sidebar.button("📍 Resetear Vista del Mapa"):
+        st.session_state.view_state = None
+        # El script se re-ejecutará naturalmente, aplicando el reseteo.
+
     st.sidebar.header("Filtros de Visualización")
     
     # Consolidación de filtros para evitar DuplicateElementId y NameError
@@ -146,6 +152,33 @@ if archivo_subido:
     
     with st.spinner('Procesando vectores de flujo...'):
         df_flujos = calcular_vectores_flujo(df_filtrado)
+
+    # --- LÓGICA DE VISTA DE MAPA PERSISTENTE (ENFOQUE DEFINITIVO) ---
+    # 1. Feedback Loop (Máxima Prioridad): Capturar la vista del usuario desde el navegador.
+    #    Si el usuario movió el mapa, su última posición se guarda en `st.session_state.deck_map`.
+    #    La leemos y la establecemos como la vista para el próximo renderizado.
+    if "deck_map" in st.session_state and st.session_state.deck_map and "view_state" in st.session_state.deck_map:
+        view_state_dict = st.session_state.deck_map.get("view_state")
+        if view_state_dict: # Asegurarse de que no esté vacío
+            st.session_state.view_state = pdk.ViewState(
+                latitude=view_state_dict["latitude"],
+                longitude=view_state_dict["longitude"],
+                zoom=view_state_dict["zoom"],
+                pitch=view_state_dict["pitch"],
+                bearing=view_state_dict["bearing"]
+            )
+
+    # 2. Centrado Inicial (Baja Prioridad): Si, y solo si, no tenemos una vista definida
+    #    (porque es la primera carga o se pulsó "Resetear"), calculamos una.
+    if st.session_state.view_state is None:
+        if not df_flujos.empty:
+            lat_centro = float(df_flujos["Latitud"].mean())
+            lon_centro = float(df_flujos["Longitud"].mean())
+            st.session_state.view_state = pdk.ViewState(
+                latitude=lat_centro, longitude=lon_centro, zoom=12, pitch=45, bearing=0
+            )
+        else: # Fallback si no hay datos en la primera carga
+             st.session_state.view_state = pdk.ViewState(latitude=-34.921, longitude=-57.954, zoom=12, pitch=45, bearing=0)
 
     if not df_flujos.empty:
         # Filtros de Mapa aplicados sobre los vectores
@@ -199,7 +232,7 @@ if archivo_subido:
                 df_zonas['Subieron'] = ""
                 df_zonas['Bajaron'] = ""
 
-                # Recuperar selección previa para resaltar
+                # Recuperar selección previa
                 selection_state = st.session_state.get("deck_map", {}).get("selection", {})
                 selected_indices = selection_state.get("arcos", [])
 
@@ -242,25 +275,13 @@ if archivo_subido:
 
             # 3. Renderizado del mapa si hay capas que mostrar
             if capas:
-                # FIX: Usamos df_mapa para el centro. Esto evita que el mapa "salte" o cambie de zoom
-                # cuando ajustamos la precisión o el filtro de pasajeros, ya que df_mapa es estable.
-                if not df_mapa.empty:
-                    lat_centro = float(df_mapa["Latitud"].mean())
-                    lon_centro = float(df_mapa["Longitud"].mean())
-                    max_p_display = int(df_zonas['Pasajeros'].max()) if not df_zonas.empty else 0
-                else:
-                    max_p_display = 0
-                
+                max_p_display = int(df_zonas['Pasajeros'].max()) if not df_zonas.empty else 0
+
                 st.subheader(f"Análisis: {ramal_sel} | Máx: {max_p_display} pasajeros en un corredor")
                 st.pydeck_chart(pdk.Deck(
                     map_provider="carto",
                     map_style="light",
-                    initial_view_state=pdk.ViewState(
-                        latitude=lat_centro,
-                        longitude=lon_centro,
-                        zoom=12,
-                        pitch=45
-                    ),
+                    initial_view_state=st.session_state.view_state, # Usamos SIEMPRE la vista guardada
                     layers=capas,
                     tooltip={
                         "html": "<b>Pasajeros:</b> {Pasajeros}<br/>"
