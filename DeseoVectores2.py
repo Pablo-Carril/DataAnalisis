@@ -2,9 +2,10 @@ import streamlit as st
 import pandas as pd
 import pydeck as pdk
 import numpy as np
+import os
 
 # Configuración de página
-st.set_page_config(page_title="Análisis de Flujos de Transporte", layout="wide")
+st.set_page_config(page_title="Análisis de Flujos", layout="wide")
 
 # --- 0. INICIALIZAR MEMORIA ---
 # Guardamos el estado de la vista del mapa para que no se reinicie con cada filtro
@@ -15,8 +16,7 @@ if 'last_major_filters' not in st.session_state:
 
 st.title("📊 Mapa de Flujos de Pasajeros")
 st.markdown("""
-Esta herramienta agrupa viajes cercanos para visualizar los **corredores de mayor demanda**. 
-Mapa de Deseo 
+Mapa de Deseo. Esta herramienta agrupa viajes cercanos para visualizar los **corredores de mayor demanda**.
 """)
 
 # --- 1. CARGA DE DATOS ---
@@ -65,40 +65,92 @@ def calcular_vectores_flujo(df):
 
 # --- 3. AGRUPACIÓN ---
 @st.cache_data
-def agrupar_por_zonas(df, precision=3):
-    # Optimización: No copiamos el DF entero. Calculamos series al vuelo.
-    factor = 10 ** precision
+def agrupar_por_zonas(df, df_ruta, metros_sel=100):
+    # Si no hay ruta, no se puede agrupar.
+    if df_ruta.empty:
+        return pd.DataFrame()
+
+    # Coordenadas de la ruta de referencia
+    ruta_lats = df_ruta['Latitud'].values
+    ruta_lons = df_ruta['Longitud'].values
+    ruta_cum = df_ruta['Dist_Acum'].values # Distancia acumulada en KM
+
+    # Coordenadas de los viajes
+    lats_ori = df['Latitud'].values
+    lons_ori = df['Longitud'].values
+    lats_des = df['Lat_Destino'].values
+    lons_des = df['Lon_Destino'].values
+
+    # 1. Encontrar los índices de los puntos más cercanos en la ruta
+    idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
+    idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
+
+    # 2. Obtener la distancia acumulada para cada punto
+    dist_acum_ori = ruta_cum[idx_ori]
+    dist_acum_des = ruta_cum[idx_des]
+
+    # 3. Agrupar por distancia (binning)
+    km_bin = metros_sel / 1000.0
+    dist_binned_ori = (dist_acum_ori / km_bin).round() * km_bin
+    dist_binned_des = (dist_acum_des / km_bin).round() * km_bin
+
+    # 4. Encontrar los puntos de la ruta que corresponden a las distancias agrupadas
+    idx_binned_ori = np.argmin(np.abs(dist_binned_ori[:, None] - ruta_cum[None, :]), axis=1)
+    idx_binned_des = np.argmin(np.abs(dist_binned_des[:, None] - ruta_cum[None, :]), axis=1)
+
+    # Crear un DataFrame temporal con las coordenadas "snapped" y "binned" a la ruta
+    df_snapped = pd.DataFrame({
+        'lat_ori': ruta_lats[idx_binned_ori],
+        'lon_ori': ruta_lons[idx_binned_ori],
+        'lat_des': ruta_lats[idx_binned_des],
+        'lon_des': ruta_lons[idx_binned_des],
+        'Sentido': df['Sentido'].values
+    })
     
-    # Redondeo vectorizado directo
-    lat_ori = (df['Latitud'] * factor).round() / factor
-    lon_ori = (df['Longitud'] * factor).round() / factor
-    lat_des = (df['Lat_Destino'] * factor).round() / factor
-    lon_des = (df['Lon_Destino'] * factor).round() / factor
-    
-    df_zonas = df.groupby([
-        lat_ori.rename('lat_ori'), 
-        lon_ori.rename('lon_ori'), 
-        lat_des.rename('lat_des'), 
-        lon_des.rename('lon_des'), 
-        'Sentido'
+    # Agrupar por las coordenadas de la ruta
+    df_zonas = df_snapped.groupby([
+        'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
     ]).size().reset_index(name='Pasajeros')
     
     return df_zonas
 
 @st.cache_data
-def calcular_estadisticas_nodos(df, precision=3):
-    factor = 10 ** precision
+def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100):
+    if df_ruta.empty:
+        return pd.DataFrame()
+
+    # Coordenadas de la ruta de referencia
+    ruta_lats = df_ruta['Latitud'].values
+    ruta_lons = df_ruta['Longitud'].values
+    ruta_cum = df_ruta['Dist_Acum'].values
+
+    # Coordenadas de los viajes
+    lats_ori = df['Latitud'].values
+    lons_ori = df['Longitud'].values
+    lats_des = df['Lat_Destino'].values
+    lons_des = df['Lon_Destino'].values
+
+    # 1. Encontrar los índices de los puntos más cercanos en la ruta
+    idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
+    idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
+
+    # 2. Obtener la distancia acumulada para cada punto
+    dist_acum_ori = ruta_cum[idx_ori]
+    dist_acum_des = ruta_cum[idx_des]
+
+    # 3. Agrupar por distancia (binning)
+    km_bin = metros_sel / 1000.0
+    dist_binned_ori = (dist_acum_ori / km_bin).round() * km_bin
+    dist_binned_des = (dist_acum_des / km_bin).round() * km_bin
+
+    # 4. Encontrar los puntos de la ruta que corresponden a las distancias agrupadas
+    idx_binned_ori = np.argmin(np.abs(dist_binned_ori[:, None] - ruta_cum[None, :]), axis=1)
+    idx_binned_des = np.argmin(np.abs(dist_binned_des[:, None] - ruta_cum[None, :]), axis=1)
     
-    # Redondeo de coordenadas
-    lat_ori = (df['Latitud'] * factor).round() / factor
-    lon_ori = (df['Longitud'] * factor).round() / factor
-    lat_des = (df['Lat_Destino'] * factor).round() / factor
-    lon_des = (df['Lon_Destino'] * factor).round() / factor
-    
-    # Agrupación
-    df_sub = pd.DataFrame({'lat': lat_ori, 'lon': lon_ori})
-    df_baj = pd.DataFrame({'lat': lat_des, 'lon': lon_des})
-    
+    # Crear DataFrames con coordenadas "snapped" y "binned"
+    df_sub = pd.DataFrame({'lat': ruta_lats[idx_binned_ori], 'lon': ruta_lons[idx_binned_ori]})
+    df_baj = pd.DataFrame({'lat': ruta_lats[idx_binned_des], 'lon': ruta_lons[idx_binned_des]})
+
     sub = df_sub.groupby(['lat', 'lon']).size().reset_index(name='Subieron')
     baj = df_baj.groupby(['lat', 'lon']).size().reset_index(name='Bajaron')
     
@@ -107,6 +159,40 @@ def calcular_estadisticas_nodos(df, precision=3):
     nodos['Subieron'] = nodos['Subieron'].astype(int)
     nodos['Bajaron'] = nodos['Bajaron'].astype(int)
     return nodos
+
+# --- 5. FUNCIONES DE DISTANCIA (RUTA) ---
+def haversine_np(lon1, lat1, lon2, lat2):
+    lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = np.sin(dlat/2.0)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2.0)**2
+    c = 2 * np.arcsin(np.sqrt(a))
+    return 6371 * c
+
+@st.cache_data
+def cargar_ruta_referencia(archivo):
+    try:
+        df = pd.read_csv(archivo, sep=';', decimal=',', names=['Ramal', 'Sentido', 'Latitud', 'Longitud', 'Orden'])
+        df = df.sort_values('Orden').reset_index(drop=True)
+        # Calcular distancias acumuladas a lo largo de la ruta
+        lats = df['Latitud'].values
+        lons = df['Longitud'].values
+        dists = haversine_np(lons[:-1], lats[:-1], lons[1:], lats[1:])
+        df['Dist_Acum'] = np.concatenate(([0], np.cumsum(dists)))
+        return df
+    except Exception as e:
+        return pd.DataFrame()
+
+def calcular_distancia_traza_vectorizado(lats_ori, lons_ori, lats_des, lons_des, df_ruta):
+    ruta_lats = df_ruta['Latitud'].values
+    ruta_lons = df_ruta['Longitud'].values
+    ruta_cum = df_ruta['Dist_Acum'].values
+    
+    # Encontrar índices más cercanos en la ruta (Broadcasting: Zonas x Ruta)
+    idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
+    idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
+    
+    return np.abs(ruta_cum[idx_des] - ruta_cum[idx_ori])
 
 # --- 4. INTERFAZ DE USUARIO ---
 #archivo_subido = st.sidebar.file_uploader("Cargar archivo Parquet", type=["parquet"])
@@ -123,10 +209,10 @@ if archivo_subido:
     ramales = ["Todos"] + sorted(df_raw['Ramal'].unique().tolist())
     ramal_sel = st.sidebar.selectbox("Seleccionar Ramal", ramales)
 
-    st.sidebar.markdown("---")
+    #st.sidebar.markdown("---")
     # Botón para resetear la vista del mapa
-    if st.sidebar.button("📍 Resetear Vista del Mapa"):
-        st.session_state.view_state = None
+    #if st.sidebar.button("📍 Resetear Vista del Mapa"):
+       # st.session_state.view_state = None
         # El script se re-ejecutará naturalmente, aplicando el reseteo.
 
     st.sidebar.header("Filtros de Visualización")
@@ -135,14 +221,37 @@ if archivo_subido:
     hora_rango = st.sidebar.slider("Rango Horario (Subida)", 0, 23, (0, 23), key="slider_h")
     sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"], index=1, key="radio_s")
     
-    # Cambio: Slider en Metros en lugar de precisión abstracta
-    metros_sel = st.sidebar.select_slider("Tamaño de zona (metros aprox)", options=[50, 100, 200, 300, 400, 500, 800, 1000, 1500, 2000], value=100, key="slider_m")
-    # Cálculo inverso: Convertir metros a precisión decimal (1 grado lat ~ 111,111 metros)
-    prec_sel = np.log10(111111 / metros_sel)
-    
+    metros_sel = st.sidebar.select_slider("Tamaño de Agrupación (metros)", options=[50, 100, 200, 300, 400, 500], value=100)
+
     mostrar_puntos = st.sidebar.toggle("Mostrar Puntos", value=True, key="toggle_ptos")
-    mostrar_grilla = st.sidebar.toggle("Mostrar Grilla", value=False, key="toggle_grid")
     min_pasajeros = st.sidebar.number_input("Ocultar flujos menores a:", 1, 1000, value=2, key="num_i")
+
+    # --- Carga dinámica de la ruta de referencia ---
+    df_ruta = pd.DataFrame()
+    nombre_archivo_ruta = ""
+    # Solo intentamos cargar una ruta si se ha seleccionado un ramal y un sentido específicos.
+    if ramal_sel != "Todos" and sentido_sel != "Ambos":
+        # Intentamos detectar el archivo con o sin el ID de línea (9433)
+        posibles_nombres = [
+           # f"Ramal_{ramal_sel}_{sentido_sel}_9433.ACTrec",
+            f"Ramal_{ramal_sel}_{sentido_sel}.ACTrec"
+        ]
+        
+        for nombre in posibles_nombres:
+            if os.path.exists(nombre):
+                nombre_archivo_ruta = nombre
+                break
+        
+        if nombre_archivo_ruta:
+            df_ruta = cargar_ruta_referencia(nombre_archivo_ruta)
+            if df_ruta.empty:
+                st.sidebar.error(f"El archivo existe pero falló la lectura: {nombre_archivo_ruta}")
+        else:
+            st.sidebar.warning(f"No se encontró archivo de ruta (ej. {posibles_nombres[0]})")
+            st.sidebar.info(f"Carpeta actual: {os.getcwd()}")
+            
+    elif ramal_sel == "Todos" or sentido_sel == "Ambos":
+        st.sidebar.info("Seleccione un Ramal y Sentido para visualizar la ruta y agrupar los flujos sobre ella.")
 
     # Aplicación de filtros
     df_filtrado = df_raw.copy()
@@ -185,29 +294,43 @@ if archivo_subido:
 
         if not df_mapa.empty:
             capas = []
-            df_zonas = agrupar_por_zonas(df_mapa, precision=prec_sel)
-            df_zonas = df_zonas[df_zonas['Pasajeros'] >= min_pasajeros].reset_index(drop=True)
+            df_zonas = agrupar_por_zonas(df_mapa, df_ruta, metros_sel)
+            
+            # Verificamos que se hayan generado zonas antes de filtrar para evitar KeyError
+            if not df_zonas.empty and 'Pasajeros' in df_zonas.columns:
+                df_zonas = df_zonas[df_zonas['Pasajeros'] >= min_pasajeros].reset_index(drop=True)
+
+            if not df_ruta.empty:
+                path_data = pd.DataFrame({
+                    'path': [df_ruta[['Longitud', 'Latitud']].values.tolist()]
+                })
+                capas.append(pdk.Layer(
+                    'PathLayer',
+                    data=path_data,
+                    get_path='path',
+                    get_color=[200, 40, 40, 160], # color
+                    get_width=15,
+                    width_min_pixels=3,
+                    id='ruta_referencia_layer'
+                ))
+
+            # --- CÁLCULO DE DISTANCIAS ---
+            if not df_ruta.empty and not df_zonas.empty:
+                df_zonas['Km_Recorridos'] = calcular_distancia_traza_vectorizado(
+                    df_zonas['lat_ori'].values, df_zonas['lon_ori'].values,
+                    df_zonas['lat_des'].values, df_zonas['lon_des'].values,
+                    df_ruta
+                )
+                
+                total_pax = df_zonas['Pasajeros'].sum()
+                if total_pax > 0:
+                    dist_media = (df_zonas['Km_Recorridos'] * df_zonas['Pasajeros']).sum() / total_pax
+                    st.metric("📏 Distancia Media Ponderada (km)", f"{dist_media:.2f}")
 
             # Calcular estadísticas de nodos (Subidas/Bajadas)
-            df_nodos = calcular_estadisticas_nodos(df_mapa, precision=prec_sel)
+            df_nodos = calcular_estadisticas_nodos(df_mapa, df_ruta, metros_sel)
 
             # 0. Capa de Grilla (Fondo)
-            if mostrar_grilla:
-                capas.append(pdk.Layer(
-                    "GridLayer",
-                    df_mapa[['Latitud', 'Longitud']],
-                    get_position=["Longitud", "Latitud"],
-                    cell_size=metros_sel,
-                    extruded=False,
-                    pickable=False,
-                    color_range=[
-                        [255, 255, 0, 20],
-                        [255, 255, 0, 100],
-                        [255, 255, 0, 200],
-                        [255, 255, 0, 255]
-                    ],
-                    coverage=0.9,
-                ))
 
             # 1. Capa de Arcos (Flujos)
             if not df_zonas.empty:
