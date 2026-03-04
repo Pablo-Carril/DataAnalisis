@@ -4,6 +4,24 @@ import pydeck as pdk
 import numpy as np
 import os
 
+# Inyectar CSS para ocultar el menú 
+css_style = """
+        <style>
+       /* #MainMenu {visibility: hidden;} */
+       /* header {visibility: hidden;} */
+        footer {visibility: hidden;}
+        /* Quitar el espacio superior del contenedor principal */
+            .block-container {
+                padding-top: 1rem;
+                padding-bottom: 0rem;
+                padding-left: 3rem;
+                padding-right: 3rem;
+            }
+        </style>
+        """
+st.markdown(css_style, unsafe_allow_html=True)
+
+
 # Configuración de página
 st.set_page_config(page_title="Análisis de Flujos", layout="wide")
 
@@ -325,7 +343,7 @@ if archivo_subido:
                 total_pax = df_zonas['Pasajeros'].sum()
                 if total_pax > 0:
                     dist_media = (df_zonas['Km_Recorridos'] * df_zonas['Pasajeros']).sum() / total_pax
-                    st.metric("📏 Distancia Media Ponderada (km)", f"{dist_media:.2f}")
+                    st.metric("Distancia Media Ponderada (km)", f"{dist_media:.2f}")
 
             # Calcular estadísticas de nodos (Subidas/Bajadas)
             df_nodos = calcular_estadisticas_nodos(df_mapa, df_ruta, metros_sel)
@@ -389,7 +407,7 @@ if archivo_subido:
             if capas:
                 max_p_display = int(df_zonas['Pasajeros'].max()) if not df_zonas.empty else 0
 
-                st.subheader(f"Análisis: {ramal_sel} | Máx: {max_p_display} pasajeros en un corredor")
+                st.subheader(f"Ramal: {ramal_sel} - {sentido_sel} - Suben: en Rojo - Bajan: en Azul")#| Máx: {max_p_display} pasajeros en un corredor")
                 st.pydeck_chart(pdk.Deck(
                     map_provider="carto",
                     map_style="light",
@@ -402,7 +420,27 @@ if archivo_subido:
                     }
                 ), key="deck_map")
 
-                # La funcionalidad de selección se ha desactivado temporalmente para estabilizar el zoom.
+                # --- EXPORTACIÓN DE DATOS ---
+                if not df_zonas.empty:
+                    st.markdown("---")
+                    df_export = df_zonas.copy()
+                    df_export['Ramal'] = ramal_sel
+                    
+                    # Renombrar para coincidir con solicitud
+                    if 'Km_Recorridos' in df_export.columns:
+                        df_export = df_export.rename(columns={'Km_Recorridos': 'distancia'})
+                    
+                    cols_export = ['Ramal', 'Sentido', 'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'distancia', 'Pasajeros']
+                    cols_final = [c for c in cols_export if c in df_export.columns]
+                    
+                    csv = df_export[cols_final].to_csv(index=False, sep=';', decimal=',')
+                    
+                    st.download_button(
+                        label="📥 Descargar CSV (Flujos)",
+                        data=csv,
+                        file_name=f"flujos_{ramal_sel}_{sentido_sel}.csv",
+                        mime="text/csv"
+                    )
             else:
                 st.warning("No se encontraron flujos ni transacciones para los filtros aplicados.")
         else:
