@@ -243,6 +243,7 @@ if archivo_subido:
 
     mostrar_puntos = st.sidebar.toggle("Mostrar Puntos", value=True, key="toggle_ptos")
     min_pasajeros = st.sidebar.number_input("Ocultar flujos menores a:", 1, 1000, value=2, key="num_i")
+    dist_rango = st.sidebar.slider("Filtrar por Distancia (km)", 0.0, 50.0, (0.0, 50.0), step=0.5, key="slider_dist")
 
     # --- Carga dinámica de la ruta de referencia ---
     df_ruta = pd.DataFrame()
@@ -332,14 +333,21 @@ if archivo_subido:
                     id='ruta_referencia_layer'
                 ))
 
-            # --- CÁLCULO DE DISTANCIAS ---
+            # --- CÁLCULO DE DISTANCIAS Y FILTRO ---
             if not df_ruta.empty and not df_zonas.empty:
                 df_zonas['Km_Recorridos'] = calcular_distancia_traza_vectorizado(
                     df_zonas['lat_ori'].values, df_zonas['lon_ori'].values,
                     df_zonas['lat_des'].values, df_zonas['lon_des'].values,
                     df_ruta
                 )
+
+                # Aplicar filtro de distancia del slider
+                df_zonas = df_zonas[
+                    (df_zonas['Km_Recorridos'] >= dist_rango[0]) &
+                    (df_zonas['Km_Recorridos'] <= dist_rango[1])
+                ].reset_index(drop=True)
                 
+                # Recalcular métricas con los datos ya filtrados por distancia
                 total_pax = df_zonas['Pasajeros'].sum()
                 if total_pax > 0:
                     dist_media = (df_zonas['Km_Recorridos'] * df_zonas['Pasajeros']).sum() / total_pax
@@ -353,14 +361,16 @@ if archivo_subido:
             # 1. Capa de Arcos (Flujos)
             if not df_zonas.empty:
                 max_p = int(df_zonas['Pasajeros'].max())
+                log_max_p = np.log1p(max_p) if max_p > 0 else 1
                 
                 def color_log(x):
-                    ratio = np.log1p(x) / np.log1p(max_p) if max_p > 1 else 0
+                    ratio = np.log1p(x) / log_max_p if log_max_p > 0 else 0
                     return [255, int(165 * (1 - ratio)), 0, 200]
 
                 df_zonas['color_ori'] = df_zonas['Pasajeros'].apply(color_log)
-                # Eliminamos la columna 'color_des' para ahorrar memoria, usamos constante en el Layer
-                df_zonas['grosor_final'] = df_zonas['Pasajeros'].clip(upper=40).astype(float)
+                
+                # ANCHO DE LÍNEA LOGARÍTMICO: Más sutil y no satura al alejar el zoom.
+                df_zonas['grosor_final'] = (1 + (np.log1p(df_zonas['Pasajeros']) / log_max_p) * 14) if log_max_p > 0 else 1
 
                 # Campos vacíos para tooltip consistente
                 df_zonas['Subieron'] = ""
@@ -407,18 +417,195 @@ if archivo_subido:
             if capas:
                 max_p_display = int(df_zonas['Pasajeros'].max()) if not df_zonas.empty else 0
 
-                st.subheader(f"Ramal: {ramal_sel} - {sentido_sel} - Suben: en Rojo - Bajan: en Azul")#| Máx: {max_p_display} pasajeros en un corredor")
-                st.pydeck_chart(pdk.Deck(
-                    map_provider="carto",
-                    map_style="light",
-                    initial_view_state=st.session_state.view_state, # Usamos SIEMPRE la vista guardada
-                    layers=capas,
-                    tooltip={
-                        "html": "<b>Pasajeros:</b> {Pasajeros}<br/>"
-                                "<b>Subieron:</b> {Subieron}<br/>"
-                                "<b>Bajaron:</b> {Bajaron}"
-                    }
-                ), key="deck_map")
+                # --- CREACIÓN DE PESTAÑAS DE VISUALIZACIÓN ---
+                tab1, tab2 = st.tabs(["🗺️ Mapa 3D (Arcos)", "🛰️ Vista 2D (Vectores)"])
+
+                with tab1:
+                    st.subheader(f"Ramal: {ramal_sel} - {sentido_sel} | Suben: Naranja/Rojo - Bajan: Azul")
+                    st.pydeck_chart(pdk.Deck(
+                        map_provider="carto",
+                        map_style="light",
+                        initial_view_state=st.session_state.view_state, # Usamos SIEMPRE la vista guardada
+                        layers=capas,
+                        tooltip={
+                            "html": "<b>Pasajeros:</b> {Pasajeros}<br/>"
+                                    "<b>Subieron:</b> {Subieron}<br/>"
+                                    "<b>Bajaron:</b> {Bajaron}"
+                        },
+                        height=900
+                    ), key="deck_map_3d")
+
+                with tab2:
+                    if not df_zonas.empty:
+                        # --- PREPARACIÓN PARA VISTA 2D ---
+                        # Se crea una copia para la Tab 2, se ordena para el Z-Index y se trabaja sobre ella.
+                        # Esto evita modificar el df_zonas original que se usa en la Tab 1 y en la exportación.
+                        df_2d = df_zonas.copy().sort_values('Pasajeros', ascending=True).reset_index(drop=True)
+                        
+                        # 1. Cálculo de Colores (Gradiente de Matiz y Transparencia)
+                        max_p_2d = df_2d['Pasajeros'].max()
+                        
+                        def get_color_2d(p):
+                            ratio = p / max_p_2d if max_p_2d > 0 else 0
+                            # Alpha: 40 (muy transparente) a 255 (opaco)
+                            alpha = int(40 + (215 * ratio))
+                            
+                            # Matiz: Cian -> Azul -> Verde -> Amarillo -> Naranja -> Rojo
+                            if ratio < 0.2: # Cian a Azul
+                                r, g, b = 0, int(255 * (1 - (ratio / 0.2))), 255
+                            elif ratio < 0.4: # Azul a Verde
+                                r, g, b = 0, int(255 * ((ratio - 0.2) / 0.2)), int(255 * (1 - ((ratio - 0.2) / 0.2)))
+                            elif ratio < 0.6: # Verde a Amarillo
+                                r, g, b = int(255 * ((ratio - 0.4) / 0.2)), 255, 0
+                            elif ratio < 0.8: # Amarillo a Naranja
+                                r, g, b = 255, int(255 - (90 * ((ratio - 0.6) / 0.2))), 0
+                            else: # Naranja a Rojo
+                                r, g, b = 255, int(165 * (1 - ((ratio - 0.8) / 0.2))), 0
+                            return [r, g, b, alpha]
+
+                        df_2d['color_2d'] = df_2d['Pasajeros'].apply(get_color_2d)
+                        
+                        # 2. Tamaño de Iconos (Aumentado)
+                        # Aseguramos un tamaño base mínimo (ej. 5) + escalado
+                        df_2d['size_icon'] = df_2d['grosor_final'].apply(lambda x: max(x, 5))
+
+                        # --- LEYENDA DE COLORES ---
+                        def generar_leyenda_html(max_val):
+                            color_stops = "cyan, blue, lime, yellow, orange, red"
+                            html_string = f"""
+                            <div style="
+                                font-family: 'Source Sans Pro', sans-serif; 
+                                font-size: 0.8rem; 
+                                color: #31333F;
+                                margin-bottom: 10px;
+                                border: 1px solid #EAEAEA;
+                                padding: 5px 10px;
+                                border-radius: 5px;
+                            ">
+                                <strong>Leyenda de Pasajeros</strong>
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <span>1</span>
+                                    <div style="
+                                        background: linear-gradient(to right, {color_stops});
+                                        flex-grow: 1; margin: 0 10px;
+                                        height: 15px; border: 1px solid #CCC; border-radius: 5px;
+                                    "></div>
+                                    <span>{int(max_val)}</span>
+                                </div>
+                                <div style="text-align: center; font-size: 0.7rem; color: #555;">
+                                    (El grosor y la opacidad también aumentan con la cantidad)
+                                </div>
+                            </div>
+                            """
+                            return html_string
+
+                        capas_2d = []
+
+                        # AÑADIR RUTA DE REFERENCIA AL MAPA 2D
+                        if not df_ruta.empty:
+                            path_data_2d = pd.DataFrame({
+                                'path': [df_ruta[['Longitud', 'Latitud']].values.tolist()]
+                            })
+                            capas_2d.append(pdk.Layer(
+                                'PathLayer',
+                                data=path_data_2d,
+                                get_path='path',
+                                get_color=[100, 100, 100, 120], # Gris para no competir
+                                get_width=15,
+                                width_min_pixels=2,
+                                id='ruta_referencia_layer_2d'
+                            ))
+                        
+                        # Capa de Líneas (vectores principales)
+                        capas_2d.append(pdk.Layer(
+                            "LineLayer",
+                            df_2d,
+                            get_source_position=["lon_ori", "lat_ori"],
+                            get_target_position=["lon_des", "lat_des"],
+                            get_color="color_2d", 
+                            get_width="grosor_final",
+                            pickable=True,
+                            auto_highlight=True,
+                        ))
+
+                        def crear_puntas_de_flecha(df):
+                            lats_ori = df['lat_ori'].values
+                            lons_ori = df['lon_ori'].values
+                            lats_des = df['lat_des'].values
+                            lons_des = df['lon_des'].values
+                            
+                            dx = lons_des - lons_ori
+                            dy = lats_des - lats_ori
+                            norm = np.sqrt(dx**2 + dy**2)
+                            norm[norm == 0] = 1 # Evitar división por cero
+                            
+                            # El tamaño de la flecha es 3% del largo del vector, con un mínimo y máximo para que no se dispare
+                            # Estos valores (0.0002, 0.002) están en grados de lat/lon y funcionan bien para escalas de ciudad.
+                            arrow_size = np.clip(norm * 0.03, 0.0002, 0.002)
+                            
+                            # Vectores unitarios de la dirección del flujo
+                            ux = dx / norm
+                            uy = dy / norm
+                            
+                            # Vector perpendicular para las "alas" de la flecha
+                            px = -uy
+                            py = ux
+                            
+                            # Calcular los dos puntos que forman la cabeza de la flecha
+                            punta1_lon = lons_des - ux * arrow_size + px * arrow_size * 0.6
+                            punta1_lat = lats_des - uy * arrow_size + py * arrow_size * 0.6
+                            
+                            punta2_lon = lons_des - ux * arrow_size - px * arrow_size * 0.6
+                            punta2_lat = lats_des - uy * arrow_size - py * arrow_size * 0.6
+                            
+                            # Crear un nuevo DataFrame con los segmentos de línea para las flechas
+                            return pd.DataFrame({
+                                "start_lon": np.concatenate([lons_des, lons_des]),
+                                "start_lat": np.concatenate([lats_des, lats_des]),
+                                "end_lon": np.concatenate([punta1_lon, punta2_lon]),
+                                "end_lat": np.concatenate([punta1_lat, punta2_lat]),
+                                "color": np.concatenate([df['color_2d'].values, df['color_2d'].values]),
+                                "width": np.concatenate([df['grosor_final'].values, df['grosor_final'].values]) # Ancho proporcional
+                            })
+
+                        df_puntas = crear_puntas_de_flecha(df_2d)
+                        
+                        # Capa para las puntas de flecha
+                        capas_2d.append(pdk.Layer(
+                            "LineLayer",
+                            df_puntas,
+                            get_source_position=["start_lon", "start_lat"],
+                            get_target_position=["end_lon", "end_lat"],
+                            get_color="color",
+                            get_width="width",
+                            id="arrow_heads_layer"
+                        ))
+                        
+                        # 3. Vista cenital (desde arriba) y bloqueada
+                        view_state_2d = pdk.ViewState(
+                            latitude=st.session_state.view_state.latitude, longitude=st.session_state.view_state.longitude,
+                            zoom=st.session_state.view_state.zoom, 
+                            pitch=0, 
+                            bearing=0,
+                            max_pitch=0, # Bloquea la inclinación
+                            min_pitch=0  # Bloquea la inclinación
+                        )
+                        
+                        st.subheader(f"Vectores de flujo en 2D (Origen-Destino)")
+                        st.pydeck_chart(
+                            pdk.Deck(
+                                map_provider="carto", map_style="light", 
+                                initial_view_state=view_state_2d,
+                                layers=capas_2d, 
+                                tooltip={"html": "<b>Pasajeros:</b> {Pasajeros}"},
+                                height=900
+                            ), key="deck_map_2d"
+                        )
+                        
+                        # Mostrar leyenda debajo del mapa
+                        st.markdown(generar_leyenda_html(max_p_2d), unsafe_allow_html=True)
+                    else:
+                        st.info("No hay datos de flujos para mostrar en la vista 2D.")
 
                 # --- EXPORTACIÓN DE DATOS ---
                 if not df_zonas.empty:
