@@ -17,10 +17,23 @@ css_style = """
                 padding-left: 3rem;
                 padding-right: 3rem;
             }
-        /* FORZAR ALTURA DEL MAPA */
-        div[data-testid="stDeckGlJsonChart"] {
-            height: 550px !important;
-        }
+            /* FORZAR ALTURA DEL MAPA */
+            div[data-testid="stDeckGlJsonChart"] {
+                height: 550px !important;
+            }
+            /* Modificamos el botón de la pestaña */
+            div[data-baseweb="tab-list"] button div {
+                font-size: 20px !important;
+                font-weight: 600 !important;
+            }
+            
+            /* Simulamos alejar zoom */
+            .block-container {
+                transform: scale(0.85);
+                /*transform-origin: top left;*/
+                width: 118%;
+            }
+            
         </style>
         """
 st.markdown(css_style, unsafe_allow_html=True)
@@ -231,24 +244,24 @@ if archivo_subido:
     
     ramales = ["Todos"] + sorted(df_raw['Ramal'].unique().tolist())
     ramal_sel = st.sidebar.selectbox("Seleccionar Ramal", ramales)
+    sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"], index=1, key="radio_s")
 
+    metros_sel = st.sidebar.select_slider("Tamaño de Agrupación (metros)", options=[10, 50, 100, 200, 300, 400, 500], value=100)
     #st.sidebar.markdown("---")
     # Botón para resetear la vista del mapa
     #if st.sidebar.button("📍 Resetear Vista del Mapa"):
        # st.session_state.view_state = None
         # El script se re-ejecutará naturalmente, aplicando el reseteo.
 
-    st.sidebar.header("Filtros de Visualización")
+    #st.sidebar.header("Filtros de Visualización")
+    min_pasajeros = st.sidebar.number_input("Ocultar flujos menores a:", 1, 1000, value=2, key="num_i")
     
     # Consolidación de filtros para evitar DuplicateElementId y NameError
-    hora_rango = st.sidebar.slider("Rango Horario (Subida)", 0, 23, (0, 23), key="slider_h")
-    sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"], index=1, key="radio_s")
-    
-    metros_sel = st.sidebar.select_slider("Tamaño de Agrupación (metros)", options=[10, 50, 100, 200, 300, 400, 500], value=100)
-
-    mostrar_puntos = st.sidebar.toggle("Mostrar Puntos", value=True, key="toggle_ptos")
-    min_pasajeros = st.sidebar.number_input("Ocultar flujos menores a:", 1, 1000, value=2, key="num_i")
     dist_rango = st.sidebar.slider("Filtrar por Distancia (km)", 0.0, 50.0, (0.0, 50.0), step=0.5, key="slider_dist")
+
+    hora_rango = st.sidebar.slider("Rango Horario (Subida)", 0, 23, (0, 23), key="slider_h")
+    
+    mostrar_puntos = st.sidebar.toggle("Mostrar Puntos", value=True, key="toggle_ptos")
     ocultar_retrocesos = st.sidebar.checkbox("Ocultar retrocesos (Ida < 0km)", value=False)
 
     # --- Carga dinámica de la ruta de referencia ---
@@ -364,15 +377,28 @@ if archivo_subido:
                 total_pax = df_zonas['Pasajeros'].sum()
                 if total_pax > 0:
                     dist_media = (df_zonas['Km_Recorridos'] * df_zonas['Pasajeros']).sum() / total_pax
-                    col1, col2, col3, col4 = st.columns(4)
-                    with col1:
-                        st.metric("Distancia Media Ponderada (km): ", f"{dist_media:.2f}")
+                    col1, col2, col3, col4, col5 = st.columns(5)
                     with col2:
-                        st.subheader(f"Ramal: {ramal_sel} - {sentido_sel}")
+                        st.metric("Distancia Media (km): ", f"{dist_media:.2f}")
+                    with col1:
+                        st.metric(f"Ramal: ", f"{ramal_sel} - {sentido_sel}")
+                    with col5:
+                         with st.expander("❓ Ayuda"):
+                            st.markdown("""
+                                        **Uso de la aplicación**
+
+                                        1. Seleccione el **Ramal** en el panel izquierdo  
+                                        2. Modifique el **Tamaño de Agrupación** para agrupar pasajeros en Flujos.
+                                        (100 metros: simula paradas - más grandes: simula barrios)
+                                        3. Ajuste **Ocultar flujos menores a** para poder ver flujos ocultos.
+                                        4. Ajuste el **rango horario**  
+                                        5. Use las Pestañas **Vista 3D** y **Vista 2D**
+                                        """)
                     with col3:
-                        st.write("Prueba2")
+                        cant_flujos = len(df_zonas)
+                        st.metric("Cantidad de Flujos", f"{cant_flujos:,}")
                     with col4:
-                        st.write("Prueba3")
+                        st.metric("Pasajeros Totales", f"{total_pax:,}")
 
             # Calcular estadísticas de nodos (Subidas/Bajadas)
             df_nodos = calcular_estadisticas_nodos(df_mapa, df_ruta, metros_sel)
@@ -506,7 +532,7 @@ if archivo_subido:
                                 padding: 5px 10px;
                                 border-radius: 5px;
                             ">
-                                <strong>Leyenda de Pasajeros:</strong>
+                                <strong style="color: #FFF;">Leyenda de Pasajeros:</strong>
                                 <div style="display: flex; align-items: center; justify-content: space-between;">
                                     <span>1</span>
                                     <div style="
@@ -514,9 +540,9 @@ if archivo_subido:
                                         flex-grow: 1; margin: 0 10px;
                                         height: 15px; border: 1px solid #CCC; border-radius: 5px;
                                     "></div>
-                                    <span>{int(max_val)}</span>
+                                    <span style="color: #FFF;">{int(max_val)}</span>
                                 </div>
-                                <div style="text-align: center; font-size: 0.7rem; color: #555;">
+                                <div style="text-align: center; font-size: 0.7rem; color: #AAA;">
                                     (El grosor y la opacidad también aumentan con la cantidad)
                                 </div>
                             </div>
@@ -627,7 +653,8 @@ if archivo_subido:
                         )
                         
                         # Mostrar leyenda debajo del mapa
-                        #st.write("") # dejo un espacio
+                        st.write("") # dejo un espacio
+                        st.write("") # dejo un espacio
                         st.markdown(generar_leyenda_html(max_p_2d), unsafe_allow_html=True)
                     else:
                         st.info("No hay datos de flujos para mostrar en la vista 2D.")
