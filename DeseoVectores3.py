@@ -376,13 +376,14 @@ if archivo_subido:
                 # Recalcular métricas con los datos ya filtrados por distancia
                 total_pax = df_zonas['Pasajeros'].sum()
                 if total_pax > 0:
-                    dist_media = (df_zonas['Km_Recorridos'] * df_zonas['Pasajeros']).sum() / total_pax
-                    col1, col2, col3, col4, col5 = st.columns(5)
+                    total_km_recorridos = (df_zonas['Km_Recorridos'] * df_zonas['Pasajeros']).sum()
+                    dist_media = total_km_recorridos / total_pax
+                    col1, col2, col3, col4, col5, col6 = st.columns(6)
                     with col2:
                         st.metric("Distancia Media (km): ", f"{dist_media:.2f}")
                     with col1:
                         st.metric(f"Ramal: ", f"{ramal_sel} - {sentido_sel}")
-                    with col5:
+                    with col6:
                          with st.expander("❓ Ayuda"):
                             st.markdown("""
                                         **Uso de la aplicación**
@@ -399,6 +400,8 @@ if archivo_subido:
                         st.metric("Cantidad de Flujos", f"{cant_flujos:,}")
                     with col4:
                         st.metric("Pasajeros Totales", f"{total_pax:,}")
+                    with col5:
+                        st.metric("Kilómetros Totales", f"{total_km_recorridos:,.0f}")
 
             # Calcular estadísticas de nodos (Subidas/Bajadas)
             df_nodos = calcular_estadisticas_nodos(df_mapa, df_ruta, metros_sel)
