@@ -76,98 +76,27 @@ def cargar_datos(archivo):
 # --- 2. LÓGICA DE PROCESAMIENTO ---
 @st.cache_data
 def calcular_vectores_flujo(df):
-    # 1. Preparar el DataFrame (sorting, renaming, fixing coordinates)
     df = df.sort_values(['Tarjeta', 'Fecha Hora'])
     df = df.rename(columns={'Latitud': 'Long_Original', 'Longitud': 'Lat_Original'})
     df = df.rename(columns={'Long_Original': 'Longitud', 'Lat_Original': 'Latitud'})
     df['Latitud'] = df['Latitud'].apply(lambda x: -abs(x) if x != 0 else x)
     df['Longitud'] = df['Longitud'].apply(lambda x: -abs(x) if x != 0 else x)
 
-    # Esta es la función principal que se aplica a los datos de cada tarjeta
-    def find_destinations_for_card(card_df):
-        # card_df está ordenado por 'Fecha Hora'
-        
-        # Extraer arrays de numpy para un acceso más rápido en los bucles
-        fechas = card_df['Fecha'].values
-        sentidos = card_df['Sentido'].values
-        lats = card_df['Latitud'].values
-        lons = card_df['Longitud'].values
-        fechas_horas = card_df['Fecha Hora'].values
-        
-        num_rows = len(card_df)
-        
-        # Usamos listas nativas de Python para evitar el error de tipo con np.full
-        dest_lat = [np.nan] * num_rows
-        dest_lon = [np.nan] * num_rows
-        dest_sentido = [None] * num_rows
-        dest_fecha = [pd.NaT] * num_rows
-        
-        # Se aumenta el filtro de tiempo mínimo a 60 minutos.
-        # Esto evita que se emparejen viajes "correctivos" o de muy corta duración
-        # (ej. bajarse y tomar el siguiente en sentido contrario), que generan ruido.
-        min_time_diff = pd.Timedelta(minutes=60)
-        
-        for i in range(num_rows):
-            current_fecha = fechas[i]
-            current_sentido = sentidos[i]
-            current_fecha_hora = fechas_horas[i]
-            
-            # Se verifica si el viaje actual es el último de ese día para esa tarjeta
-            is_last_trip_of_day = (i == num_rows - 1) or (fechas[i+1] != current_fecha)
+    mask_misma_tarjeta = df['Tarjeta'] == df['Tarjeta'].shift(-1)
+    df['Lat_Destino'] = df['Latitud'].shift(-1)
+    df['Lon_Destino'] = df['Longitud'].shift(-1)
+    df['Sentido_Siguiente'] = df['Sentido'].shift(-1)
+    df['Fecha_Siguiente'] = df['Fecha'].shift(-1)
 
-            # --- Prioridad 1: Buscar destino en el mismo día (T+0) ---
-            found_t0 = False
-            for j in range(i + 1, num_rows):
-                if fechas[j] != current_fecha:
-                    break  # Salimos del bucle si ya no es el mismo día
-
-                # Filtro de tiempo mínimo para evitar rebotes o errores
-                if fechas_horas[j] - current_fecha_hora < min_time_diff:
-                    continue
-
-                if sentidos[j] != current_sentido:
-                    # Encontrado: un viaje de vuelta. Se sobreescribe para quedarse con el ÚLTIMO del día.
-                    dest_lat[i], dest_lon[i], dest_sentido[i], dest_fecha[i] = lats[j], lons[j], sentidos[j], fechas[j]
-                    found_t0 = True
-            
-            if found_t0:
-                continue # Si se encontró, pasar al siguiente viaje 'i'
-            
-            # --- Prioridad 2: Si no se encontró y ES EL ÚLTIMO VIAJE DEL DÍA, buscar primer viaje en T+1 o T+2 ---
-            # Se asume que el destino del último viaje del día es el origen del primer viaje del día siguiente (ej. la casa).
-            if is_last_trip_of_day:
-                # Mejora profesional: máximo 16 horas para el viaje de vuelta del día siguiente
-                time_limit = current_fecha_hora + pd.Timedelta(hours=16)
-
-                for j in range(i + 1, num_rows):
-                    # Salir si el siguiente viaje está fuera de la ventana de 16 horas
-                    if fechas_horas[j] > time_limit:
-                        break
-                    
-                    # El viaje debe ser en un día posterior
-                    if fechas[j] > current_fecha:
-                        # Solución correcta: verificar distancia mínima entre orígenes para evitar falsos positivos.
-                        dist = distancia_metros(lats[i], lons[i], lats[j], lons[j])
-
-                        # mínimo 500 m para considerar que no es un "rebote" en el mismo lugar (ej. casa -> casa)
-                        if dist > 500:
-                            dest_lat[i], dest_lon[i], dest_sentido[i], dest_fecha[i] = lats[j], lons[j], sentidos[j], fechas[j]
-                            break
-                    
-        return pd.DataFrame({
-            'Lat_Destino': dest_lat, 'Lon_Destino': dest_lon,
-            'Sentido_Siguiente': dest_sentido, 'Fecha_Siguiente': dest_fecha
-        }, index=card_df.index)
-
-    # 2. Agrupar por tarjeta y aplicar la función para encontrar destinos
-    destinations = df.groupby('Tarjeta', group_keys=False).apply(find_destinations_for_card)
-    
-    # 3. Unir los resultados al DataFrame original y filtrar los viajes sin destino
-    df_with_dest = df.join(destinations)
+    mask_cero_destino = (df['Lat_Destino'] != 0) & (df['Lon_Destino'] != 0)
     mask = (
-        df_with_dest['Lat_Destino'].notna() & (df_with_dest['Lat_Destino'] != 0) & (df_with_dest['Lon_Destino'] != 0)
+        mask_misma_tarjeta &
+        mask_cero_destino &
+        (df['Sentido'] != df['Sentido_Siguiente']) & 
+        (df['Fecha'] == df['Fecha_Siguiente']) &
+        (df['Lat_Destino'].notna())
     )
-    return df_with_dest[mask].copy()
+    return df[mask].copy()
 
 # --- 3. AGRUPACIÓN ---
 @st.cache_data
@@ -267,16 +196,6 @@ def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100):
     return nodos
 
 # --- 5. FUNCIONES DE DISTANCIA (RUTA) ---
-def distancia_metros(lat1, lon1, lat2, lon2):
-    R = 6371000
-    phi1 = np.radians(lat1)
-    phi2 = np.radians(lat2)
-    dphi = np.radians(lat2-lat1)
-    dlambda = np.radians(lon2-lon1)
-
-    a = np.sin(dphi/2)**2 + np.cos(phi1)*np.cos(phi2)*np.sin(dlambda/2)**2
-    return 2*R*np.arcsin(np.sqrt(a))
-
 def haversine_np(lon1, lat1, lon2, lat2):
     lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
     dlon = lon2 - lon1
@@ -342,8 +261,8 @@ if archivo_subido:
 
     hora_rango = st.sidebar.slider("Rango Horario (Subida)", 0, 23, (0, 23), key="slider_h")
     
-    mostrar_puntos = st.sidebar.toggle("Mostrar Puntos Originales", value=False, key="toggle_ptos")
-    ocultar_retrocesos = st.sidebar.checkbox("Ocultar retrocesos (Ida < 0km)", value=True)
+    mostrar_puntos = st.sidebar.toggle("Mostrar Puntos", value=True, key="toggle_ptos")
+    ocultar_retrocesos = st.sidebar.checkbox("Ocultar retrocesos (Ida < 0km)", value=False)
 
     # --- Carga dinámica de la ruta de referencia ---
     df_ruta = pd.DataFrame()
@@ -530,19 +449,19 @@ if archivo_subido:
                     get_radius=20,
                 ))
 
-            # Puntos agrupados con estadísticas
-            if not df_nodos.empty:
-                # Campos vacíos para tooltip consistente
-                df_nodos['Pasajeros'] = ""
+                # Puntos agrupados con estadísticas
+                if not df_nodos.empty:
+                    # Campos vacíos para tooltip consistente
+                    df_nodos['Pasajeros'] = ""
 
-                capas.append(pdk.Layer(
-                    "ScatterplotLayer",
-                    df_nodos,
-                    get_position=["lon", "lat"],
-                    get_color=[20, 150, 0, 120], # verde 
-                    get_radius=30,
-                    pickable=True,
-                ))
+                    capas.append(pdk.Layer(
+                        "ScatterplotLayer",
+                        df_nodos,
+                        get_position=["lon", "lat"],
+                        get_color=[20, 150, 0, 120], # verde 
+                        get_radius=30,
+                        pickable=True,
+                    ))
 
             # 3. Renderizado del mapa si hay capas que mostrar
             if capas:
