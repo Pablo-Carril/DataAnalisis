@@ -3,6 +3,7 @@ import pandas as pd
 import pydeck as pdk
 import numpy as np
 import os
+from sklearn.cluster import DBSCAN
 
 # Inyectar CSS para ocultar el menú 
 css_style = """
@@ -75,196 +76,476 @@ def cargar_datos(archivo):
 
 # --- 2. LÓGICA DE PROCESAMIENTO ---
 @st.cache_data
-def calcular_vectores_flujo(df):
-    # 1. Preparar el DataFrame (sorting, renaming, fixing coordinates)
-    df = df.sort_values(['Tarjeta', 'Fecha Hora'])
-    df = df.rename(columns={'Latitud': 'Long_Original', 'Longitud': 'Lat_Original'})
-    df = df.rename(columns={'Long_Original': 'Longitud', 'Lat_Original': 'Latitud'})
-    df['Latitud'] = df['Latitud'].apply(lambda x: -abs(x) if x != 0 else x)
-    df['Longitud'] = df['Longitud'].apply(lambda x: -abs(x) if x != 0 else x)
+def calcular_vectores_flujo(df, df_ruta=None):
 
-    # Esta es la función principal que se aplica a los datos de cada tarjeta
+    # ------------------------------------------------------------
+    # 1. PREPARACIÓN DEL DATAFRAME
+    # ------------------------------------------------------------
+
+    # Ordenar por tarjeta y tiempo.
+    # Esto es fundamental para reconstruir la secuencia real de viajes
+    # de cada usuario (trip chaining).
+    df = df.sort_values(['Tarjeta', 'Fecha Hora'])
+
+    # Intercambiar columnas Latitud/Longitud.
+    # Algunos datasets vienen invertidos y esto corrige el orden.
+    df[['Latitud','Longitud']] = df[['Longitud','Latitud']].to_numpy()
+
+    # Convertir columnas a arrays numpy para acelerar cálculos.
+    lat = df['Latitud'].to_numpy()
+    lon = df['Longitud'].to_numpy()
+
+    # Corregir signo de coordenadas.
+    # En Argentina latitudes y longitudes deben ser negativas.
+    # Esto evita errores de ubicación en el mapa.
+    lat[lat != 0] = -np.abs(lat[lat != 0])
+    lon[lon != 0] = -np.abs(lon[lon != 0])
+
+    df['Latitud'] = lat
+    df['Longitud'] = lon
+
+    # Si hay ruta, calcular la distancia acumulada de cada transacción (Snapping)
+    if df_ruta is not None and not df_ruta.empty:
+        r_lats = df_ruta['Latitud'].values
+        r_lons = df_ruta['Longitud'].values
+        r_cum = df_ruta['Dist_Acum'].values
+
+        tx_lats = df['Latitud'].values
+        tx_lons = df['Longitud'].values
+
+        # Broadcasting para encontrar el punto más cercano en la ruta
+        dists_sq = (tx_lats[:, None] - r_lats[None, :])**2 + (tx_lons[:, None] - r_lons[None, :])**2
+        min_idx = np.argmin(dists_sq, axis=1)
+        df['Route_Dist'] = r_cum[min_idx] # Distancia en KM
+    else:
+        df['Route_Dist'] = np.nan
+
+
+    # ------------------------------------------------------------
+    # FUNCIÓN PRINCIPAL DE INFERENCIA DE DESTINO
+    # Se ejecuta para cada tarjeta individual.
+    # ------------------------------------------------------------
     def find_destinations_for_card(card_df):
-        # card_df está ordenado por 'Fecha Hora'
-        
-        # Extraer arrays de numpy para un acceso más rápido en los bucles
-        fechas = card_df['Fecha'].values
-        sentidos = card_df['Sentido'].values
-        lats = card_df['Latitud'].values
-        lons = card_df['Longitud'].values
-        fechas_horas = card_df['Fecha Hora'].values
-        
+
+        # Convertir columnas a arrays numpy para acceso rápido
+        fechas = card_df['Fecha'].to_numpy()
+        sentidos = card_df['Sentido'].to_numpy()
+        lats = card_df['Latitud'].to_numpy()
+        lons = card_df['Longitud'].to_numpy()
+        fechas_horas = card_df['Fecha Hora'].to_numpy()
+        r_dists = card_df['Route_Dist'].to_numpy()
+
         num_rows = len(card_df)
-        
-        # Usamos listas nativas de Python para evitar el error de tipo con np.full
+
+        # Listas donde se guardará el destino inferido
         dest_lat = [np.nan] * num_rows
         dest_lon = [np.nan] * num_rows
         dest_sentido = [None] * num_rows
         dest_fecha = [pd.NaT] * num_rows
-        
-        # Se aumenta el filtro de tiempo mínimo a 60 minutos.
-        # Esto evita que se emparejen viajes "correctivos" o de muy corta duración
-        # (ej. bajarse y tomar el siguiente en sentido contrario), que generan ruido.
-        min_time_diff = pd.Timedelta(minutes=60)
-        
+
+        # ------------------------------------------------------------
+        # PARÁMETROS DEL ALGORITMO
+        # ------------------------------------------------------------
+
+        # Tiempo mínimo entre viajes.
+        # Evita emparejar transbordos o errores (ej: bajar y subir al siguiente).
+        min_time_diff = pd.Timedelta(minutes=20)
+
+        # Distancia mínima y máxima entre origen y destino.
+        # Evita dos tipos de error:
+        # - rebotes muy cortos (ej: subir y bajar en la misma parada)
+        # - destinos absurdamente lejanos.
+        max_dist = 60000
+        min_dist = 50
+
+
+        # ------------------------------------------------------------
+        # RECORRIDO DE TODOS LOS VIAJES DE LA TARJETA
+        # ------------------------------------------------------------
         for i in range(num_rows):
+
             current_fecha = fechas[i]
             current_sentido = sentidos[i]
             current_fecha_hora = fechas_horas[i]
-            
-            # Se verifica si el viaje actual es el último de ese día para esa tarjeta
-            is_last_trip_of_day = (i == num_rows - 1) or (fechas[i+1] != current_fecha)
 
-            # --- Prioridad 1: Buscar destino en el mismo día (T+0) ---
+            # Detectar si este es el último viaje del día.
+            # Esto es importante para aplicar la regla T+1.
+            is_last_trip_of_day = (
+                i == num_rows - 1 or fechas[i+1] != current_fecha
+            )
+
             found_t0 = False
-            for j in range(i + 1, num_rows):
-                if fechas[j] != current_fecha:
-                    break  # Salimos del bucle si ya no es el mismo día
 
-                # Filtro de tiempo mínimo para evitar rebotes o errores
+
+            # ------------------------------------------------------------
+            # PRIORIDAD 1: DESTINO EN EL MISMO DÍA (T+0)
+            # ------------------------------------------------------------
+            # El destino de un viaje suele ser el origen del próximo viaje
+            # en sentido contrario dentro del mismo día.
+            for j in range(i+1, num_rows):
+
+                # Si cambió el día se corta la búsqueda.
+                if fechas[j] != current_fecha:
+                    break
+
+                # Evitar transbordos o rebotes cercanos en el tiempo.
                 if fechas_horas[j] - current_fecha_hora < min_time_diff:
                     continue
 
+                # Buscamos viaje en sentido contrario.
                 if sentidos[j] != current_sentido:
-                    # Encontrado: un viaje de vuelta. Se sobreescribe para quedarse con el ÚLTIMO del día.
-                    dest_lat[i], dest_lon[i], dest_sentido[i], dest_fecha[i] = lats[j], lons[j], sentidos[j], fechas[j]
-                    found_t0 = True
-            
+
+                    # Filtro rápido por bounding box (~5 km).
+                    # Evita calcular distancia exacta para puntos muy lejanos.
+                    if abs(lats[i] - lats[j]) > 0.45 or abs(lons[i] - lons[j]) > 0.45:
+                        continue
+
+                    # Cálculo de distancia real.
+                    dist = distancia_metros(
+                        lats[i], lons[i],
+                        lats[j], lons[j]
+                    )
+
+                    # Validar rango de distancia razonable.
+                    if min_dist < dist < max_dist:
+
+                        # Guardar destino inferido.
+                        dest_lat[i] = lats[j]
+                        dest_lon[i] = lons[j]
+                        dest_sentido[i] = sentidos[j]
+                        dest_fecha[i] = fechas[j]
+
+                        found_t0 = True
+
+                        # Se usa el PRIMER retorno del día.
+                        # Esto suele representar mejor el destino real
+                        # (ej: casa → trabajo → casa).
+                        break
+
+            # Si se encontró destino en el mismo día no se busca más.
             if found_t0:
-                continue # Si se encontró, pasar al siguiente viaje 'i'
-            
-            # --- Prioridad 2: Si no se encontró y ES EL ÚLTIMO VIAJE DEL DÍA, buscar primer viaje en T+1 o T+2 ---
-            # Se asume que el destino del último viaje del día es el origen del primer viaje del día siguiente (ej. la casa).
+                continue
+
+
+            # ------------------------------------------------------------
+            # PRIORIDAD 2: DESTINO EN DÍA SIGUIENTE (T+1)
+            # ------------------------------------------------------------
+            # Si es el último viaje del día, se asume que el destino
+            # puede ser el origen del primer viaje del día siguiente
+            # (ej: trabajo → casa).
             if is_last_trip_of_day:
-                # Mejora profesional: máximo 16 horas para el viaje de vuelta del día siguiente
+
+                # Límite máximo de tiempo (16 horas).
+                # Evita emparejar viajes separados por demasiadas horas.
                 time_limit = current_fecha_hora + pd.Timedelta(hours=16)
 
-                for j in range(i + 1, num_rows):
-                    # Salir si el siguiente viaje está fuera de la ventana de 16 horas
+                for j in range(i+1, num_rows):
+
+                    # Si se supera la ventana temporal se detiene la búsqueda.
                     if fechas_horas[j] > time_limit:
                         break
-                    
-                    # El viaje debe ser en un día posterior
-                    if fechas[j] > current_fecha:
-                        # Solución correcta: verificar distancia mínima entre orígenes para evitar falsos positivos.
-                        dist = distancia_metros(lats[i], lons[i], lats[j], lons[j])
 
-                        # mínimo 500 m para considerar que no es un "rebote" en el mismo lugar (ej. casa -> casa)
-                        if dist > 500:
-                            dest_lat[i], dest_lon[i], dest_sentido[i], dest_fecha[i] = lats[j], lons[j], sentidos[j], fechas[j]
+                    # Debe ser en un día posterior.
+                    if fechas[j] > current_fecha:
+
+                        # Filtro rápido espacial.
+                        if abs(lats[i] - lats[j]) > 0.05 or abs(lons[i] - lons[j]) > 0.05:
+                            continue
+
+                        # Distancia real.
+                        # Si tenemos datos de ruta, usamos la distancia real sobre el recorrido
+                        if not np.isnan(r_dists[i]) and not np.isnan(r_dists[j]):
+                            dist = abs(r_dists[j] - r_dists[i]) * 1000 # Convertir KM a metros
+                        else:
+                            # Fallback a distancia lineal (Haversine)
+                            dist = distancia_metros(
+                                lats[i], lons[i],
+                                lats[j], lons[j]
+                            )
+
+                        # Validar distancia razonable.
+                        if min_dist < dist < max_dist:
+
+                            dest_lat[i] = lats[j]
+                            dest_lon[i] = lons[j]
+                            dest_sentido[i] = sentidos[j]
+                            dest_fecha[i] = fechas[j]
+
                             break
-                    
+
+
+        # Crear DataFrame con destinos inferidos
         return pd.DataFrame({
-            'Lat_Destino': dest_lat, 'Lon_Destino': dest_lon,
-            'Sentido_Siguiente': dest_sentido, 'Fecha_Siguiente': dest_fecha
+            'Lat_Destino': dest_lat,
+            'Lon_Destino': dest_lon,
+            'Sentido_Siguiente': dest_sentido,
+            'Fecha_Siguiente': dest_fecha
         }, index=card_df.index)
 
-    # 2. Agrupar por tarjeta y aplicar la función para encontrar destinos
-    destinations = df.groupby('Tarjeta', group_keys=False).apply(find_destinations_for_card)
-    
-    # 3. Unir los resultados al DataFrame original y filtrar los viajes sin destino
+
+    # ------------------------------------------------------------
+    # APLICAR INFERENCIA A CADA TARJETA
+    # ------------------------------------------------------------
+    destinations = df.groupby('Tarjeta', sort=False, group_keys=False).apply(find_destinations_for_card)
+
+
+    # ------------------------------------------------------------
+    # UNIR DESTINOS AL DATAFRAME ORIGINAL
+    # ------------------------------------------------------------
     df_with_dest = df.join(destinations)
+
+
+    # ------------------------------------------------------------
+    # FILTRAR VIAJES SIN DESTINO VÁLIDO
+    # ------------------------------------------------------------
+    # Se eliminan:
+    # - destinos nulos
+    # - coordenadas 0
     mask = (
-        df_with_dest['Lat_Destino'].notna() & (df_with_dest['Lat_Destino'] != 0) & (df_with_dest['Lon_Destino'] != 0)
+        df_with_dest['Lat_Destino'].notna() &
+        (df_with_dest['Lat_Destino'] != 0) &
+        (df_with_dest['Lon_Destino'] != 0)
     )
+
     return df_with_dest[mask].copy()
 
 # --- 3. AGRUPACIÓN ---
 @st.cache_data
-def agrupar_por_zonas(df, df_ruta, metros_sel=100):
-    # Si no hay ruta, no se puede agrupar.
-    if df_ruta.empty:
-        return pd.DataFrame()
-
-    # Coordenadas de la ruta de referencia
-    ruta_lats = df_ruta['Latitud'].values
-    ruta_lons = df_ruta['Longitud'].values
-    ruta_cum = df_ruta['Dist_Acum'].values # Distancia acumulada en KM
-
-    # Coordenadas de los viajes
-    lats_ori = df['Latitud'].values
-    lons_ori = df['Longitud'].values
-    lats_des = df['Lat_Destino'].values
-    lons_des = df['Lon_Destino'].values
-
-    # 1. Encontrar los índices de los puntos más cercanos en la ruta
-    idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
-    idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
-
-    # 2. Obtener la distancia acumulada para cada punto
-    dist_acum_ori = ruta_cum[idx_ori]
-    dist_acum_des = ruta_cum[idx_des]
-
-    # 3. Agrupar por distancia (binning)
-    km_bin = metros_sel / 1000.0
-    dist_binned_ori = (dist_acum_ori / km_bin).round() * km_bin
-    dist_binned_des = (dist_acum_des / km_bin).round() * km_bin
-
-    # 4. Encontrar los puntos de la ruta que corresponden a las distancias agrupadas
-    idx_binned_ori = np.argmin(np.abs(dist_binned_ori[:, None] - ruta_cum[None, :]), axis=1)
-    idx_binned_des = np.argmin(np.abs(dist_binned_des[:, None] - ruta_cum[None, :]), axis=1)
-
-    # Crear un DataFrame temporal con las coordenadas "snapped" y "binned" a la ruta
-    df_snapped = pd.DataFrame({
-        'lat_ori': ruta_lats[idx_binned_ori],
-        'lon_ori': ruta_lons[idx_binned_ori],
-        'lat_des': ruta_lats[idx_binned_des],
-        'lon_des': ruta_lons[idx_binned_des],
-        'Sentido': df['Sentido'].values
-    })
+def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia en Ruta"):
     
-    # Agrupar por las coordenadas de la ruta
-    df_zonas = df_snapped.groupby([
-        'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
-    ]).size().reset_index(name='Pasajeros')
+    if criterio == "Distancia en Ruta":
+        # Si no hay ruta, no se puede agrupar por distancia en ruta.
+        if df_ruta.empty:
+            return pd.DataFrame()
+
+        # Coordenadas de la ruta de referencia
+        ruta_lats = df_ruta['Latitud'].values
+        ruta_lons = df_ruta['Longitud'].values
+        ruta_cum = df_ruta['Dist_Acum'].values # Distancia acumulada en KM
+
+        # Coordenadas de los viajes
+        lats_ori = df['Latitud'].values
+        lons_ori = df['Longitud'].values
+        lats_des = df['Lat_Destino'].values
+        lons_des = df['Lon_Destino'].values
+
+        # 1. Encontrar los índices de los puntos más cercanos en la ruta
+        idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
+        idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
+
+        # 2. Obtener la distancia acumulada para cada punto
+        dist_acum_ori = ruta_cum[idx_ori]
+        dist_acum_des = ruta_cum[idx_des]
+
+        # 3. Agrupar por distancia (binning)
+        km_bin = metros_sel / 1000.0
+        dist_binned_ori = (dist_acum_ori / km_bin).round() * km_bin
+        dist_binned_des = (dist_acum_des / km_bin).round() * km_bin
+
+        # 4. Encontrar los puntos de la ruta que corresponden a las distancias agrupadas
+        idx_binned_ori = np.argmin(np.abs(dist_binned_ori[:, None] - ruta_cum[None, :]), axis=1)
+        idx_binned_des = np.argmin(np.abs(dist_binned_des[:, None] - ruta_cum[None, :]), axis=1)
+
+        # Crear un DataFrame temporal con las coordenadas "snapped" y "binned" a la ruta
+        df_snapped = pd.DataFrame({
+            'lat_ori': ruta_lats[idx_binned_ori],
+            'lon_ori': ruta_lons[idx_binned_ori],
+            'lat_des': ruta_lats[idx_binned_des],
+            'lon_des': ruta_lons[idx_binned_des],
+            'Sentido': df['Sentido'].values
+        })
+        
+        # Agrupar por las coordenadas de la ruta
+        df_zonas = df_snapped.groupby([
+            'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
+        ]).size().reset_index(name='Pasajeros')
+        
+        return df_zonas
     
-    return df_zonas
+    elif criterio == "Grilla Espacial":
+        # Aproximación simple: 0.001 grados ~ 111 metros
+        scale = metros_sel / 111111.0 
+        
+        df_zonas = df.copy()
+        # Redondear coordenadas al grid
+        df_zonas['lat_ori'] = (df['Latitud'] / scale).round() * scale
+        df_zonas['lon_ori'] = (df['Longitud'] / scale).round() * scale
+        df_zonas['lat_des'] = (df['Lat_Destino'] / scale).round() * scale
+        df_zonas['lon_des'] = (df['Lon_Destino'] / scale).round() * scale
+        
+        # Agrupar
+        return df_zonas.groupby([
+            'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
+        ]).size().reset_index(name='Pasajeros')
+        
+    elif criterio == "Clusters (DBSCAN)":
+        # 1. Preparar datos para clustering
+        # Unimos origen y destino para encontrar "Nodos" comunes (paradas/zonas)
+        puntos_ori = df[['Latitud', 'Longitud']].values
+        puntos_des = df[['Lat_Destino', 'Lon_Destino']].values
+        
+        # Stack vertical: [lat, lon] de todos los puntos
+        all_points = np.vstack((puntos_ori, puntos_des))
+        
+        # 2. Configurar DBSCAN
+        # eps se pasa en radianes para usar la métrica haversine, o en grados aproximados para euclidean.
+        # Para velocidad en visualización interactiva, usaremos aproximación Euclidiana sobre grados.
+        # 1 grado latitud ~= 111.111 km = 111111 metros.
+        eps_deg = metros_sel / 111111.0
+        min_samples = 3 # Mínimo de puntos para formar un cluster denso
+
+        # 3. Ejecutar Clustering
+        # n_jobs=-1 usa todos los núcleos del procesador
+        db = DBSCAN(eps=eps_deg, min_samples=min_samples, metric='euclidean', n_jobs=-1).fit(all_points)
+        labels = db.labels_
+        
+        # 4. Calcular Centroides de los Clusters
+        # Creamos un DF temporal para agrupar por label y sacar el promedio de lat/lon
+        df_points = pd.DataFrame(all_points, columns=['lat', 'lon'])
+        df_points['label'] = labels
+        
+        # Filtramos el ruido (label -1)
+        valid_points = df_points[df_points['label'] != -1]
+        
+        if valid_points.empty:
+            return pd.DataFrame()
+            
+        centroids = valid_points.groupby('label')[['lat', 'lon']].mean()
+        
+        # 5. Mapear transacciones originales a los centroides
+        n = len(df)
+        labels_ori = labels[:n]
+        labels_des = labels[n:]
+        
+        # Filtramos flujos donde origen O destino sean ruido (-1)
+        mask_valid = (labels_ori != -1) & (labels_des != -1)
+        
+        if not np.any(mask_valid):
+            return pd.DataFrame()
+            
+        df_valid = df[mask_valid].copy()
+        valid_labels_ori = labels_ori[mask_valid]
+        valid_labels_des = labels_des[mask_valid]
+        
+        # Asignar coordenadas de los centroides
+        # Usamos los labels para buscar en el índice de 'centroids'
+        df_valid['lat_ori'] = centroids.loc[valid_labels_ori, 'lat'].values
+        df_valid['lon_ori'] = centroids.loc[valid_labels_ori, 'lon'].values
+        df_valid['lat_des'] = centroids.loc[valid_labels_des, 'lat'].values
+        df_valid['lon_des'] = centroids.loc[valid_labels_des, 'lon'].values
+        
+        # 6. Agrupar
+        return df_valid.groupby([
+            'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
+        ]).size().reset_index(name='Pasajeros')
 
 @st.cache_data
-def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100):
-    if df_ruta.empty:
-        return pd.DataFrame()
-
-    # Coordenadas de la ruta de referencia
-    ruta_lats = df_ruta['Latitud'].values
-    ruta_lons = df_ruta['Longitud'].values
-    ruta_cum = df_ruta['Dist_Acum'].values
-
-    # Coordenadas de los viajes
-    lats_ori = df['Latitud'].values
-    lons_ori = df['Longitud'].values
-    lats_des = df['Lat_Destino'].values
-    lons_des = df['Lon_Destino'].values
-
-    # 1. Encontrar los índices de los puntos más cercanos en la ruta
-    idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
-    idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
-
-    # 2. Obtener la distancia acumulada para cada punto
-    dist_acum_ori = ruta_cum[idx_ori]
-    dist_acum_des = ruta_cum[idx_des]
-
-    # 3. Agrupar por distancia (binning)
-    km_bin = metros_sel / 1000.0
-    dist_binned_ori = (dist_acum_ori / km_bin).round() * km_bin
-    dist_binned_des = (dist_acum_des / km_bin).round() * km_bin
-
-    # 4. Encontrar los puntos de la ruta que corresponden a las distancias agrupadas
-    idx_binned_ori = np.argmin(np.abs(dist_binned_ori[:, None] - ruta_cum[None, :]), axis=1)
-    idx_binned_des = np.argmin(np.abs(dist_binned_des[:, None] - ruta_cum[None, :]), axis=1)
+def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100, criterio="Distancia en Ruta"):
     
-    # Crear DataFrames con coordenadas "snapped" y "binned"
-    df_sub = pd.DataFrame({'lat': ruta_lats[idx_binned_ori], 'lon': ruta_lons[idx_binned_ori]})
-    df_baj = pd.DataFrame({'lat': ruta_lats[idx_binned_des], 'lon': ruta_lons[idx_binned_des]})
+    if criterio == "Distancia en Ruta":
+        if df_ruta.empty:
+            return pd.DataFrame()
 
-    sub = df_sub.groupby(['lat', 'lon']).size().reset_index(name='Subieron')
-    baj = df_baj.groupby(['lat', 'lon']).size().reset_index(name='Bajaron')
+        # Coordenadas de la ruta de referencia
+        ruta_lats = df_ruta['Latitud'].values
+        ruta_lons = df_ruta['Longitud'].values
+        ruta_cum = df_ruta['Dist_Acum'].values
+
+        # Coordenadas de los viajes
+        lats_ori = df['Latitud'].values
+        lons_ori = df['Longitud'].values
+        lats_des = df['Lat_Destino'].values
+        lons_des = df['Lon_Destino'].values
+
+        # 1. Encontrar los índices de los puntos más cercanos en la ruta
+        idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
+        idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
+
+        # 2. Obtener la distancia acumulada para cada punto
+        dist_acum_ori = ruta_cum[idx_ori]
+        dist_acum_des = ruta_cum[idx_des]
+
+        # 3. Agrupar por distancia (binning)
+        km_bin = metros_sel / 1000.0
+        dist_binned_ori = (dist_acum_ori / km_bin).round() * km_bin
+        dist_binned_des = (dist_acum_des / km_bin).round() * km_bin
+
+        # 4. Encontrar los puntos de la ruta que corresponden a las distancias agrupadas
+        idx_binned_ori = np.argmin(np.abs(dist_binned_ori[:, None] - ruta_cum[None, :]), axis=1)
+        idx_binned_des = np.argmin(np.abs(dist_binned_des[:, None] - ruta_cum[None, :]), axis=1)
+        
+        # Crear DataFrames con coordenadas "snapped" y "binned"
+        df_sub = pd.DataFrame({'lat': ruta_lats[idx_binned_ori], 'lon': ruta_lons[idx_binned_ori]})
+        df_baj = pd.DataFrame({'lat': ruta_lats[idx_binned_des], 'lon': ruta_lons[idx_binned_des]})
+
+        sub = df_sub.groupby(['lat', 'lon']).size().reset_index(name='Subieron')
+        baj = df_baj.groupby(['lat', 'lon']).size().reset_index(name='Bajaron')
+        
+        # Merge
+        nodos = pd.merge(sub, baj, on=['lat', 'lon'], how='outer').fillna(0)
+        nodos['Subieron'] = nodos['Subieron'].astype(int)
+        nodos['Bajaron'] = nodos['Bajaron'].astype(int)
+        return nodos
     
-    # Merge
-    nodos = pd.merge(sub, baj, on=['lat', 'lon'], how='outer').fillna(0)
-    nodos['Subieron'] = nodos['Subieron'].astype(int)
-    nodos['Bajaron'] = nodos['Bajaron'].astype(int)
-    return nodos
+    elif criterio == "Grilla Espacial":
+        scale = metros_sel / 111111.0
+        
+        df['lat_bin'] = (df['Latitud'] / scale).round() * scale
+        df['lon_bin'] = (df['Longitud'] / scale).round() * scale
+        
+        df['lat_des_bin'] = (df['Lat_Destino'] / scale).round() * scale
+        df['lon_des_bin'] = (df['Lon_Destino'] / scale).round() * scale
+        
+        sub = df.groupby(['lat_bin', 'lon_bin']).size().reset_index(name='Subieron')
+        sub.rename(columns={'lat_bin': 'lat', 'lon_bin': 'lon'}, inplace=True)
+        
+        baj = df.groupby(['lat_des_bin', 'lon_des_bin']).size().reset_index(name='Bajaron')
+        baj.rename(columns={'lat_des_bin': 'lat', 'lon_des_bin': 'lon'}, inplace=True)
+        
+        nodos = pd.merge(sub, baj, on=['lat', 'lon'], how='outer').fillna(0)
+        nodos['Subieron'] = nodos['Subieron'].astype(int)
+        nodos['Bajaron'] = nodos['Bajaron'].astype(int)
+        return nodos
+        
+    elif criterio == "Clusters (DBSCAN)":
+        # Misma lógica de clustering para mantener consistencia visual
+        puntos_ori = df[['Latitud', 'Longitud']].values
+        puntos_des = df[['Lat_Destino', 'Lon_Destino']].values
+        all_points = np.vstack((puntos_ori, puntos_des))
+        
+        eps_deg = metros_sel / 111111.0
+        min_samples = 3
+        
+        db = DBSCAN(eps=eps_deg, min_samples=min_samples, metric='euclidean', n_jobs=-1).fit(all_points)
+        labels = db.labels_
+        
+        df_points = pd.DataFrame(all_points, columns=['lat', 'lon'])
+        df_points['label'] = labels
+        
+        # Ignoramos ruido
+        valid_mask = df_points['label'] != -1
+        if not np.any(valid_mask):
+            return pd.DataFrame()
+            
+        # Centroides
+        centroids = df_points[valid_mask].groupby('label')[['lat', 'lon']].mean()
+        
+        # Separar subidas y bajadas
+        n = len(df)
+        labels_ori = labels[:n]
+        labels_des = labels[n:]
+        
+        # Contar por label (cluster)
+        # Solo contamos si el punto pertenece a un cluster (no es ruido)
+        sub_counts = pd.Series(labels_ori[labels_ori != -1]).value_counts().rename('Subieron')
+        baj_counts = pd.Series(labels_des[labels_des != -1]).value_counts().rename('Bajaron')
+        
+        # Unir estadísticas con coordenadas de centroides
+        stats = pd.concat([centroids, sub_counts, baj_counts], axis=1).fillna(0)
+        stats['Subieron'] = stats['Subieron'].astype(int)
+        stats['Bajaron'] = stats['Bajaron'].astype(int)
+        
+        return stats.reset_index(drop=True)
 
 # --- 5. FUNCIONES DE DISTANCIA (RUTA) ---
 def distancia_metros(lat1, lon1, lat2, lon2):
@@ -327,7 +608,23 @@ if archivo_subido:
     ramal_sel = st.sidebar.selectbox("Seleccionar Ramal", ramales)
     sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"], index=1, key="radio_s")
 
-    metros_sel = st.sidebar.select_slider("Tamaño de Agrupación (metros)", options=[10, 50, 100, 200, 300, 400, 500], value=100)
+    # Nuevo control para seleccionar el tipo de agrupación
+    criterio_agrupacion = st.sidebar.radio("Criterio de Agrupación", ["Distancia en Ruta", "Grilla Espacial", "Clusters (DBSCAN)"], index=0)
+    
+    # Ajustamos las opciones del slider según el criterio
+    label_slider = "Tamaño"
+    val_default = 100
+    if criterio_agrupacion == 'Distancia en Ruta':
+        label_slider = "Metros en Ruta"
+    elif criterio_agrupacion == 'Grilla Espacial':
+        label_slider = "Metros de Cuadrante"
+        val_default = 400
+    else:
+        label_slider = "Radio del Cluster (metros)"
+        val_default = 200
+
+    metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[50, 100, 200, 300, 400, 500, 800, 1000], value=val_default)
+    
     #st.sidebar.markdown("---")
     # Botón para resetear la vista del mapa
     #if st.sidebar.button("📍 Resetear Vista del Mapa"):
@@ -381,7 +678,7 @@ if archivo_subido:
         df_filtrado = df_filtrado[df_filtrado['Ramal'] == ramal_sel]
     
     with st.spinner('Procesando vectores de flujo...'):
-        df_flujos = calcular_vectores_flujo(df_filtrado)
+        df_flujos = calcular_vectores_flujo(df_filtrado, df_ruta)
 
     # --- LÓGICA DE VISTA DE MAPA ESTABLE ---
     # Se define qué filtros fuerzan un reseteo del centro del mapa.
@@ -413,7 +710,7 @@ if archivo_subido:
 
         if not df_mapa.empty:
             capas = []
-            df_zonas = agrupar_por_zonas(df_mapa, df_ruta, metros_sel)
+            df_zonas = agrupar_por_zonas(df_mapa, df_ruta, metros_sel, criterio_agrupacion)
             
             # Verificamos que se hayan generado zonas antes de filtrar para evitar KeyError
             if not df_zonas.empty and 'Pasajeros' in df_zonas.columns:
