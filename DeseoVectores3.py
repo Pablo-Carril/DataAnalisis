@@ -311,6 +311,43 @@ def calcular_vectores_flujo(df, df_ruta=None):
 
 # --- 3. AGRUPACIÓN ---
 @st.cache_data
+def snap_to_route(df, df_ruta):
+    """
+    Ajusta los puntos de origen y destino de un DataFrame de flujos a la ruta más cercana.
+    Devuelve un DataFrame con columnas adicionales para las distancias acumuladas y los índices.
+    """
+    df_snapped = df.copy()
+    if df_ruta is None or df_ruta.empty:
+        df_snapped['idx_ori'] = -1
+        df_snapped['idx_des'] = -1
+        df_snapped['dist_acum_ori'] = np.nan
+        df_snapped['dist_acum_des'] = np.nan
+        return df_snapped
+
+    # Coordenadas de la ruta de referencia
+    ruta_lats = df_ruta['Latitud'].values
+    ruta_lons = df_ruta['Longitud'].values
+    ruta_cum = df_ruta['Dist_Acum'].values
+
+    # Coordenadas de los viajes
+    lats_ori = df_snapped['Latitud'].values
+    lons_ori = df_snapped['Longitud'].values
+    lats_des = df_snapped['Lat_Destino'].values
+    lons_des = df_snapped['Lon_Destino'].values
+
+    # Encontrar los índices de los puntos más cercanos en la ruta
+    idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
+    idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
+
+    # Añadir las nuevas columnas al DataFrame
+    df_snapped['idx_ori'] = idx_ori
+    df_snapped['idx_des'] = idx_des
+    df_snapped['dist_acum_ori'] = ruta_cum[idx_ori]
+    df_snapped['dist_acum_des'] = ruta_cum[idx_des]
+    
+    return df_snapped
+
+@st.cache_data
 def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
     
     if criterio == "Distancia":
@@ -318,24 +355,14 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
         if df_ruta.empty:
             return pd.DataFrame()
 
-        # Coordenadas de la ruta de referencia
+        # Usar la nueva función para obtener los puntos ajustados
+        df_snapped_data = snap_to_route(df, df_ruta)
+        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
+        dist_acum_des = df_snapped_data['dist_acum_des'].values
+        
         ruta_lats = df_ruta['Latitud'].values
         ruta_lons = df_ruta['Longitud'].values
         ruta_cum = df_ruta['Dist_Acum'].values # Distancia acumulada en KM
-
-        # Coordenadas de los viajes
-        lats_ori = df['Latitud'].values
-        lons_ori = df['Longitud'].values
-        lats_des = df['Lat_Destino'].values
-        lons_des = df['Lon_Destino'].values
-
-        # 1. Encontrar los índices de los puntos más cercanos en la ruta
-        idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
-        idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
-
-        # 2. Obtener la distancia acumulada para cada punto
-        dist_acum_ori = ruta_cum[idx_ori]
-        dist_acum_des = ruta_cum[idx_des]
 
         # 3. Agrupar por distancia (binning)
         km_bin = metros_sel / 1000.0
@@ -368,21 +395,14 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
             return pd.DataFrame()
 
         # 1. Snap all points to route and get their 1D distance
+        df_snapped_data = snap_to_route(df, df_ruta)
+        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
+        dist_acum_des = df_snapped_data['dist_acum_des'].values
+
+        ruta_cum = df_ruta['Dist_Acum'].values
         ruta_lats = df_ruta['Latitud'].values
         ruta_lons = df_ruta['Longitud'].values
-        ruta_cum = df_ruta['Dist_Acum'].values
-
-        lats_ori = df['Latitud'].values
-        lons_ori = df['Longitud'].values
-        lats_des = df['Lat_Destino'].values
-        lons_des = df['Lon_Destino'].values
-
-        idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
-        idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
-
-        dist_acum_ori = ruta_cum[idx_ori]
-        dist_acum_des = ruta_cum[idx_des]
-
+        
         # 2. Run DBSCAN on the 1D distances
         all_dists_km = np.concatenate([dist_acum_ori, dist_acum_des])
         eps_km = metros_sel / 1000.0
@@ -444,24 +464,13 @@ def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100, criterio="Distancia
         if df_ruta.empty:
             return pd.DataFrame()
 
-        # Coordenadas de la ruta de referencia
+        df_snapped_data = snap_to_route(df, df_ruta)
+        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
+        dist_acum_des = df_snapped_data['dist_acum_des'].values
+
         ruta_lats = df_ruta['Latitud'].values
         ruta_lons = df_ruta['Longitud'].values
         ruta_cum = df_ruta['Dist_Acum'].values
-
-        # Coordenadas de los viajes
-        lats_ori = df['Latitud'].values
-        lons_ori = df['Longitud'].values
-        lats_des = df['Lat_Destino'].values
-        lons_des = df['Lon_Destino'].values
-
-        # 1. Encontrar los índices de los puntos más cercanos en la ruta
-        idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
-        idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
-
-        # 2. Obtener la distancia acumulada para cada punto
-        dist_acum_ori = ruta_cum[idx_ori]
-        dist_acum_des = ruta_cum[idx_des]
 
         # 3. Agrupar por distancia (binning)
         km_bin = metros_sel / 1000.0
@@ -492,21 +501,14 @@ def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100, criterio="Distancia
         if df_ruta.empty:
             return pd.DataFrame()
 
-        # 1. Snap all points to route
+        # 1. Snap all points to route and get their 1D distance
+        df_snapped_data = snap_to_route(df, df_ruta)
+        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
+        dist_acum_des = df_snapped_data['dist_acum_des'].values
+
         ruta_lats = df_ruta['Latitud'].values
         ruta_lons = df_ruta['Longitud'].values
         ruta_cum = df_ruta['Dist_Acum'].values
-
-        lats_ori = df['Latitud'].values
-        lons_ori = df['Longitud'].values
-        lats_des = df['Lat_Destino'].values
-        lons_des = df['Lon_Destino'].values
-
-        idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
-        idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
-
-        dist_acum_ori = ruta_cum[idx_ori]
-        dist_acum_des = ruta_cum[idx_des]
 
         # 2. Run DBSCAN on 1D distances
         all_dists_km = np.concatenate([dist_acum_ori, dist_acum_des])
