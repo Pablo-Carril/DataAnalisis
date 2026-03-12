@@ -311,9 +311,9 @@ def calcular_vectores_flujo(df, df_ruta=None):
 
 # --- 3. AGRUPACIÓN ---
 @st.cache_data
-def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia en Ruta"):
+def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
     
-    if criterio == "Distancia en Ruta":
+    if criterio == "Distancia":
         # Si no hay ruta, no se puede agrupar por distancia en ruta.
         if df_ruta.empty:
             return pd.DataFrame()
@@ -362,62 +362,62 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia en Ruta")
         
         return df_zonas
     
-    elif criterio == "Grilla Espacial":
-        # Aproximación simple: 0.001 grados ~ 111 metros
-        scale = metros_sel / 111111.0 
-        
-        df_zonas = df.copy()
-        # Redondear coordenadas al grid
-        df_zonas['lat_ori'] = (df['Latitud'] / scale).round() * scale
-        df_zonas['lon_ori'] = (df['Longitud'] / scale).round() * scale
-        df_zonas['lat_des'] = (df['Lat_Destino'] / scale).round() * scale
-        df_zonas['lon_des'] = (df['Lon_Destino'] / scale).round() * scale
-        
-        # Agrupar
-        return df_zonas.groupby([
-            'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
-        ]).size().reset_index(name='Pasajeros')
-        
-    elif criterio == "Clusters (DBSCAN)":
-        # 1. Preparar datos para clustering
-        # Unimos origen y destino para encontrar "Nodos" comunes (paradas/zonas)
-        puntos_ori = df[['Latitud', 'Longitud']].values
-        puntos_des = df[['Lat_Destino', 'Lon_Destino']].values
-        
-        # Stack vertical: [lat, lon] de todos los puntos
-        all_points = np.vstack((puntos_ori, puntos_des))
-        
-        # 2. Configurar DBSCAN
-        # eps se pasa en radianes para usar la métrica haversine, o en grados aproximados para euclidean.
-        # Para velocidad en visualización interactiva, usaremos aproximación Euclidiana sobre grados.
-        # 1 grado latitud ~= 111.111 km = 111111 metros.
-        eps_deg = metros_sel / 111111.0
-        min_samples = 3 # Mínimo de puntos para formar un cluster denso
+    elif criterio == "Clusters":
+        if df_ruta.empty:
+            st.warning("El clustering en ruta requiere un archivo de recorrido.")
+            return pd.DataFrame()
 
-        # 3. Ejecutar Clustering
-        # n_jobs=-1 usa todos los núcleos del procesador
-        db = DBSCAN(eps=eps_deg, min_samples=min_samples, metric='euclidean', n_jobs=-1).fit(all_points)
+        # 1. Snap all points to route and get their 1D distance
+        ruta_lats = df_ruta['Latitud'].values
+        ruta_lons = df_ruta['Longitud'].values
+        ruta_cum = df_ruta['Dist_Acum'].values
+
+        lats_ori = df['Latitud'].values
+        lons_ori = df['Longitud'].values
+        lats_des = df['Lat_Destino'].values
+        lons_des = df['Lon_Destino'].values
+
+        idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
+        idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
+
+        dist_acum_ori = ruta_cum[idx_ori]
+        dist_acum_des = ruta_cum[idx_des]
+
+        # 2. Run DBSCAN on the 1D distances
+        all_dists_km = np.concatenate([dist_acum_ori, dist_acum_des])
+        eps_km = metros_sel / 1000.0
+        min_samples = 5 # Mínimo de puntos para formar un cluster denso
+
+        # DBSCAN necesita un array con forma (n_samples, n_features)
+        db = DBSCAN(eps=eps_km, min_samples=min_samples, metric='euclidean', n_jobs=-1).fit(all_dists_km.reshape(-1, 1))
         labels = db.labels_
+
+        # 3. Calculate 1D centroids (mean distance for each cluster)
+        df_dists = pd.DataFrame({'dist_km': all_dists_km, 'label': labels})
+        valid_dists = df_dists[df_dists['label'] != -1]
         
-        # 4. Calcular Centroides de los Clusters
-        # Creamos un DF temporal para agrupar por label y sacar el promedio de lat/lon
-        df_points = pd.DataFrame(all_points, columns=['lat', 'lon'])
-        df_points['label'] = labels
-        
-        # Filtramos el ruido (label -1)
-        valid_points = df_points[df_points['label'] != -1]
-        
-        if valid_points.empty:
+        if valid_dists.empty:
             return pd.DataFrame()
             
-        centroids = valid_points.groupby('label')[['lat', 'lon']].mean()
+        # El centroide es el "kilometraje" promedio del cluster
+        centroids_1d = valid_dists.groupby('label')['dist_km'].mean()
+
+        # 4. Map 1D centroids back to 2D route coordinates
+        # Para cada "kilometraje" del centroide, encontramos el punto más cercano en la ruta
+        centroid_indices = np.argmin(np.abs(centroids_1d.values[:, None] - ruta_cum[None, :]), axis=1)
         
-        # 5. Mapear transacciones originales a los centroides
+        # Creamos un mapa de label -> coordenadas 2D
+        centroid_coords = pd.DataFrame({
+            'lat': ruta_lats[centroid_indices],
+            'lon': ruta_lons[centroid_indices]
+        }, index=centroids_1d.index) # El índice es el 'label' del cluster
+
+        # 5. Asignar cada transacción original a su centroide de cluster
         n = len(df)
         labels_ori = labels[:n]
         labels_des = labels[n:]
         
-        # Filtramos flujos donde origen O destino sean ruido (-1)
+        # Solo consideramos viajes donde tanto el origen como el destino pertenecen a un cluster
         mask_valid = (labels_ori != -1) & (labels_des != -1)
         
         if not np.any(mask_valid):
@@ -427,22 +427,20 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia en Ruta")
         valid_labels_ori = labels_ori[mask_valid]
         valid_labels_des = labels_des[mask_valid]
         
-        # Asignar coordenadas de los centroides
-        # Usamos los labels para buscar en el índice de 'centroids'
-        df_valid['lat_ori'] = centroids.loc[valid_labels_ori, 'lat'].values
-        df_valid['lon_ori'] = centroids.loc[valid_labels_ori, 'lon'].values
-        df_valid['lat_des'] = centroids.loc[valid_labels_des, 'lat'].values
-        df_valid['lon_des'] = centroids.loc[valid_labels_des, 'lon'].values
+        # Asignamos las coordenadas del centroide correspondiente a cada viaje
+        df_valid['lat_ori'] = centroid_coords.loc[valid_labels_ori, 'lat'].values
+        df_valid['lon_ori'] = centroid_coords.loc[valid_labels_ori, 'lon'].values
+        df_valid['lat_des'] = centroid_coords.loc[valid_labels_des, 'lat'].values
+        df_valid['lon_des'] = centroid_coords.loc[valid_labels_des, 'lon'].values
         
-        # 6. Agrupar
+        # 6. Agrupar por las nuevas coordenadas del cluster para obtener los flujos
         return df_valid.groupby([
             'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
         ]).size().reset_index(name='Pasajeros')
 
 @st.cache_data
-def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100, criterio="Distancia en Ruta"):
-    
-    if criterio == "Distancia en Ruta":
+def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100, criterio="Distancia"):
+    if criterio == "Distancia":
         if df_ruta.empty:
             return pd.DataFrame()
 
@@ -486,62 +484,61 @@ def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100, criterio="Distancia
         nodos['Subieron'] = nodos['Subieron'].astype(int)
         nodos['Bajaron'] = nodos['Bajaron'].astype(int)
         return nodos
-    
-    elif criterio == "Grilla Espacial":
-        scale = metros_sel / 111111.0
+      #stats['Bajaron'] = stats['Bajaron'].astype(int)
         
-        df['lat_bin'] = (df['Latitud'] / scale).round() * scale
-        df['lon_bin'] = (df['Longitud'] / scale).round() * scale
-        
-        df['lat_des_bin'] = (df['Lat_Destino'] / scale).round() * scale
-        df['lon_des_bin'] = (df['Lon_Destino'] / scale).round() * scale
-        
-        sub = df.groupby(['lat_bin', 'lon_bin']).size().reset_index(name='Subieron')
-        sub.rename(columns={'lat_bin': 'lat', 'lon_bin': 'lon'}, inplace=True)
-        
-        baj = df.groupby(['lat_des_bin', 'lon_des_bin']).size().reset_index(name='Bajaron')
-        baj.rename(columns={'lat_des_bin': 'lat', 'lon_des_bin': 'lon'}, inplace=True)
-        
-        nodos = pd.merge(sub, baj, on=['lat', 'lon'], how='outer').fillna(0)
-        nodos['Subieron'] = nodos['Subieron'].astype(int)
-        nodos['Bajaron'] = nodos['Bajaron'].astype(int)
-        return nodos
-        
-    elif criterio == "Clusters (DBSCAN)":
-        # Misma lógica de clustering para mantener consistencia visual
-        puntos_ori = df[['Latitud', 'Longitud']].values
-        puntos_des = df[['Lat_Destino', 'Lon_Destino']].values
-        all_points = np.vstack((puntos_ori, puntos_des))
-        
-        eps_deg = metros_sel / 111111.0
-        min_samples = 3
-        
-        db = DBSCAN(eps=eps_deg, min_samples=min_samples, metric='euclidean', n_jobs=-1).fit(all_points)
+      #   return stats.reset_index(drop=True)
+      
+    elif criterio == "Clusters":
+        if df_ruta.empty:
+            return pd.DataFrame()
+
+        # 1. Snap all points to route
+        ruta_lats = df_ruta['Latitud'].values
+        ruta_lons = df_ruta['Longitud'].values
+        ruta_cum = df_ruta['Dist_Acum'].values
+
+        lats_ori = df['Latitud'].values
+        lons_ori = df['Longitud'].values
+        lats_des = df['Lat_Destino'].values
+        lons_des = df['Lon_Destino'].values
+
+        idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
+        idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
+
+        dist_acum_ori = ruta_cum[idx_ori]
+        dist_acum_des = ruta_cum[idx_des]
+
+        # 2. Run DBSCAN on 1D distances
+        all_dists_km = np.concatenate([dist_acum_ori, dist_acum_des])
+        eps_km = metros_sel / 1000.0
+        min_samples = 5
+        db = DBSCAN(eps=eps_km, min_samples=min_samples, metric='euclidean', n_jobs=-1).fit(all_dists_km.reshape(-1, 1))
         labels = db.labels_
         
-        df_points = pd.DataFrame(all_points, columns=['lat', 'lon'])
-        df_points['label'] = labels
-        
-        # Ignoramos ruido
-        valid_mask = df_points['label'] != -1
-        if not np.any(valid_mask):
+        # 3. Calculate 1D centroids
+        df_dists = pd.DataFrame({'dist_km': all_dists_km, 'label': labels})
+        valid_dists = df_dists[df_dists['label'] != -1]
+        if valid_dists.empty:
             return pd.DataFrame()
-            
-        # Centroides
-        centroids = df_points[valid_mask].groupby('label')[['lat', 'lon']].mean()
-        
-        # Separar subidas y bajadas
+        centroids_1d = valid_dists.groupby('label')['dist_km'].mean()
+
+        # 4. Map 1D centroids to 2D route coordinates
+        centroid_indices = np.argmin(np.abs(centroids_1d.values[:, None] - ruta_cum[None, :]), axis=1)
+        centroid_coords = pd.DataFrame({
+            'lat': ruta_lats[centroid_indices],
+            'lon': ruta_lons[centroid_indices]
+        }, index=centroids_1d.index)
+
+        # 5. Count boardings and alightings per cluster
         n = len(df)
         labels_ori = labels[:n]
         labels_des = labels[n:]
         
-        # Contar por label (cluster)
-        # Solo contamos si el punto pertenece a un cluster (no es ruido)
         sub_counts = pd.Series(labels_ori[labels_ori != -1]).value_counts().rename('Subieron')
         baj_counts = pd.Series(labels_des[labels_des != -1]).value_counts().rename('Bajaron')
         
-        # Unir estadísticas con coordenadas de centroides
-        stats = pd.concat([centroids, sub_counts, baj_counts], axis=1).fillna(0)
+        # 6. Join stats with centroid coordinates
+        stats = pd.concat([centroid_coords, sub_counts, baj_counts], axis=1).fillna(0)
         stats['Subieron'] = stats['Subieron'].astype(int)
         stats['Bajaron'] = stats['Bajaron'].astype(int)
         
@@ -603,27 +600,28 @@ if archivo_subido:
     fechas_disponibles = sorted(df_raw['Fecha'].unique())
     opciones_fecha = ["Todo el mes"] + [str(f) for f in fechas_disponibles]
     fecha_sel = st.sidebar.selectbox("Seleccionar Período", opciones_fecha)
-    
-    ramales = ["Todos"] + sorted(df_raw['Ramal'].unique().tolist())
-    ramal_sel = st.sidebar.selectbox("Seleccionar Ramal", ramales)
+
+    ramales_unicos = sorted(df_raw['Ramal'].unique().tolist())
+    ramales = ["Todos"] + ramales_unicos
+    default_index = 1 if ramales_unicos else 0
+    ramal_sel = st.sidebar.selectbox("Seleccionar Ramal", ramales, index=default_index)
     sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"], index=1, key="radio_s")
 
-    # Nuevo control para seleccionar el tipo de agrupación
-    criterio_agrupacion = st.sidebar.radio("Criterio de Agrupación", ["Distancia en Ruta", "Grilla Espacial", "Clusters (DBSCAN)"], index=0)
+    # Nuevo control para seleccionar el tipo de agrupación - Por Distancia o por Clusters DBSCAN
+    criterio_agrupacion = st.sidebar.radio("Agrupar Por:", ["Distancia", "Clusters"], index=0, key="criterio_agrupacion")
     
     # Ajustamos las opciones del slider según el criterio
     label_slider = "Tamaño"
     val_default = 100
-    if criterio_agrupacion == 'Distancia en Ruta':
-        label_slider = "Metros en Ruta"
-    elif criterio_agrupacion == 'Grilla Espacial':
-        label_slider = "Metros de Cuadrante"
-        val_default = 400
+    if criterio_agrupacion == 'Distancia':
+        label_slider = "Agrupación (mts):"
+        metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[50, 100, 150, 200, 300, 400, 500], value=val_default)
     else:
-        label_slider = "Radio del Cluster (metros)"
+        label_slider = "Radio del Cluster (mts):"
         val_default = 200
+        metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[100, 150, 170, 180, 190, 200, 210, 220, 230, 240, 260, 300], value=val_default)
 
-    metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[50, 100, 200, 300, 400, 500, 800, 1000], value=val_default)
+    
     
     #st.sidebar.markdown("---")
     # Botón para resetear la vista del mapa
