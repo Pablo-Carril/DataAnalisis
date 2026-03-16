@@ -617,7 +617,7 @@ if archivo_subido:
     val_default = 100
     if criterio_agrupacion == 'Distancia':
         label_slider = "Agrupación (mts):"
-        metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[50, 100, 150, 200, 300, 400, 500], value=val_default)
+        metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[50, 100, 150, 200, 300, 400, 500, 3000], value=val_default)
     else:
         label_slider = "Radio del Cluster (mts):"
         val_default = 200
@@ -803,6 +803,13 @@ if archivo_subido:
                 # Campos vacíos para tooltip consistente
                 df_zonas['Subieron'] = ""
                 df_zonas['Bajaron'] = ""
+                
+                # Calcular porcentaje del flujo respecto al total visible
+                total_visible = df_zonas['Pasajeros'].sum()
+                if total_visible > 0:
+                    df_zonas['Porcentaje'] = ((df_zonas['Pasajeros'] / total_visible) * 100).map('{:.1f}%'.format)
+                else:
+                    df_zonas['Porcentaje'] = "0.0%"
 
                 capas.append(pdk.Layer(
                     "ArcLayer",
@@ -832,6 +839,15 @@ if archivo_subido:
                 # Campos vacíos para tooltip consistente
                 df_nodos['Pasajeros'] = ""
 
+                # Calcular el porcentaje de actividad del nodo sobre el total
+                total_subidas = df_nodos['Subieron'].sum()
+                total_actividad = total_subidas * 2 # Total de subidas + bajadas
+
+                if total_actividad > 0:
+                    df_nodos['Porcentaje'] = (((df_nodos['Subieron'] + df_nodos['Bajaron']) / total_actividad) * 100).map('{:.1f}%'.format)
+                else:
+                    df_nodos['Porcentaje'] = "0.0%"
+
                 capas.append(pdk.Layer(
                     "ScatterplotLayer",
                     df_nodos,
@@ -858,7 +874,8 @@ if archivo_subido:
                         tooltip={
                             "html": "<b>Pasajeros:</b> {Pasajeros}<br/>"
                                     "<b>Subieron:</b> {Subieron}<br/>"
-                                    "<b>Bajaron:</b> {Bajaron}"
+                                    "<b>Bajaron:</b> {Bajaron}<br/>"
+                                    "<b>% Actividad:</b> {Porcentaje}"
                         },
                         # height=700 se maneja por CSS ahora, pero dejamos un valor base
                     ), key="deck_map_3d", use_container_width=True)
