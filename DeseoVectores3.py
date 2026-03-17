@@ -531,140 +531,40 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
         return df_mapped.groupby([
             'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
         ]).size().reset_index(name='Pasajeros')
-
 @st.cache_data
-def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100, criterio="Distancia"):
-    if criterio == "Distancia":
-        if df_ruta.empty:
-            return pd.DataFrame()
+def calcular_estadisticas_nodos(df_zonas):
+    """
+    Calcula las estadísticas de subidas y bajadas para cada nodo,
+    derivándolas directamente de los flujos agrupados (df_zonas).
+    Esto asegura que los nodos de estadísticas coincidan exactamente
+    con los puntos de origen y destino de los flujos.
+    """
+    if df_zonas.empty:
+        return pd.DataFrame()
 
-        df_snapped_data = snap_to_route(df, df_ruta)
-        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
-        dist_acum_des = df_snapped_data['dist_acum_des'].values
+    # Calcular 'Subieron' sumando los pasajeros de los orígenes de los flujos
+    sub_counts = df_zonas.groupby(['lat_ori', 'lon_ori'])['Pasajeros'].sum().reset_index()
+    sub_counts.rename(columns={'lat_ori': 'lat', 'lon_ori': 'lon', 'Pasajeros': 'Subieron'}, inplace=True)
 
-        ruta_lats = df_ruta['Latitud'].values
-        ruta_lons = df_ruta['Longitud'].values
-        ruta_cum = df_ruta['Dist_Acum'].values
+    # Calcular 'Bajaron' sumando los pasajeros de los destinos de los flujos
+    baj_counts = df_zonas.groupby(['lat_des', 'lon_des'])['Pasajeros'].sum().reset_index()
+    baj_counts.rename(columns={'lat_des': 'lat', 'lon_des': 'lon', 'Pasajeros': 'Bajaron'}, inplace=True)
 
-        # 3. Agrupar por distancia (binning)
-        km_bin = metros_sel / 1000.0
-        dist_binned_ori = (dist_acum_ori / km_bin).round() * km_bin
-        dist_binned_des = (dist_acum_des / km_bin).round() * km_bin
-
-        # 4. Encontrar los puntos de la ruta que corresponden a las distancias agrupadas
-        idx_binned_ori = np.argmin(np.abs(dist_binned_ori[:, None] - ruta_cum[None, :]), axis=1)
-        idx_binned_des = np.argmin(np.abs(dist_binned_des[:, None] - ruta_cum[None, :]), axis=1)
-        
-        # Crear DataFrames con coordenadas "snapped" y "binned"
-        df_sub = pd.DataFrame({'lat': ruta_lats[idx_binned_ori], 'lon': ruta_lons[idx_binned_ori]})
-        df_baj = pd.DataFrame({'lat': ruta_lats[idx_binned_des], 'lon': ruta_lons[idx_binned_des]})
-
-        sub = df_sub.groupby(['lat', 'lon']).size().reset_index(name='Subieron')
-        baj = df_baj.groupby(['lat', 'lon']).size().reset_index(name='Bajaron')
-        
-        # Merge
-        nodos = pd.merge(sub, baj, on=['lat', 'lon'], how='outer').fillna(0)
-        nodos['Subieron'] = nodos['Subieron'].astype(int)
-        nodos['Bajaron'] = nodos['Bajaron'].astype(int)
-        return nodos
-      #stats['Bajaron'] = stats['Bajaron'].astype(int)
-        
-      #   return stats.reset_index(drop=True)
-      
-    elif criterio == "Clusters":
-        if df_ruta.empty:
-            return pd.DataFrame()
-
-        # 1. Snap all points to route and get their 1D distance
-        df_snapped_data = snap_to_route(df, df_ruta)
-        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
-        dist_acum_des = df_snapped_data['dist_acum_des'].values
-
-        ruta_lats = df_ruta['Latitud'].values
-        ruta_lons = df_ruta['Longitud'].values
-        ruta_cum = df_ruta['Dist_Acum'].values
-
-        # 2. Run DBSCAN on 1D distances
-        all_dists_km = np.concatenate([dist_acum_ori, dist_acum_des])
-        eps_km = metros_sel / 1000.0
-        min_samples = 5
-        db = DBSCAN(eps=eps_km, min_samples=min_samples, metric='euclidean', n_jobs=-1).fit(all_dists_km.reshape(-1, 1))
-        labels = db.labels_
-        
-        # 3. Calculate 1D centroids
-        df_dists = pd.DataFrame({'dist_km': all_dists_km, 'label': labels})
-        valid_dists = df_dists[df_dists['label'] != -1]
-        if valid_dists.empty:
-            return pd.DataFrame()
-        centroids_1d = valid_dists.groupby('label')['dist_km'].mean()
-
-        # 4. Map 1D centroids to 2D route coordinates
-        centroid_indices = np.argmin(np.abs(centroids_1d.values[:, None] - ruta_cum[None, :]), axis=1)
-        centroid_coords = pd.DataFrame({
-            'lat': ruta_lats[centroid_indices],
-            'lon': ruta_lons[centroid_indices]
-        }, index=centroids_1d.index)
-
-        # 5. Count boardings and alightings per cluster
-        n = len(df)
-        labels_ori = labels[:n]
-        labels_des = labels[n:]
-        
-        sub_counts = pd.Series(labels_ori[labels_ori != -1]).value_counts().rename('Subieron')
-        baj_counts = pd.Series(labels_des[labels_des != -1]).value_counts().rename('Bajaron')
-        
-        # 6. Join stats with centroid coordinates
-        stats = pd.concat([centroid_coords, sub_counts, baj_counts], axis=1).fillna(0)
-        stats['Subieron'] = stats['Subieron'].astype(int)
-        stats['Bajaron'] = stats['Bajaron'].astype(int)
-        
-        return stats.reset_index(drop=True)
+    # Unir las estadísticas de subidas y bajadas por coordenadas
+    nodos = pd.merge(sub_counts, baj_counts, on=['lat', 'lon'], how='outer').fillna(0)
+    nodos['Subieron'] = nodos['Subieron'].astype(int)
+    nodos['Bajaron'] = nodos['Bajaron'].astype(int)
     
-    elif criterio == "KDE":
-        if df_ruta.empty:
-            return pd.DataFrame()
+    # Calcular el total de actividad para el porcentaje
+    nodos['Total_Actividad'] = nodos['Subieron'] + nodos['Bajaron']
+    total_general_actividad = nodos['Total_Actividad'].sum()
 
-        # Repetimos lógica de picos para consistencia visual con los arcos
-        df_snapped_data = snap_to_route(df, df_ruta)
-        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
-        dist_acum_des = df_snapped_data['dist_acum_des'].values
-        
-        ruta_cum = df_ruta['Dist_Acum'].values
-        ruta_lats = df_ruta['Latitud'].values
-        ruta_lons = df_ruta['Longitud'].values
+    if total_general_actividad > 0:
+        nodos['Porcentaje'] = ((nodos['Total_Actividad'] / total_general_actividad) * 100).map('{:.1f}%'.format)
+    else:
+        nodos['Porcentaje'] = "0.0%"
 
-        valid_points = np.concatenate([dist_acum_ori, dist_acum_des])
-        valid_points = valid_points[~np.isnan(valid_points)]
-        
-        if len(valid_points) == 0:
-            return pd.DataFrame()
-
-        bandwidth = metros_sel / 1000.0
-        kde = KernelDensity(bandwidth=bandwidth, kernel='gaussian')
-        kde.fit(valid_points.reshape(-1, 1))
-
-        max_dist = ruta_cum.max()
-        grid_points = np.linspace(0, max_dist, int(max_dist * 100))
-        log_dens = kde.score_samples(grid_points.reshape(-1, 1))
-        peaks_idx, _ = find_peaks(log_dens)
-        peak_locs_km = grid_points[peaks_idx]
-
-        if len(peak_locs_km) == 0:
-            peak_locs_km = np.array([0, max_dist])
-
-        peak_route_indices = np.argmin(np.abs(peak_locs_km[:, None] - ruta_cum[None, :]), axis=1)
-        
-        # Asignación
-        idx_closest_peak_ori = np.argmin(np.abs(dist_acum_ori[:, None] - peak_locs_km[None, :]), axis=1)
-        idx_closest_peak_des = np.argmin(np.abs(dist_acum_des[:, None] - peak_locs_km[None, :]), axis=1)
-
-        sub_counts = pd.Series(idx_closest_peak_ori).value_counts().rename('Subieron')
-        baj_counts = pd.Series(idx_closest_peak_des).value_counts().rename('Bajaron')
-
-        # Construir dataframe final usando los índices de picos como clave
-        coords = pd.DataFrame({'lat': ruta_lats[peak_route_indices], 'lon': ruta_lons[peak_route_indices]})
-        stats = pd.concat([coords, sub_counts, baj_counts], axis=1).fillna(0)
-        return stats
+    return nodos
 
 # --- 5. FUNCIONES DE DISTANCIA (RUTA) ---
 def distancia_metros(lat1, lon1, lat2, lon2):
@@ -714,7 +614,14 @@ def calcular_distancia_traza_vectorizado(lats_ori, lons_ori, lats_des, lons_des,
 
 # --- 4. INTERFAZ DE USUARIO ---
 #archivo_subido = st.sidebar.file_uploader("Cargar archivo Parquet", type=["parquet"])
-archivo_subido = "Transacciones saes octubre.parquet"
+
+st.sidebar.header("Selección de Línea")
+linea_seleccionada = st.sidebar.selectbox("Seleccionar Línea", ["Línea 85", "Línea 98"], index=0)
+
+if linea_seleccionada == "Línea 85":
+    archivo_subido = "Transacciones saes octubre.parquet"
+else:
+    archivo_subido = "Transacciones expreso octubre.parquet"
 
 if archivo_subido:
     df_raw = cargar_datos(archivo_subido)
@@ -807,7 +714,7 @@ if archivo_subido:
 
     # --- LÓGICA DE VISTA DE MAPA ESTABLE ---
     # Se define qué filtros fuerzan un reseteo del centro del mapa.
-    current_major_filters = (fecha_sel, ramal_sel)
+    current_major_filters = (archivo_subido, fecha_sel, ramal_sel)
 
     # Se recalcula el centro SÓLO si:
     # 1. Es la primera carga o se ha pulsado el botón de reseteo (view_state is None).
@@ -907,7 +814,7 @@ if archivo_subido:
                         st.metric("Kilómetros Totales", f"{total_km_recorridos:,.0f}")
 
             # Calcular estadísticas de nodos (Subidas/Bajadas)
-            df_nodos = calcular_estadisticas_nodos(df_mapa, df_ruta, metros_sel)
+            df_nodos = calcular_estadisticas_nodos(df_zonas) # Ahora toma df_zonas directamente
 
             # 0. Capa de Grilla (Fondo)
 
@@ -961,17 +868,11 @@ if archivo_subido:
 
             # Puntos agrupados con estadísticas
             if not df_nodos.empty:
-                # Campos vacíos para tooltip consistente
-                df_nodos['Pasajeros'] = ""
-
-                # Calcular el porcentaje de actividad del nodo sobre el total
-                total_subidas = df_nodos['Subieron'].sum()
-                total_actividad = total_subidas * 2 # Total de subidas + bajadas
-
-                if total_actividad > 0:
-                    df_nodos['Porcentaje'] = (((df_nodos['Subieron'] + df_nodos['Bajaron']) / total_actividad) * 100).map('{:.1f}%'.format)
-                else:
-                    df_nodos['Porcentaje'] = "0.0%"
+                # Aseguramos que 'Pasajeros' esté vacío para el tooltip de nodos,
+                # ya que los nodos tienen 'Subieron' y 'Bajaron'
+                df_nodos['Pasajeros'] = "" 
+                # 'Porcentaje' ya se calcula dentro de calcular_estadisticas_nodos
+                # 'Subieron' y 'Bajaron' ya están en df_nodos
 
                 capas.append(pdk.Layer(
                     "ScatterplotLayer",
@@ -1195,6 +1096,8 @@ if archivo_subido:
                 # --- EXPORTACIÓN DE DATOS ---
                 if not df_zonas.empty:
                     # st.markdown("---")
+                    col1_dl, col2_dl = st.columns(2)
+
                     df_export = df_zonas.copy()
                     df_export['Ramal'] = ramal_sel
                     
@@ -1202,22 +1105,37 @@ if archivo_subido:
                     if 'Km_Recorridos' in df_export.columns:
                         df_export = df_export.rename(columns={'Km_Recorridos': 'distancia'})
                     
-                    cols_export = ['Ramal', 'Sentido', 'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'distancia', 'Pasajeros']
+                    cols_export = ['Ramal', 'Sentido', 'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'distancia', 'Pasajeros', 'Porcentaje']
                     cols_final = [c for c in cols_export if c in df_export.columns]
                     
                     csv = df_export[cols_final].to_csv(index=False, sep=';', decimal=',')
                     
-                    st.download_button(
-                        label="📥 Descargar CSV (Flujos)",
-                        data=csv,
-                        file_name=f"flujos_{ramal_sel}_{sentido_sel}.csv",
-                        mime="text/csv"
-                    )
+                    with col1_dl:
+                        st.download_button(
+                            label="📥 Descargar CSV (Flujos)",
+                            data=csv,
+                            file_name=f"flujos_{ramal_sel}_{sentido_sel}.csv",
+                            mime="text/csv"
+                        )
+
+                    # Exportar estadísticas de Nodos (Subidas y Bajadas por ubicación)
+                    if not df_nodos.empty:
+                        cols_nodos = ['lat', 'lon', 'Subieron', 'Bajaron', 'Porcentaje']
+                        cols_nodos_final = [c for c in cols_nodos if c in df_nodos.columns]
+                        csv_nodos = df_nodos[cols_nodos_final].to_csv(index=False, sep=';', decimal=',')
+                        
+                        with col2_dl:
+                            st.download_button(
+                                label="📥 Descargar CSV (Estadísticas Nodos)",
+                                data=csv_nodos,
+                                file_name=f"nodos_{ramal_sel}_{sentido_sel}.csv",
+                                mime="text/csv"
+                            )
             else:
                 st.warning("No se encontraron flujos ni transacciones para los filtros aplicados.")
         else:
             st.warning("No hay viajes que coincidan con los filtros de hora y sentido.")
     else:
-        st.warning("No se encontraron viajes.")
+        st.warning("No se encontraron viajes. Seleccione otro Ramal y sentido.")
 else:
     st.info("Carga un archivo .parquet para comenzar.")
