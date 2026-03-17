@@ -4,6 +4,9 @@ import pydeck as pdk
 import numpy as np
 import os
 from sklearn.cluster import DBSCAN
+from sklearn.neighbors import KernelDensity
+from scipy.signal import find_peaks
+from scipy.spatial import KDTree
 
 # Inyectar CSS para ocultar el menú 
 css_style = """
@@ -65,9 +68,9 @@ def cargar_datos(archivo):
     df['Fecha'] = df['Fecha Hora'].dt.date
     
     #Optimización de memoria: float64 -> float32
-    for col in ['Latitud', 'Longitud']:
-        if col in df.columns:
-            df[col] = df[col].astype('float32')
+    #for col in ['Latitud', 'Longitud']:
+    #    if col in df.columns:
+    #        df[col] = df[col].astype('float32')
             
     df['Hora_Int'] = df['Fecha Hora'].dt.hour
     df = df[(df['Latitud'] != 0) & (df['Longitud'] != 0)]
@@ -195,9 +198,9 @@ def calcular_vectores_flujo(df, df_ruta=None):
                 # Buscamos viaje en sentido contrario.
                 if sentidos[j] != current_sentido:
 
-                    # Filtro rápido por bounding box (~5 km).
+                    # Filtro rápido por bounding box (~5 km). MODIFICO para captar viajes largos de hasta 50 Kmts
                     # Evita calcular distancia exacta para puntos muy lejanos.
-                    if abs(lats[i] - lats[j]) > 0.45 or abs(lons[i] - lons[j]) > 0.45:
+                    if abs(lats[i] - lats[j]) > 0.50 or abs(lons[i] - lons[j]) > 0.50:
                         continue
 
                     # Cálculo de distancia real.
@@ -324,22 +327,16 @@ def snap_to_route(df, df_ruta):
         df_snapped['dist_acum_des'] = np.nan
         return df_snapped
 
-    # Coordenadas de la ruta de referencia
-    ruta_lats = df_ruta['Latitud'].values
-    ruta_lons = df_ruta['Longitud'].values
+    # 1. Creamos el índice espacial de la ruta (KDTree)
+    puntos_ruta = df_ruta[['Latitud', 'Longitud']].values
+    tree = KDTree(puntos_ruta)
+
+    # 2. Consultamos el punto más cercano de forma eficiente
+    _, idx_ori = tree.query(df_snapped[['Latitud', 'Longitud']].values)
+    _, idx_des = tree.query(df_snapped[['Lat_Destino', 'Lon_Destino']].values)
+
+    # 3. Asignamos los valores recuperados
     ruta_cum = df_ruta['Dist_Acum'].values
-
-    # Coordenadas de los viajes
-    lats_ori = df_snapped['Latitud'].values
-    lons_ori = df_snapped['Longitud'].values
-    lats_des = df_snapped['Lat_Destino'].values
-    lons_des = df_snapped['Lon_Destino'].values
-
-    # Encontrar los índices de los puntos más cercanos en la ruta
-    idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
-    idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
-
-    # Añadir las nuevas columnas al DataFrame
     df_snapped['idx_ori'] = idx_ori
     df_snapped['idx_des'] = idx_des
     df_snapped['dist_acum_ori'] = ruta_cum[idx_ori]
@@ -457,6 +454,83 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
         return df_valid.groupby([
             'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
         ]).size().reset_index(name='Pasajeros')
+    
+    elif criterio == "KDE":
+        if df_ruta.empty:
+            st.warning("El método KDE requiere una ruta de referencia cargada.")
+            return pd.DataFrame()
+
+        # 1. Ajustar puntos a la ruta (Snapping)
+        df_snapped_data = snap_to_route(df, df_ruta)
+        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
+        dist_acum_des = df_snapped_data['dist_acum_des'].values
+
+        # Datos de la ruta para mapeo inverso
+        ruta_cum = df_ruta['Dist_Acum'].values
+        ruta_lats = df_ruta['Latitud'].values
+        ruta_lons = df_ruta['Longitud'].values
+
+        # 2. Preparar datos para KDE (Concatenamos Origen y Destino para encontrar "Hubs" comunes)
+        # Filtramos NaNs por seguridad
+        valid_points = np.concatenate([dist_acum_ori, dist_acum_des])
+        valid_points = valid_points[~np.isnan(valid_points)]
+        
+        if len(valid_points) == 0:
+            return pd.DataFrame()
+
+        # 3. Configurar y ajustar KDE
+        bandwidth = metros_sel / 1000.0 # Convertir metros a KM
+        kde = KernelDensity(bandwidth=bandwidth, kernel='gaussian')
+        kde.fit(valid_points.reshape(-1, 1))
+
+        # 4. Evaluar densidad a lo largo de la ruta para encontrar picos
+        max_dist = ruta_cum.max()
+        # Resolución de muestreo: cada 10 metros
+        grid_points = np.linspace(0, max_dist, int(max_dist * 100)) 
+        log_dens = kde.score_samples(grid_points.reshape(-1, 1))
+        
+        # 5. Encontrar picos (máximos locales)
+        peaks_idx, _ = find_peaks(log_dens)
+        peak_locs_km = grid_points[peaks_idx]
+
+        if len(peak_locs_km) == 0:
+            # Fallback si es muy plano: usar extremos
+            peak_locs_km = np.array([0, max_dist])
+
+        # 6. Mapear los picos 1D a coordenadas 2D (Lat/Lon)
+        # Encontramos el índice en df_ruta más cercano a cada pico kilométrico
+        peak_route_indices = np.argmin(np.abs(peak_locs_km[:, None] - ruta_cum[None, :]), axis=1)
+        
+        # Tabla de referencia de Hubs: Indice Pico -> Lat/Lon
+        hub_coords = pd.DataFrame({
+            'lat': ruta_lats[peak_route_indices],
+            'lon': ruta_lons[peak_route_indices],
+            'km_peak': peak_locs_km
+        })
+
+        # 7. Asignar cada transacción original al Pico (Hub) más cercano
+        # Para lat_ori
+        idx_closest_peak_ori = np.argmin(np.abs(dist_acum_ori[:, None] - peak_locs_km[None, :]), axis=1)
+        # Para lat_des
+        idx_closest_peak_des = np.argmin(np.abs(dist_acum_des[:, None] - peak_locs_km[None, :]), axis=1)
+
+        df_mapped = df.copy()
+        df_mapped['lat_ori'] = hub_coords.iloc[idx_closest_peak_ori]['lat'].values
+        df_mapped['lon_ori'] = hub_coords.iloc[idx_closest_peak_ori]['lon'].values
+        
+        df_mapped['lat_des'] = hub_coords.iloc[idx_closest_peak_des]['lat'].values
+        df_mapped['lon_des'] = hub_coords.iloc[idx_closest_peak_des]['lon'].values
+
+        # Evitar flujos "dentro del mismo hub" (ruido visual)
+        df_mapped = df_mapped[idx_closest_peak_ori != idx_closest_peak_des]
+
+        if df_mapped.empty:
+            return pd.DataFrame()
+
+        # 8. Agrupar
+        return df_mapped.groupby([
+            'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
+        ]).size().reset_index(name='Pasajeros')
 
 @st.cache_data
 def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100, criterio="Distancia"):
@@ -545,6 +619,52 @@ def calcular_estadisticas_nodos(df, df_ruta, metros_sel=100, criterio="Distancia
         stats['Bajaron'] = stats['Bajaron'].astype(int)
         
         return stats.reset_index(drop=True)
+    
+    elif criterio == "KDE":
+        if df_ruta.empty:
+            return pd.DataFrame()
+
+        # Repetimos lógica de picos para consistencia visual con los arcos
+        df_snapped_data = snap_to_route(df, df_ruta)
+        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
+        dist_acum_des = df_snapped_data['dist_acum_des'].values
+        
+        ruta_cum = df_ruta['Dist_Acum'].values
+        ruta_lats = df_ruta['Latitud'].values
+        ruta_lons = df_ruta['Longitud'].values
+
+        valid_points = np.concatenate([dist_acum_ori, dist_acum_des])
+        valid_points = valid_points[~np.isnan(valid_points)]
+        
+        if len(valid_points) == 0:
+            return pd.DataFrame()
+
+        bandwidth = metros_sel / 1000.0
+        kde = KernelDensity(bandwidth=bandwidth, kernel='gaussian')
+        kde.fit(valid_points.reshape(-1, 1))
+
+        max_dist = ruta_cum.max()
+        grid_points = np.linspace(0, max_dist, int(max_dist * 100))
+        log_dens = kde.score_samples(grid_points.reshape(-1, 1))
+        peaks_idx, _ = find_peaks(log_dens)
+        peak_locs_km = grid_points[peaks_idx]
+
+        if len(peak_locs_km) == 0:
+            peak_locs_km = np.array([0, max_dist])
+
+        peak_route_indices = np.argmin(np.abs(peak_locs_km[:, None] - ruta_cum[None, :]), axis=1)
+        
+        # Asignación
+        idx_closest_peak_ori = np.argmin(np.abs(dist_acum_ori[:, None] - peak_locs_km[None, :]), axis=1)
+        idx_closest_peak_des = np.argmin(np.abs(dist_acum_des[:, None] - peak_locs_km[None, :]), axis=1)
+
+        sub_counts = pd.Series(idx_closest_peak_ori).value_counts().rename('Subieron')
+        baj_counts = pd.Series(idx_closest_peak_des).value_counts().rename('Bajaron')
+
+        # Construir dataframe final usando los índices de picos como clave
+        coords = pd.DataFrame({'lat': ruta_lats[peak_route_indices], 'lon': ruta_lons[peak_route_indices]})
+        stats = pd.concat([coords, sub_counts, baj_counts], axis=1).fillna(0)
+        return stats
 
 # --- 5. FUNCIONES DE DISTANCIA (RUTA) ---
 def distancia_metros(lat1, lon1, lat2, lon2):
@@ -576,6 +696,7 @@ def cargar_ruta_referencia(archivo):
         dists = haversine_np(lons[:-1], lats[:-1], lons[1:], lats[1:])
         df['Dist_Acum'] = np.concatenate(([0], np.cumsum(dists)))
         return df
+    
     except Exception as e:
         return pd.DataFrame()
 
@@ -610,14 +731,18 @@ if archivo_subido:
     sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"], index=1, key="radio_s")
 
     # Nuevo control para seleccionar el tipo de agrupación - Por Distancia o por Clusters DBSCAN
-    criterio_agrupacion = st.sidebar.radio("Agrupar Por:", ["Distancia", "Clusters"], index=0, key="criterio_agrupacion")
+    criterio_agrupacion = st.sidebar.radio("Agrupar Por:", ["Distancia", "Clusters", "KDE"], index=0, key="criterio_agrupacion")
     
     # Ajustamos las opciones del slider según el criterio
     label_slider = "Tamaño"
     val_default = 100
     if criterio_agrupacion == 'Distancia':
         label_slider = "Agrupación (mts):"
-        metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[50, 100, 150, 200, 300, 400, 500, 3000], value=val_default)
+        metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[100, 150, 200, 300, 400, 500, 3100], value=val_default)
+    elif criterio_agrupacion == 'KDE':
+        label_slider = "Suavizado (Bandwidth mts):"
+        val_default = 300
+        metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[100, 200, 300, 400, 500, 800, 1000, 1500], value=val_default)
     else:
         label_slider = "Radio del Cluster (mts):"
         val_default = 200
@@ -1013,7 +1138,12 @@ if archivo_subido:
                                 "end_lon": np.concatenate([punta1_lon, punta2_lon]),
                                 "end_lat": np.concatenate([punta1_lat, punta2_lat]),
                                 "color": np.concatenate([df['color_2d'].values, df['color_2d'].values]),
-                                "width": np.concatenate([df['grosor_final'].values, df['grosor_final'].values]) # Ancho proporcional
+                                "width": np.concatenate([df['grosor_final'].values, df['grosor_final'].values]), # Ancho proporcional
+                                # Datos extra para el tooltip
+                                "Pasajeros": np.concatenate([df['Pasajeros'].values, df['Pasajeros'].values]),
+                                "Subieron": np.concatenate([df['Subieron'].values, df['Subieron'].values]),
+                                "Bajaron": np.concatenate([df['Bajaron'].values, df['Bajaron'].values]),
+                                "Porcentaje": np.concatenate([df['Porcentaje'].values, df['Porcentaje'].values])
                             })
 
                         df_puntas = crear_puntas_de_flecha(df_2d)
@@ -1045,7 +1175,12 @@ if archivo_subido:
                                 map_provider="carto", map_style="light", 
                                 initial_view_state=view_state_2d,
                                 layers=capas_2d, 
-                                tooltip={"html": "<b>Pasajeros:</b> {Pasajeros}"},
+                                tooltip={
+                                    "html": "<b>Pasajeros:</b> {Pasajeros}<br/>"
+                                            "<b>Subieron:</b> {Subieron}<br/>"
+                                            "<b>Bajaron:</b> {Bajaron}<br/>"
+                                            "<b>% Actividad:</b> {Porcentaje}"
+                                },
                                 # height=700 se maneja por CSS
                             ), key="deck_map_2d", use_container_width=True
                         )
