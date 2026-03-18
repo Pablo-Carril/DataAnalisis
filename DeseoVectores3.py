@@ -3,6 +3,7 @@ import pandas as pd
 import pydeck as pdk
 import numpy as np
 import os
+import plotly.graph_objects as go
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import KernelDensity
 from scipy.signal import find_peaks
@@ -345,7 +346,7 @@ def snap_to_route(df, df_ruta):
     return df_snapped
 
 @st.cache_data
-def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
+def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia", kde_mode="Unidos"):
     
     if criterio == "Distancia":
         # Si no hay ruta, no se puede agrupar por distancia en ruta.
@@ -454,7 +455,7 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
         return df_valid.groupby([
             'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
         ]).size().reset_index(name='Pasajeros')
-    
+
     elif criterio == "KDE":
         if df_ruta.empty:
             st.warning("El método KDE requiere una ruta de referencia cargada.")
@@ -462,42 +463,64 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
 
         # 1. Ajustar puntos a la ruta (Snapping)
         df_snapped_data = snap_to_route(df, df_ruta)
-        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
-        dist_acum_des = df_snapped_data['dist_acum_des'].values
+        dist_acum_ori = df_snapped_data['dist_acum_ori'].dropna().values
+        dist_acum_des = df_snapped_data['dist_acum_des'].dropna().values
 
         # Datos de la ruta para mapeo inverso
         ruta_cum = df_ruta['Dist_Acum'].values
         ruta_lats = df_ruta['Latitud'].values
         ruta_lons = df_ruta['Longitud'].values
 
-        # 2. Preparar datos para KDE (Concatenamos Origen y Destino para encontrar "Hubs" comunes)
-        # Filtramos NaNs por seguridad
-        valid_points = np.concatenate([dist_acum_ori, dist_acum_des])
-        valid_points = valid_points[~np.isnan(valid_points)]
-        
-        if len(valid_points) == 0:
-            return pd.DataFrame()
-
-        # 3. Configurar y ajustar KDE
-        bandwidth = metros_sel / 1000.0 # Convertir metros a KM
+        # 2. Configuración de KDE
+        bandwidth = metros_sel / 1000.0  # Convertir metros a KM
         kde = KernelDensity(bandwidth=bandwidth, kernel='gaussian')
-        kde.fit(valid_points.reshape(-1, 1))
-
-        # 4. Evaluar densidad a lo largo de la ruta para encontrar picos
         max_dist = ruta_cum.max()
         # Resolución de muestreo: cada 10 metros
-        grid_points = np.linspace(0, max_dist, int(max_dist * 100)) 
-        log_dens = kde.score_samples(grid_points.reshape(-1, 1))
+        grid_points = np.linspace(0, max_dist, int(max_dist * 100)) if max_dist > 0 else np.array([])
         
-        # 5. Encontrar picos (máximos locales)
-        peaks_idx, _ = find_peaks(log_dens)
-        peak_locs_km = grid_points[peaks_idx]
+        peak_locs_km = np.array([])
+
+        # 3. Detección de Picos (Hubs) según el modo seleccionado
+        if kde_mode == "Separados":
+            # --- MODO SEPARADO: Detectar picos de subida y bajada por separado ---
+            peaks_ori, peaks_des = np.array([]), np.array([])
+            
+            if len(dist_acum_ori) > 2:
+                kde.fit(dist_acum_ori.reshape(-1, 1))
+                log_dens_ori = kde.score_samples(grid_points.reshape(-1, 1))
+                peaks_idx_ori, _ = find_peaks(log_dens_ori)
+                peaks_ori = grid_points[peaks_idx_ori]
+
+            if len(dist_acum_des) > 2:
+                kde.fit(dist_acum_des.reshape(-1, 1))
+                log_dens_des = kde.score_samples(grid_points.reshape(-1, 1))
+                peaks_idx_des, _ = find_peaks(log_dens_des)
+                peaks_des = grid_points[peaks_idx_des]
+            
+            all_peaks = np.concatenate([peaks_ori, peaks_des])
+            if len(all_peaks) > 0:
+                # Agrupar picos cercanos para evitar duplicados (redondeando a una fracción del bandwidth)
+                rounding_factor = bandwidth / 2
+                peak_locs_km = np.unique(np.round(all_peaks / rounding_factor) * rounding_factor)
+
+        else:  # "Unidos" (comportamiento original)
+            # --- MODO UNIDO: Detectar hubs de actividad general ---
+            valid_points = np.concatenate([dist_acum_ori, dist_acum_des])
+            if len(valid_points) > 2:
+                kde.fit(valid_points.reshape(-1, 1))
+                log_dens = kde.score_samples(grid_points.reshape(-1, 1))
+                peaks_idx, _ = find_peaks(log_dens)
+                peak_locs_km = grid_points[peaks_idx]
+
+        # 4. Fallback y Mapeo de Picos a Coordenadas 2D
+        if len(peak_locs_km) == 0:
+            st.sidebar.warning("KDE no encontró picos. Usando extremos de ruta como hubs.")
+            peak_locs_km = np.array([0, max_dist]) if max_dist > 0 else np.array([])
 
         if len(peak_locs_km) == 0:
-            # Fallback si es muy plano: usar extremos
-            peak_locs_km = np.array([0, max_dist])
+             return pd.DataFrame()
 
-        # 6. Mapear los picos 1D a coordenadas 2D (Lat/Lon)
+        # 5. Mapear los picos 1D a coordenadas 2D (Lat/Lon)
         # Encontramos el índice en df_ruta más cercano a cada pico kilométrico
         peak_route_indices = np.argmin(np.abs(peak_locs_km[:, None] - ruta_cum[None, :]), axis=1)
         
@@ -508,11 +531,11 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
             'km_peak': peak_locs_km
         })
 
-        # 7. Asignar cada transacción original al Pico (Hub) más cercano
+        # 6. Asignar cada transacción original al Pico (Hub) más cercano
         # Para lat_ori
-        idx_closest_peak_ori = np.argmin(np.abs(dist_acum_ori[:, None] - peak_locs_km[None, :]), axis=1)
+        idx_closest_peak_ori = np.argmin(np.abs(df_snapped_data['dist_acum_ori'].values[:, None] - peak_locs_km[None, :]), axis=1)
         # Para lat_des
-        idx_closest_peak_des = np.argmin(np.abs(dist_acum_des[:, None] - peak_locs_km[None, :]), axis=1)
+        idx_closest_peak_des = np.argmin(np.abs(df_snapped_data['dist_acum_des'].values[:, None] - peak_locs_km[None, :]), axis=1)
 
         df_mapped = df.copy()
         df_mapped['lat_ori'] = hub_coords.iloc[idx_closest_peak_ori]['lat'].values
@@ -527,7 +550,7 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia"):
         if df_mapped.empty:
             return pd.DataFrame()
 
-        # 8. Agrupar
+        # 7. Agrupar
         return df_mapped.groupby([
             'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
         ]).size().reset_index(name='Pasajeros')
@@ -643,6 +666,7 @@ if archivo_subido:
     # Ajustamos las opciones del slider según el criterio
     label_slider = "Tamaño"
     val_default = 100
+    kde_mode = "Unidos" # Valor por defecto para evitar NameError
     if criterio_agrupacion == 'Distancia':
         label_slider = "Agrupación (mts):"
         metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[100, 150, 200, 300, 400, 500, 3100], value=val_default)
@@ -650,6 +674,10 @@ if archivo_subido:
         label_slider = "Suavizado (Bandwidth mts):"
         val_default = 300
         metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[100, 200, 300, 400, 500, 800, 1000, 1500], value=val_default)
+        kde_mode = st.sidebar.radio(
+            "Modo Detección KDE:", ["Unidos", "Separados"], index=0, 
+            help="**Unidos**: Detecta 'hubs' de actividad general (subidas+bajadas). **Separados**: Detecta hubs de subida y bajada de forma independiente y luego los combina."
+        )
     else:
         label_slider = "Radio del Cluster (mts):"
         val_default = 200
@@ -710,7 +738,7 @@ if archivo_subido:
         df_filtrado = df_filtrado[df_filtrado['Ramal'] == ramal_sel]
     
     with st.spinner('Procesando vectores de flujo...'):
-        df_flujos = calcular_vectores_flujo(df_filtrado, df_ruta)
+        df_flujos = calcular_vectores_flujo(df_filtrado, df_ruta=df_ruta)
 
     # --- LÓGICA DE VISTA DE MAPA ESTABLE ---
     # Se define qué filtros fuerzan un reseteo del centro del mapa.
@@ -742,7 +770,7 @@ if archivo_subido:
 
         if not df_mapa.empty:
             capas = []
-            df_zonas = agrupar_por_zonas(df_mapa, df_ruta, metros_sel, criterio_agrupacion)
+            df_zonas = agrupar_por_zonas(df_mapa, df_ruta, metros_sel, criterio_agrupacion, kde_mode=kde_mode)
             
             # Verificamos que se hayan generado zonas antes de filtrar para evitar KeyError
             if not df_zonas.empty and 'Pasajeros' in df_zonas.columns:
@@ -874,12 +902,20 @@ if archivo_subido:
                 # 'Porcentaje' ya se calcula dentro de calcular_estadisticas_nodos
                 # 'Subieron' y 'Bajaron' ya están en df_nodos
 
+                # --- RADIO DINÁMICO PARA NODOS 3D ---
+                max_act_3d = df_nodos['Total_Actividad'].max()
+                if max_act_3d > 0:
+                    # Radio dinámico: Mínimo 20m, Máximo 250m (según actividad)
+                    df_nodos['radius_3d'] = 20 + (df_nodos['Total_Actividad'] / max_act_3d) * 230
+                else:
+                    df_nodos['radius_3d'] = 20
+
                 capas.append(pdk.Layer(
                     "ScatterplotLayer",
                     df_nodos,
                     get_position=["lon", "lat"],
                     get_color=[20, 150, 0, 120], # verde 
-                    get_radius=30,
+                    get_radius='radius_3d',
                     pickable=True,
                 ))
 
@@ -888,7 +924,7 @@ if archivo_subido:
                 max_p_display = int(df_zonas['Pasajeros'].max()) if not df_zonas.empty else 0
 
                 # --- CREACIÓN DE PESTAÑAS DE VISUALIZACIÓN ---
-                tab1, tab2 = st.tabs(["🗺️ Mapa 3D (Arcos)", "🛰️ Vista 2D (Vectores)"])
+                tab1, tab2, tab3 = st.tabs(["🗺️ Mapa 3D (Arcos)", "🛰️ Vista 2D (Vectores)", "📈 Vista Lineal 1D"])
 
                 with tab1:
                     
@@ -1060,6 +1096,26 @@ if archivo_subido:
                             id="arrow_heads_layer"
                         ))
                         
+                        # --- PUNTOS ESTADÍSTICOS (NODOS) EN 2D CON RADIO DINÁMICO ---
+                        if not df_nodos.empty:
+                            df_nodos_2d = df_nodos.copy()
+                            max_act = df_nodos_2d['Total_Actividad'].max()
+                            
+                            # Radio dinámico: Mínimo 20m, Máximo 250m (según actividad)
+                            if max_act > 0:
+                                df_nodos_2d['radius_2d'] = 20 + (df_nodos_2d['Total_Actividad'] / max_act) * 230
+                            else:
+                                df_nodos_2d['radius_2d'] = 20
+
+                            capas_2d.append(pdk.Layer(
+                                "ScatterplotLayer",
+                                df_nodos_2d,
+                                get_position=["lon", "lat"],
+                                get_color=[30, 180, 0, 140], # Verde semi-transparente
+                                get_radius="radius_2d",
+                                pickable=True,
+                            ))
+                        
                         # 3. Vista cenital (desde arriba) y bloqueada
                         view_state_2d = pdk.ViewState(
                             latitude=st.session_state.view_state.latitude, longitude=st.session_state.view_state.longitude,
@@ -1092,6 +1148,102 @@ if archivo_subido:
                         st.markdown(generar_leyenda_html(max_p_2d), unsafe_allow_html=True)
                     else:
                         st.info("No hay datos de flujos para mostrar en la vista 2D.")
+
+                with tab3:
+                    if not df_ruta.empty and not df_zonas.empty:
+                        with st.spinner("Generando diagrama lineal de flujos..."):
+                            # 1. Mapear coordenadas a Kilómetros de Ruta (Broadcasting)
+                            # Esto nos da la posición exacta en el eje X para el gráfico 1D
+                            ruta_lats = df_ruta['Latitud'].values
+                            ruta_lons = df_ruta['Longitud'].values
+                            ruta_cum = df_ruta['Dist_Acum'].values
+                            
+                            # Orígenes
+                            dists_ori = (df_zonas['lat_ori'].values[:, None] - ruta_lats[None, :])**2 + (df_zonas['lon_ori'].values[:, None] - ruta_lons[None, :])**2
+                            km_ori = ruta_cum[np.argmin(dists_ori, axis=1)]
+                            
+                            # Destinos
+                            dists_des = (df_zonas['lat_des'].values[:, None] - ruta_lats[None, :])**2 + (df_zonas['lon_des'].values[:, None] - ruta_lons[None, :])**2
+                            km_des = ruta_cum[np.argmin(dists_des, axis=1)]
+
+                            df_1d = df_zonas.copy()
+                            df_1d['km_ori'] = km_ori
+                            df_1d['km_des'] = km_des
+                            
+                            # 2. Ordenar por Pasajeros (Los "más chicos" primero, para estar cerca de la línea)
+                            df_1d = df_1d.sort_values('Pasajeros', ascending=True).reset_index(drop=True)
+                            
+                            # 3. Algoritmo de Apilamiento (Stacking) sin superposición
+                            levels = [] # Lista de listas con intervalos ocupados [(inicio, fin), ...]
+                            row_levels = []
+                            
+                            for idx, row in df_1d.iterrows():
+                                s, e = min(row['km_ori'], row['km_des']), max(row['km_ori'], row['km_des'])
+                                # Pequeño margen para evitar toques visuales
+                                s, e = s - 0.02, e + 0.02
+                                
+                                assigned_lvl = -1
+                                # Buscamos el nivel más bajo disponible donde no choque
+                                for i, lvl_intervals in enumerate(levels):
+                                    collision = False
+                                    for (occ_s, occ_e) in lvl_intervals:
+                                        # Chequeo de intersección de intervalos
+                                        if max(s, occ_s) < min(e, occ_e):
+                                            collision = True
+                                            break
+                                    if not collision:
+                                        lvl_intervals.append((s, e))
+                                        assigned_lvl = i
+                                        break
+                                
+                                if assigned_lvl == -1:
+                                    assigned_lvl = len(levels)
+                                    levels.append([(s, e)])
+                                
+                                row_levels.append(assigned_lvl)
+                            
+                            # 4. Dibujar Gráfico con Plotly
+                            fig = go.Figure()
+                            
+                            # Línea base (Ruta)
+                            fig.add_trace(go.Scatter(x=[0, ruta_cum.max()], y=[0, 0], mode='lines', line=dict(color='black', width=3), name='Ruta', hoverinfo='skip'))
+                            
+                            for i, row in df_1d.iterrows():
+                                lvl = row_levels[i]
+                                height = (lvl + 1) * 1.5 # Altura basada en el nivel asignado
+                                x0, x1 = row['km_ori'], row['km_des']
+                                
+                                # Generar curva (Senoide) para el arco
+                                xs = np.linspace(x0, x1, 50)
+                                # t va de 0 a 1 normalizado a lo largo del arco
+                                t = (xs - x0) / (x1 - x0) 
+                                ys = height * np.sin(np.pi * t) # Forma de arco
+                                
+                                # Convertir color de lista [r,g,b,a] a string 'rgba(...)'
+                                c = row['color_ori']
+                                color_str = f"rgba({c[0]}, {c[1]}, {c[2]}, {c[3]/255:.2f})"
+                                
+                                fig.add_trace(go.Scatter(
+                                    x=xs, y=ys, mode='lines',
+                                    line=dict(color=color_str, width=max(1, row['grosor_final']/2)), # Ajustar grosor para Plotly
+                                    text=f"Pax: {row['Pasajeros']}<br>Desde: {x0:.1f}km<br>Hasta: {x1:.1f}km<br>Dist: {abs(x1-x0):.1f}km",
+                                    hoverinfo='text',
+                                    showlegend=False,
+                                    opacity=0.9
+                                ))
+                            
+                            fig.update_layout(
+                                #title=f"Diagrama de Flujos Lineal - {ramal_sel}",
+                                xaxis_title="Kilómetros",
+                                yaxis_title="Nivel de Pasajeros",
+                                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False), # Ocultar eje Y
+                                xaxis=dict(showgrid=True, zeroline=True),
+                                height=600,
+                                plot_bgcolor='white'
+                            )
+                            st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.info("Se requiere cargar una ruta de referencia (ACTrec) para visualizar el gráfico 1D.")
 
                 # --- EXPORTACIÓN DE DATOS ---
                 if not df_zonas.empty:
