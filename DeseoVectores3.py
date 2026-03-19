@@ -3,7 +3,6 @@ import pandas as pd
 import pydeck as pdk
 import numpy as np
 import os
-import plotly.graph_objects as go
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import KernelDensity
 from scipy.signal import find_peaks
@@ -660,6 +659,7 @@ if archivo_subido:
     ramal_sel = st.sidebar.selectbox("Seleccionar Ramal", ramales, index=default_index)
     sentido_sel = st.sidebar.radio("Sentido de Subida", ["Ambos", "Ida", "Vuelta"], index=1, key="radio_s")
 
+    st.sidebar.markdown("---")
     # Nuevo control para seleccionar el tipo de agrupación - Por Distancia o por Clusters DBSCAN
     criterio_agrupacion = st.sidebar.radio("Agrupar Por:", ["Distancia", "Clusters", "KDE"], index=0, key="criterio_agrupacion")
     
@@ -671,9 +671,9 @@ if archivo_subido:
         label_slider = "Agrupación (mts):"
         metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[100, 150, 200, 300, 400, 500, 3100], value=val_default)
     elif criterio_agrupacion == 'KDE':
-        label_slider = "Suavizado (Bandwidth mts):"
-        val_default = 300
-        metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[100, 200, 300, 400, 500, 800, 1000, 1500], value=val_default)
+        label_slider = "Area (mts):"
+        val_default = 200
+        metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[100, 150, 160, 170, 180, 190, 200, 250, 300, 400, 500, 800, 1000, 1500], value=val_default)
         kde_mode = st.sidebar.radio(
             "Modo Detección KDE:", ["Unidos", "Separados"], index=0, 
             help="**Unidos**: Detecta 'hubs' de actividad general (subidas+bajadas). **Separados**: Detecta hubs de subida y bajada de forma independiente y luego los combina."
@@ -910,11 +910,20 @@ if archivo_subido:
                 else:
                     df_nodos['radius_3d'] = 20
 
+                # --- COLOR DINÁMICO DE NODOS (Subida vs Bajada) ---
+                def get_node_color(row):
+                    # Si bajan más que suben -> Amarillo Claro, sino Verde
+                    if row['Bajaron'] > row['Subieron']:
+                        return [255, 235, 60, 120] # Amarillo Claro
+                    return [20, 150, 0, 100] # Verde
+
+                df_nodos['color_nodo'] = df_nodos.apply(get_node_color, axis=1)
+
                 capas.append(pdk.Layer(
                     "ScatterplotLayer",
                     df_nodos,
                     get_position=["lon", "lat"],
-                    get_color=[20, 150, 0, 120], # verde 
+                    get_color="color_nodo",
                     get_radius='radius_3d',
                     pickable=True,
                 ))
@@ -943,7 +952,7 @@ if archivo_subido:
                     ), key="deck_map_3d", use_container_width=True)
                     st.write("")
                     st.write("")
-                    st.write(" Suben: Naranja/Rojo - Bajan: Azul")
+                    st.write(" **Arcos**: Suben (Naranja/Rojo) -> Bajan (Azul) | **Nodos**: Verde (Subida) - Amarillo (Bajada)")
                 
                 with tab2:
                     if not df_zonas.empty:
@@ -1111,7 +1120,7 @@ if archivo_subido:
                                 "ScatterplotLayer",
                                 df_nodos_2d,
                                 get_position=["lon", "lat"],
-                                get_color=[30, 180, 0, 140], # Verde semi-transparente
+                                get_color="color_nodo",
                                 get_radius="radius_2d",
                                 pickable=True,
                             ))
@@ -1169,22 +1178,33 @@ if archivo_subido:
                             df_1d = df_zonas.copy()
                             df_1d['km_ori'] = km_ori
                             df_1d['km_des'] = km_des
+                            df_1d['dist_abs'] = (df_1d['km_des'] - df_1d['km_ori']).abs()
+                            
+                            # Calcular mediana para separar cortos de largos
+                            median_dist = df_1d['dist_abs'].median()
                             
                             # 2. Ordenar por Pasajeros (Los "más chicos" primero, para estar cerca de la línea)
                             df_1d = df_1d.sort_values('Pasajeros', ascending=True).reset_index(drop=True)
                             
-                            # 3. Algoritmo de Apilamiento (Stacking) sin superposición
-                            levels = [] # Lista de listas con intervalos ocupados [(inicio, fin), ...]
+                            # 3. Algoritmo de Apilamiento (Stacking) BIDIRECCIONAL
+                            levels_top = []    # Para viajes cortos (Arriba)
+                            levels_bottom = [] # Para viajes largos (Abajo)
                             row_levels = []
+                            row_dirs = [] # 1 para arriba, -1 para abajo
                             
                             for idx, row in df_1d.iterrows():
                                 s, e = min(row['km_ori'], row['km_des']), max(row['km_ori'], row['km_des'])
-                                # Pequeño margen para evitar toques visuales
-                                s, e = s - 0.02, e + 0.02
+                                # Pequeño margen para evitar toques visuales entre líneas verticales
+                                s, e = s - 0.05, e + 0.05
+                                
+                                # Decidir si va arriba o abajo
+                                is_top = row['dist_abs'] <= median_dist
+                                target_levels = levels_top if is_top else levels_bottom
+                                direction = 1 if is_top else -1
                                 
                                 assigned_lvl = -1
                                 # Buscamos el nivel más bajo disponible donde no choque
-                                for i, lvl_intervals in enumerate(levels):
+                                for i, lvl_intervals in enumerate(target_levels):
                                     collision = False
                                     for (occ_s, occ_e) in lvl_intervals:
                                         # Chequeo de intersección de intervalos
@@ -1197,51 +1217,160 @@ if archivo_subido:
                                         break
                                 
                                 if assigned_lvl == -1:
-                                    assigned_lvl = len(levels)
-                                    levels.append([(s, e)])
+                                    assigned_lvl = len(target_levels)
+                                    target_levels.append([(s, e)])
                                 
                                 row_levels.append(assigned_lvl)
+                                row_dirs.append(direction)
                             
-                            # 4. Dibujar Gráfico con Plotly
-                            fig = go.Figure()
+                            # --- LÓGICA DE COLOR CORREGIDA (Espectro Completo) ---
+                            max_p_1d = df_1d['Pasajeros'].max()
+                            def get_color_1d(p):
+                                ratio = p / max_p_1d if max_p_1d > 0 else 0
+                                alpha = 200
+                                if ratio < 0.2: r, g, b = 0, int(255 * (1 - (ratio / 0.2))), 255
+                                elif ratio < 0.4: r, g, b = 0, int(255 * ((ratio - 0.2) / 0.2)), int(255 * (1 - ((ratio - 0.2) / 0.2)))
+                                elif ratio < 0.6: r, g, b = int(255 * ((ratio - 0.4) / 0.2)), 255, 0
+                                elif ratio < 0.8: r, g, b = 255, int(255 - (90 * ((ratio - 0.6) / 0.2))), 0
+                                else: r, g, b = 255, int(165 * (1 - ((ratio - 0.8) / 0.2))), 0
+                                return [r, g, b, alpha]
                             
-                            # Línea base (Ruta)
-                            fig.add_trace(go.Scatter(x=[0, ruta_cum.max()], y=[0, 0], mode='lines', line=dict(color='black', width=3), name='Ruta', hoverinfo='skip'))
+                            # 4. Construcción de Geometrías para PyDeck (Simulación de Coordenadas)
+                            # Mapeamos: Km -> Longitud | Nivel -> Latitud
+                            SCALE_X = 0.01   # 1 km = 0.01 grados Longitud
+                            SCALE_Y = 0.0015 # 1 nivel = 0.0015 grados Latitud
+                            BASE_LAT, BASE_LON = 0, 0
                             
+                            # Detectar orientación geográfica de la ruta
+                            lat_start = df_ruta['Latitud'].iloc[0]
+                            lat_end = df_ruta['Latitud'].iloc[-1]
+                            # Sur: Latitud disminuye (más negativa). Norte: Latitud aumenta (menos negativa).
+                            is_southbound = lat_end < lat_start
+                            max_km_ruta = ruta_cum.max()
+
+                            paths_data = []
+                            arrows_data = []
+
                             for i, row in df_1d.iterrows():
                                 lvl = row_levels[i]
-                                height = (lvl + 1) * 1.5 # Altura basada en el nivel asignado
-                                x0, x1 = row['km_ori'], row['km_des']
+                                direction = row_dirs[i]
                                 
-                                # Generar curva (Senoide) para el arco
-                                xs = np.linspace(x0, x1, 50)
-                                # t va de 0 a 1 normalizado a lo largo del arco
-                                t = (xs - x0) / (x1 - x0) 
-                                ys = height * np.sin(np.pi * t) # Forma de arco
+                                # Altura basada en el nivel asignado (apilado)
+                                y_base = BASE_LAT
+                                y_top = BASE_LAT + (lvl + 1) * SCALE_Y * direction
                                 
-                                # Convertir color de lista [r,g,b,a] a string 'rgba(...)'
-                                c = row['color_ori']
-                                color_str = f"rgba({c[0]}, {c[1]}, {c[2]}, {c[3]/255:.2f})"
+                                if is_southbound:
+                                    # Sur: Izquierda a Derecha (Km 0 -> 0)
+                                    x_ori = BASE_LON + row['km_ori'] * SCALE_X
+                                    x_des = BASE_LON + row['km_des'] * SCALE_X
+                                else:
+                                    # Norte: Derecha a Izquierda (Km 0 -> Max)
+                                    x_ori = BASE_LON + (max_km_ruta - row['km_ori']) * SCALE_X
+                                    x_des = BASE_LON + (max_km_ruta - row['km_des']) * SCALE_X
                                 
-                                fig.add_trace(go.Scatter(
-                                    x=xs, y=ys, mode='lines',
-                                    line=dict(color=color_str, width=max(1, row['grosor_final']/2)), # Ajustar grosor para Plotly
-                                    text=f"Pax: {row['Pasajeros']}<br>Desde: {x0:.1f}km<br>Hasta: {x1:.1f}km<br>Dist: {abs(x1-x0):.1f}km",
-                                    hoverinfo='text',
-                                    showlegend=False,
-                                    opacity=0.9
-                                ))
+                                # --- GENERAR FORMA CUADRADA CON CURVA SUAVE ---
+                                # Puntos clave
+                                # Radio de giro (en grados)
+                                r_x = 0.3 * SCALE_X # 300m radio X
+                                r_y = abs(y_top - y_base) * 0.2 # 20% altura radio Y
+                                
+                                # Ajustar radio si el viaje es muy corto
+                                dist_x = abs(x_des - x_ori)
+                                if r_x * 2 > dist_x:
+                                    r_x = dist_x / 2.5
+                                
+                                # Definimos la geometría base (bracket)
+                                # p0(start) -> p1(sube) -> p2(curva) -> p3(curva_end) -> p4(baja) -> p5(end)
+                                sign_dir = 1 if x_des > x_ori else -1
+                                sign_y = 1 if y_top > y_base else -1 # 1 para Arriba, -1 para Abajo
+                                
+                                p0 = [x_ori, y_base]
+                                p1 = [x_ori, y_top - (r_y * sign_y)]
+                                p2 = [x_ori + (r_x * sign_dir), y_top]
+                                p3 = [x_des - (r_x * sign_dir), y_top]
+                                p4 = [x_des, y_top - (r_y * sign_y)]
+                                p5 = [x_des, y_base]
+                                
+                                path_coords = [p0, p1, p2, p3, p4, p5]
+                                
+                                # Color y Grosor
+                                color = get_color_1d(row['Pasajeros']) # Usamos la nueva función de color
+                                width = row['grosor_final']
+
+                                paths_data.append({
+                                    'path': path_coords,
+                                    'color': color,
+                                    'width': width,
+                                    'Pasajeros': row['Pasajeros'],
+                                    'Distancia': f"{row['dist_abs']:.2f} km",
+                                    'Origen_km': f"{row['km_ori']:.1f}",
+                                    'Destino_km': f"{row['km_des']:.1f}"
+                                })
+
+                                # --- PUNTA DE FLECHA (Optimizado para evitar cruces) ---
+                                # Solo dibujamos flecha si el viaje es mayor a 500m para evitar manchas
+                                if row['dist_abs'] > 0.5:
+                                    # La colocamos en el medio del tramo horizontal (p2 -> p3)
+                                    mid_x = (p2[0] + p3[0]) / 2
+                                    mid_y = (p2[1] + p3[1]) / 2
+                                    
+                                    # Vector dirección unitario (horizontal)
+                                    u_x = 1 if x_des > x_ori else -1
+                                    
+                                    # Tamaño ajustado: aprox 400m en escala X (aprox 6px en pantalla)
+                                    arrow_size = 0.004 
+                                    
+                                    # Puntos de las alas (formando una V acostada)
+                                    # a1 (arriba), a2 (abajo), mid es el vértice
+                                    a1 = [mid_x - u_x * arrow_size, mid_y + arrow_size * 0.7]
+                                    a2 = [mid_x - u_x * arrow_size, mid_y - arrow_size * 0.7]
+                                    
+                                    # Guardamos como path continuo a1 -> mid -> a2
+                                    arrows_data.append({'path': [a1, [mid_x, mid_y], a2], 'color': color, 'width': width})
+
+                            # --- RENDERIZADO PYDECK ---
                             
-                            fig.update_layout(
-                                #title=f"Diagrama de Flujos Lineal - {ramal_sel}",
-                                xaxis_title="Kilómetros",
-                                yaxis_title="Nivel de Pasajeros",
-                                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False), # Ocultar eje Y
-                                xaxis=dict(showgrid=True, zeroline=True),
-                                height=600,
-                                plot_bgcolor='white'
-                            )
-                            st.plotly_chart(fig, use_container_width=True)
+                            # Capa de Ruta (Línea Base negra)
+                            # Extendemos un poco la línea base para que se vea bien el final
+                            linea_base_data = pd.DataFrame({
+                                'path': [[[BASE_LON, BASE_LAT], [BASE_LON + ruta_cum.max() * SCALE_X, BASE_LAT]]]
+                            })
+                            
+                            # Capa de Fondo (Rectángulo Blanco detrás del gráfico)
+                            max_lvl_top = len(levels_top) if levels_top else 0
+                            max_lvl_bot = len(levels_bottom) if levels_bottom else 0
+                            min_x, max_x = BASE_LON - 0.05, BASE_LON + ruta_cum.max() * SCALE_X + 0.05
+                            min_y = BASE_LAT - (max_lvl_bot + 20) * SCALE_Y
+                            max_y = BASE_LAT + (max_lvl_top + 20) * SCALE_Y
+                            
+                            bg_data = pd.DataFrame({'polygon': [[[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]]})
+
+                            layers_1d = [
+                                # Fondo primero (z-index bajo)
+                                pdk.Layer("PolygonLayer", bg_data, get_polygon="polygon", get_fill_color=[255, 255, 255], get_line_color=[255,255,255], pickable=False),
+                                # Línea Base
+                                pdk.Layer("PathLayer", linea_base_data, get_path="path", get_color=[0,0,0,255], get_width=3, width_units='pixels'),
+                                # Arcos (Brackets)
+                                pdk.Layer("PathLayer", pd.DataFrame(paths_data), get_path="path", get_color="color", get_width="width", width_units='pixels', pickable=True, rounded=True),
+                                # Flechas (Ahora PathLayer para uniones limpias)
+                                pdk.Layer("PathLayer", pd.DataFrame(arrows_data), get_path="path", get_color="color", get_width="width", width_units='pixels', rounded=True)
+                            ]
+
+                            # Vista Centrada en el medio del recorrido
+                            cx = BASE_LON + (ruta_cum.max() * SCALE_X) / 2
+                            view_1d = pdk.ViewState(latitude=BASE_LAT, longitude=cx, zoom=11, pitch=0, bearing=0)
+
+                            st.pydeck_chart(pdk.Deck(
+                                map_provider=None, # Sin mapa base, solo canvas blanco
+                                map_style=None,
+                                initial_view_state=view_1d,
+                                layers=layers_1d,
+                                tooltip={
+                                    "html": "<b>Pax: {Pasajeros}</b><br>Dist: {Distancia}<br>Km: {Origen_km} -> {Destino_km}",
+                                    "style": {"color": "white", "backgroundColor": "#333"}
+                                }
+                            ), use_container_width=True)
+
                     else:
                         st.info("Se requiere cargar una ruta de referencia (ACTrec) para visualizar el gráfico 1D.")
 
