@@ -3,10 +3,10 @@ import pandas as pd
 import pydeck as pdk
 import numpy as np
 import os
-
-from spatial_utils import calcular_distancia_traza_vectorizado
-from data_processing import (cargar_datos, cargar_informacion_paradas, calcular_vectores_flujo, 
-                             agrupar_por_zonas, calcular_estadisticas_nodos, cargar_ruta_referencia)
+from sklearn.cluster import DBSCAN
+from sklearn.neighbors import KernelDensity
+from scipy.signal import find_peaks
+from scipy.spatial import KDTree
 
 # Inyectar CSS para ocultar el menú 
 css_style = """
@@ -58,6 +58,587 @@ st.title("📊 Mapa de Flujos de Pasajeros")
 #Mapa de Deseo. Esta herramienta agrupa viajes cercanos para visualizar los **corredores de mayor demanda**.
 #""")
 
+# --- 1. CARGA DE DATOS ---
+@st.cache_data
+def cargar_datos(archivo):
+    df = pd.read_parquet(archivo)
+    df['Fecha Hora'] = pd.to_datetime(df['Fecha Hora'])
+    if 'Fecha' in df.columns:
+        df = df.drop(columns=['Fecha'])
+    df['Fecha'] = df['Fecha Hora'].dt.date
+    
+    #Optimización de memoria: float64 -> float32
+    #for col in ['Latitud', 'Longitud']:
+    #    if col in df.columns:
+    #        df[col] = df[col].astype('float32')
+            
+    df['Hora_Int'] = df['Fecha Hora'].dt.hour
+    df = df[(df['Latitud'] != 0) & (df['Longitud'] != 0)]
+    df = df.dropna(subset=['Latitud', 'Longitud'])
+    return df
+
+# --- 2. LÓGICA DE PROCESAMIENTO ---
+@st.cache_data
+def calcular_vectores_flujo(df, df_ruta=None):
+
+    # ------------------------------------------------------------
+    # 1. PREPARACIÓN DEL DATAFRAME
+    # ------------------------------------------------------------
+
+    # Ordenar por tarjeta y tiempo.
+    # Esto es fundamental para reconstruir la secuencia real de viajes
+    # de cada usuario (trip chaining).
+    df = df.sort_values(['Tarjeta', 'Fecha Hora'])
+
+    # Intercambiar columnas Latitud/Longitud.
+    # Algunos datasets vienen invertidos y esto corrige el orden.
+    df[['Latitud','Longitud']] = df[['Longitud','Latitud']].to_numpy()
+
+    # Convertir columnas a arrays numpy para acelerar cálculos.
+    lat = df['Latitud'].to_numpy()
+    lon = df['Longitud'].to_numpy()
+
+    # Corregir signo de coordenadas.
+    # En Argentina latitudes y longitudes deben ser negativas.
+    # Esto evita errores de ubicación en el mapa.
+    lat[lat != 0] = -np.abs(lat[lat != 0])
+    lon[lon != 0] = -np.abs(lon[lon != 0])
+
+    df['Latitud'] = lat
+    df['Longitud'] = lon
+
+    # Si hay ruta, calcular la distancia acumulada de cada transacción (Snapping)
+    if df_ruta is not None and not df_ruta.empty:
+        r_lats = df_ruta['Latitud'].values
+        r_lons = df_ruta['Longitud'].values
+        r_cum = df_ruta['Dist_Acum'].values
+
+        tx_lats = df['Latitud'].values
+        tx_lons = df['Longitud'].values
+
+        # Broadcasting para encontrar el punto más cercano en la ruta
+        dists_sq = (tx_lats[:, None] - r_lats[None, :])**2 + (tx_lons[:, None] - r_lons[None, :])**2
+        min_idx = np.argmin(dists_sq, axis=1)
+        df['Route_Dist'] = r_cum[min_idx] # Distancia en KM
+    else:
+        df['Route_Dist'] = np.nan
+
+
+    # ------------------------------------------------------------
+    # FUNCIÓN PRINCIPAL DE INFERENCIA DE DESTINO
+    # Se ejecuta para cada tarjeta individual.
+    # ------------------------------------------------------------
+    def find_destinations_for_card(card_df):
+
+        # Convertir columnas a arrays numpy para acceso rápido
+        fechas = card_df['Fecha'].to_numpy()
+        sentidos = card_df['Sentido'].to_numpy()
+        lats = card_df['Latitud'].to_numpy()
+        lons = card_df['Longitud'].to_numpy()
+        fechas_horas = card_df['Fecha Hora'].to_numpy()
+        r_dists = card_df['Route_Dist'].to_numpy()
+
+        num_rows = len(card_df)
+
+        # Listas donde se guardará el destino inferido
+        dest_lat = [np.nan] * num_rows
+        dest_lon = [np.nan] * num_rows
+        dest_sentido = [None] * num_rows
+        dest_fecha = [pd.NaT] * num_rows
+
+        # ------------------------------------------------------------
+        # PARÁMETROS DEL ALGORITMO
+        # ------------------------------------------------------------
+
+        # Tiempo mínimo entre viajes.
+        # Evita emparejar transbordos o errores (ej: bajar y subir al siguiente).
+        min_time_diff = pd.Timedelta(minutes=20)
+
+        # Distancia mínima y máxima entre origen y destino.
+        # Evita dos tipos de error:
+        # - rebotes muy cortos (ej: subir y bajar en la misma parada)
+        # - destinos absurdamente lejanos.
+        max_dist = 60000
+        min_dist = 50
+
+
+        # ------------------------------------------------------------
+        # RECORRIDO DE TODOS LOS VIAJES DE LA TARJETA
+        # ------------------------------------------------------------
+        for i in range(num_rows):
+
+            current_fecha = fechas[i]
+            current_sentido = sentidos[i]
+            current_fecha_hora = fechas_horas[i]
+
+            # Detectar si este es el último viaje del día.
+            # Esto es importante para aplicar la regla T+1.
+            is_last_trip_of_day = (
+                i == num_rows - 1 or fechas[i+1] != current_fecha
+            )
+
+            found_t0 = False
+
+
+            # ------------------------------------------------------------
+            # PRIORIDAD 1: DESTINO EN EL MISMO DÍA (T+0)
+            # ------------------------------------------------------------
+            # El destino de un viaje suele ser el origen del próximo viaje
+            # en sentido contrario dentro del mismo día.
+            for j in range(i+1, num_rows):
+
+                # Si cambió el día se corta la búsqueda.
+                if fechas[j] != current_fecha:
+                    break
+
+                # Evitar transbordos o rebotes cercanos en el tiempo.
+                if fechas_horas[j] - current_fecha_hora < min_time_diff:
+                    continue
+
+                # Buscamos viaje en sentido contrario.
+                if sentidos[j] != current_sentido:
+
+                    # Filtro rápido por bounding box (~5 km). MODIFICO para captar viajes largos de hasta 50 Kmts
+                    # Evita calcular distancia exacta para puntos muy lejanos.
+                    if abs(lats[i] - lats[j]) > 0.50 or abs(lons[i] - lons[j]) > 0.50:
+                        continue
+
+                    # Cálculo de distancia real.
+                    dist = distancia_metros(
+                        lats[i], lons[i],
+                        lats[j], lons[j]
+                    )
+
+                    # Validar rango de distancia razonable.
+                    if min_dist < dist < max_dist:
+
+                        # Guardar destino inferido.
+                        dest_lat[i] = lats[j]
+                        dest_lon[i] = lons[j]
+                        dest_sentido[i] = sentidos[j]
+                        dest_fecha[i] = fechas[j]
+
+                        found_t0 = True
+
+                        # Se usa el PRIMER retorno del día.
+                        # Esto suele representar mejor el destino real
+                        # (ej: casa → trabajo → casa).
+                        break
+
+            # Si se encontró destino en el mismo día no se busca más.
+            if found_t0:
+                continue
+
+
+            # ------------------------------------------------------------
+            # PRIORIDAD 2: DESTINO EN DÍA SIGUIENTE (T+1)
+            # ------------------------------------------------------------
+            # Si es el último viaje del día, se asume que el destino
+            # puede ser el origen del primer viaje del día siguiente
+            # (ej: trabajo → casa).
+            if is_last_trip_of_day:
+
+                # Límite máximo de tiempo (16 horas).
+                # Evita emparejar viajes separados por demasiadas horas.
+                time_limit = current_fecha_hora + pd.Timedelta(hours=16)
+
+                for j in range(i+1, num_rows):
+
+                    # Si se supera la ventana temporal se detiene la búsqueda.
+                    if fechas_horas[j] > time_limit:
+                        break
+
+                    # Debe ser en un día posterior.
+                    if fechas[j] > current_fecha:
+
+                        # Filtro rápido espacial.
+                        if abs(lats[i] - lats[j]) > 0.05 or abs(lons[i] - lons[j]) > 0.05:
+                            continue
+
+                        # Distancia real.
+                        # Si tenemos datos de ruta, usamos la distancia real sobre el recorrido
+                        if not np.isnan(r_dists[i]) and not np.isnan(r_dists[j]):
+                            dist = abs(r_dists[j] - r_dists[i]) * 1000 # Convertir KM a metros
+                        else:
+                            # Fallback a distancia lineal (Haversine)
+                            dist = distancia_metros(
+                                lats[i], lons[i],
+                                lats[j], lons[j]
+                            )
+
+                        # Validar distancia razonable.
+                        if min_dist < dist < max_dist:
+
+                            dest_lat[i] = lats[j]
+                            dest_lon[i] = lons[j]
+                            dest_sentido[i] = sentidos[j]
+                            dest_fecha[i] = fechas[j]
+
+                            break
+
+
+        # Crear DataFrame con destinos inferidos
+        return pd.DataFrame({
+            'Lat_Destino': dest_lat,
+            'Lon_Destino': dest_lon,
+            'Sentido_Siguiente': dest_sentido,
+            'Fecha_Siguiente': dest_fecha
+        }, index=card_df.index)
+
+
+    # ------------------------------------------------------------
+    # APLICAR INFERENCIA A CADA TARJETA
+    # ------------------------------------------------------------
+    destinations = df.groupby('Tarjeta', sort=False, group_keys=False).apply(find_destinations_for_card)
+
+
+    # ------------------------------------------------------------
+    # UNIR DESTINOS AL DATAFRAME ORIGINAL
+    # ------------------------------------------------------------
+    df_with_dest = df.join(destinations)
+
+
+    # ------------------------------------------------------------
+    # FILTRAR VIAJES SIN DESTINO VÁLIDO
+    # ------------------------------------------------------------
+    # Se eliminan:
+    # - destinos nulos
+    # - coordenadas 0
+    mask = (
+        df_with_dest['Lat_Destino'].notna() &
+        (df_with_dest['Lat_Destino'] != 0) &
+        (df_with_dest['Lon_Destino'] != 0)
+    )
+
+    return df_with_dest[mask].copy()
+
+# --- 3. AGRUPACIÓN ---
+@st.cache_data
+def snap_to_route(df, df_ruta):
+    """
+    Ajusta los puntos de origen y destino de un DataFrame de flujos a la ruta más cercana.
+    Devuelve un DataFrame con columnas adicionales para las distancias acumuladas y los índices.
+    """
+    df_snapped = df.copy()
+    if df_ruta is None or df_ruta.empty:
+        df_snapped['idx_ori'] = -1
+        df_snapped['idx_des'] = -1
+        df_snapped['dist_acum_ori'] = np.nan
+        df_snapped['dist_acum_des'] = np.nan
+        return df_snapped
+
+    # 1. Creamos el índice espacial de la ruta (KDTree)
+    puntos_ruta = df_ruta[['Latitud', 'Longitud']].values
+    tree = KDTree(puntos_ruta)
+
+    # 2. Consultamos el punto más cercano de forma eficiente
+    _, idx_ori = tree.query(df_snapped[['Latitud', 'Longitud']].values)
+    _, idx_des = tree.query(df_snapped[['Lat_Destino', 'Lon_Destino']].values)
+
+    # 3. Asignamos los valores recuperados
+    ruta_cum = df_ruta['Dist_Acum'].values
+    df_snapped['idx_ori'] = idx_ori
+    df_snapped['idx_des'] = idx_des
+    df_snapped['dist_acum_ori'] = ruta_cum[idx_ori]
+    df_snapped['dist_acum_des'] = ruta_cum[idx_des]
+    
+    return df_snapped
+
+@st.cache_data
+def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia", kde_mode="Unidos"): # kde_mode added for KDE criterion
+    
+    if criterio == "Distancia":
+        # Si no hay ruta, no se puede agrupar por distancia en ruta.
+        if df_ruta.empty:
+            return pd.DataFrame()
+
+        # Usar la nueva función para obtener los puntos ajustados
+        df_snapped_data = snap_to_route(df, df_ruta)
+        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
+        dist_acum_des = df_snapped_data['dist_acum_des'].values
+        
+        ruta_lats = df_ruta['Latitud'].values
+        ruta_lons = df_ruta['Longitud'].values
+        ruta_cum = df_ruta['Dist_Acum'].values # Distancia acumulada en KM
+
+        # 3. Agrupar por distancia (binning)
+        km_bin = metros_sel / 1000.0
+        dist_binned_ori = (dist_acum_ori / km_bin).round() * km_bin
+        dist_binned_des = (dist_acum_des / km_bin).round() * km_bin
+
+        # 4. Encontrar los puntos de la ruta que corresponden a las distancias agrupadas
+        idx_binned_ori = np.argmin(np.abs(dist_binned_ori[:, None] - ruta_cum[None, :]), axis=1)
+        idx_binned_des = np.argmin(np.abs(dist_binned_des[:, None] - ruta_cum[None, :]), axis=1)
+
+        # Crear un DataFrame temporal con las coordenadas "snapped" y "binned" a la ruta
+        df_snapped = pd.DataFrame({
+            'lat_ori': ruta_lats[idx_binned_ori],
+            'lon_ori': ruta_lons[idx_binned_ori],
+            'lat_des': ruta_lats[idx_binned_des],
+            'lon_des': ruta_lons[idx_binned_des],
+            'Sentido': df['Sentido'].values
+        })
+        
+        # Agrupar por las coordenadas de la ruta
+        df_zonas = df_snapped.groupby([
+            'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
+        ]).size().reset_index(name='Pasajeros')
+        
+        return df_zonas
+    
+    elif criterio == "Clusters":
+        if df_ruta.empty:
+            st.warning("El clustering en ruta requiere un archivo de recorrido.")
+            return pd.DataFrame()
+
+        # 1. Snap all points to route and get their 1D distance
+        df_snapped_data = snap_to_route(df, df_ruta)
+        dist_acum_ori = df_snapped_data['dist_acum_ori'].values
+        dist_acum_des = df_snapped_data['dist_acum_des'].values
+
+        ruta_cum = df_ruta['Dist_Acum'].values
+        ruta_lats = df_ruta['Latitud'].values
+        ruta_lons = df_ruta['Longitud'].values
+        
+        # 2. Run DBSCAN on the 1D distances
+        all_dists_km = np.concatenate([dist_acum_ori, dist_acum_des])
+        eps_km = metros_sel / 1000.0
+        min_samples = 5 # Mínimo de puntos para formar un cluster denso
+
+        # DBSCAN necesita un array con forma (n_samples, n_features)
+        db = DBSCAN(eps=eps_km, min_samples=min_samples, metric='euclidean', n_jobs=-1).fit(all_dists_km.reshape(-1, 1))
+        labels = db.labels_
+
+        # 3. Calculate 1D centroids (mean distance for each cluster)
+        df_dists = pd.DataFrame({'dist_km': all_dists_km, 'label': labels})
+        valid_dists = df_dists[df_dists['label'] != -1]
+        
+        if valid_dists.empty:
+            return pd.DataFrame()
+            
+        # El centroide es el "kilometraje" promedio del cluster
+        centroids_1d = valid_dists.groupby('label')['dist_km'].mean()
+
+        # 4. Map 1D centroids back to 2D route coordinates
+        # Para cada "kilometraje" del centroide, encontramos el punto más cercano en la ruta
+        centroid_indices = np.argmin(np.abs(centroids_1d.values[:, None] - ruta_cum[None, :]), axis=1)
+        
+        # Creamos un mapa de label -> coordenadas 2D
+        centroid_coords = pd.DataFrame({
+            'lat': ruta_lats[centroid_indices],
+            'lon': ruta_lons[centroid_indices]
+        }, index=centroids_1d.index) # El índice es el 'label' del cluster
+
+        # 5. Asignar cada transacción original a su centroide de cluster
+        n = len(df)
+        labels_ori = labels[:n]
+        labels_des = labels[n:]
+        
+        # Solo consideramos viajes donde tanto el origen como el destino pertenecen a un cluster
+        mask_valid = (labels_ori != -1) & (labels_des != -1)
+        
+        if not np.any(mask_valid):
+            return pd.DataFrame()
+            
+        df_valid = df[mask_valid].copy()
+        valid_labels_ori = labels_ori[mask_valid]
+        valid_labels_des = labels_des[mask_valid]
+        
+        # Asignamos las coordenadas del centroide correspondiente a cada viaje
+        df_valid['lat_ori'] = centroid_coords.loc[valid_labels_ori, 'lat'].values
+        df_valid['lon_ori'] = centroid_coords.loc[valid_labels_ori, 'lon'].values
+        df_valid['lat_des'] = centroid_coords.loc[valid_labels_des, 'lat'].values
+        df_valid['lon_des'] = centroid_coords.loc[valid_labels_des, 'lon'].values
+        
+        # 6. Agrupar por las nuevas coordenadas del cluster para obtener los flujos
+        return df_valid.groupby([
+            'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
+        ]).size().reset_index(name='Pasajeros')
+
+    elif criterio == "KDE":
+        if df_ruta.empty:
+            st.warning("El método KDE requiere una ruta de referencia cargada.")
+            return pd.DataFrame()
+
+        # 1. Ajustar puntos a la ruta (Snapping)
+        df_snapped_data = snap_to_route(df, df_ruta)
+        dist_acum_ori = df_snapped_data['dist_acum_ori'].dropna().values
+        dist_acum_des = df_snapped_data['dist_acum_des'].dropna().values
+
+        # Datos de la ruta para mapeo inverso
+        ruta_cum = df_ruta['Dist_Acum'].values
+        ruta_lats = df_ruta['Latitud'].values
+        ruta_lons = df_ruta['Longitud'].values
+
+        # 2. Configuración de KDE
+        bandwidth = metros_sel / 1000.0  # Convertir metros a KM
+        kde = KernelDensity(bandwidth=bandwidth, kernel='gaussian')
+        max_dist = ruta_cum.max()
+        # Resolución de muestreo: cada 10 metros
+        grid_points = np.linspace(0, max_dist, int(max_dist * 100)) if max_dist > 0 else np.array([])
+        
+        peak_locs_km = np.array([])
+
+        # 3. Detección de Picos (Hubs) según el modo seleccionado
+        if kde_mode == "Separados":
+            # --- MODO SEPARADO: Detectar picos de subida y bajada por separado ---
+            peaks_ori, peaks_des = np.array([]), np.array([])
+            
+            if len(dist_acum_ori) > 2:
+                kde.fit(dist_acum_ori.reshape(-1, 1))
+                log_dens_ori = kde.score_samples(grid_points.reshape(-1, 1))
+                peaks_idx_ori, _ = find_peaks(log_dens_ori)
+                peaks_ori = grid_points[peaks_idx_ori]
+
+            if len(dist_acum_des) > 2:
+                kde.fit(dist_acum_des.reshape(-1, 1))
+                log_dens_des = kde.score_samples(grid_points.reshape(-1, 1))
+                peaks_idx_des, _ = find_peaks(log_dens_des)
+                peaks_des = grid_points[peaks_idx_des]
+            
+            all_peaks = np.concatenate([peaks_ori, peaks_des])
+            if len(all_peaks) > 0:
+                # Agrupar picos cercanos para evitar duplicados (redondeando a una fracción del bandwidth)
+                rounding_factor = bandwidth / 2
+                peak_locs_km = np.unique(np.round(all_peaks / rounding_factor) * rounding_factor)
+
+        else:  # "Unidos" (comportamiento original)
+            # --- MODO UNIDO: Detectar hubs de actividad general ---
+            valid_points = np.concatenate([dist_acum_ori, dist_acum_des])
+            if len(valid_points) > 2:
+                kde.fit(valid_points.reshape(-1, 1))
+                log_dens = kde.score_samples(grid_points.reshape(-1, 1))
+                peaks_idx, _ = find_peaks(log_dens)
+                peak_locs_km = grid_points[peaks_idx]
+
+        # 4. Fallback y Mapeo de Picos a Coordenadas 2D
+        if len(peak_locs_km) == 0:
+            st.sidebar.warning("KDE no encontró picos. Usando extremos de ruta como hubs.")
+            peak_locs_km = np.array([0, max_dist]) if max_dist > 0 else np.array([])
+
+        if len(peak_locs_km) == 0:
+             return pd.DataFrame()
+
+        # 5. Mapear los picos 1D a coordenadas 2D (Lat/Lon)
+        # Encontramos el índice en df_ruta más cercano a cada pico kilométrico
+        peak_route_indices = np.argmin(np.abs(peak_locs_km[:, None] - ruta_cum[None, :]), axis=1)
+        
+        # Tabla de referencia de Hubs: Indice Pico -> Lat/Lon
+        hub_coords = pd.DataFrame({
+            'lat': ruta_lats[peak_route_indices],
+            'lon': ruta_lons[peak_route_indices],
+            'km_peak': peak_locs_km
+        })
+
+        # 6. Asignar cada transacción original al Pico (Hub) más cercano
+        # Para lat_ori
+        idx_closest_peak_ori = np.argmin(np.abs(df_snapped_data['dist_acum_ori'].values[:, None] - peak_locs_km[None, :]), axis=1)
+        # Para lat_des
+        idx_closest_peak_des = np.argmin(np.abs(df_snapped_data['dist_acum_des'].values[:, None] - peak_locs_km[None, :]), axis=1)
+
+        df_mapped = df.copy()
+        df_mapped['lat_ori'] = hub_coords.iloc[idx_closest_peak_ori]['lat'].values
+        df_mapped['lon_ori'] = hub_coords.iloc[idx_closest_peak_ori]['lon'].values
+        
+        df_mapped['lat_des'] = hub_coords.iloc[idx_closest_peak_des]['lat'].values
+        df_mapped['lon_des'] = hub_coords.iloc[idx_closest_peak_des]['lon'].values
+
+        # Evitar flujos "dentro del mismo hub" (ruido visual)
+        df_mapped = df_mapped[idx_closest_peak_ori != idx_closest_peak_des]
+
+        if df_mapped.empty:
+            return pd.DataFrame()
+
+        # 7. Agrupar
+        return df_mapped.groupby([
+            'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
+        ]).size().reset_index(name='Pasajeros')
+@st.cache_data
+def calcular_estadisticas_nodos(df_zonas):
+    """
+    Calcula las estadísticas de subidas y bajadas para cada nodo,
+    derivándolas directamente de los flujos agrupados (df_zonas).
+    Esto asegura que los nodos de estadísticas coincidan exactamente
+    con los puntos de origen y destino de los flujos.
+    """
+    if df_zonas.empty:
+        return pd.DataFrame()
+
+    # Calcular 'Subieron' sumando los pasajeros de los orígenes de los flujos
+    sub_counts = df_zonas.groupby(['lat_ori', 'lon_ori'])['Pasajeros'].sum().reset_index()
+    sub_counts.rename(columns={'lat_ori': 'lat', 'lon_ori': 'lon', 'Pasajeros': 'Subieron'}, inplace=True)
+
+    # Calcular 'Bajaron' sumando los pasajeros de los destinos de los flujos
+    baj_counts = df_zonas.groupby(['lat_des', 'lon_des'])['Pasajeros'].sum().reset_index()
+    baj_counts.rename(columns={'lat_des': 'lat', 'lon_des': 'lon', 'Pasajeros': 'Bajaron'}, inplace=True)
+
+    # Unir las estadísticas de subidas y bajadas por coordenadas
+    nodos = pd.merge(sub_counts, baj_counts, on=['lat', 'lon'], how='outer').fillna(0)
+    nodos['Subieron'] = nodos['Subieron'].astype(int)
+    nodos['Bajaron'] = nodos['Bajaron'].astype(int)
+    
+    # Calcular el total de actividad para el porcentaje
+    nodos['Total_Actividad'] = nodos['Subieron'] + nodos['Bajaron']
+    
+    # Totales para cálculos de porcentajes
+    total_act = nodos['Total_Actividad'].sum()
+    total_sub = nodos['Subieron'].sum()
+    total_baj = nodos['Bajaron'].sum()
+
+    # Porcentajes como números (floats) para exportación y tooltips
+    nodos['Porcentaje_Actividad'] = (nodos['Total_Actividad'] / total_act * 100) if total_act > 0 else 0.0
+    nodos['Porcentaje_Subieron'] = (nodos['Subieron'] / total_sub * 100) if total_sub > 0 else 0.0
+    nodos['Porcentaje_Bajaron'] = (nodos['Bajaron'] / total_baj * 100) if total_baj > 0 else 0.0
+
+    return nodos
+
+
+# --- 5. FUNCIONES DE DISTANCIA (RUTA) ---
+def distancia_metros(lat1, lon1, lat2, lon2):
+    R = 6371000
+    phi1 = np.radians(lat1)
+    phi2 = np.radians(lat2)
+    dphi = np.radians(lat2-lat1)
+    dlambda = np.radians(lon2-lon1)
+
+    a = np.sin(dphi/2)**2 + np.cos(phi1)*np.cos(phi2)*np.sin(dlambda/2)**2
+    return 2*R*np.arcsin(np.sqrt(a))
+
+def haversine_np(lon1, lat1, lon2, lat2):
+    lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = np.sin(dlat/2.0)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2.0)**2
+    c = 2 * np.arcsin(np.sqrt(a))
+    return 6371 * c
+
+@st.cache_data
+def cargar_ruta_referencia(archivo):
+    try:
+        df = pd.read_csv(archivo, sep=';', decimal=',', names=['Ramal', 'Sentido', 'Latitud', 'Longitud', 'Orden'])
+        df = df.sort_values('Orden').reset_index(drop=True)
+        # Calcular distancias acumuladas a lo largo de la ruta
+        lats = df['Latitud'].values
+        lons = df['Longitud'].values
+        dists = haversine_np(lons[:-1], lats[:-1], lons[1:], lats[1:])
+        df['Dist_Acum'] = np.concatenate(([0], np.cumsum(dists)))
+        return df
+    
+    except Exception as e:
+        return pd.DataFrame()
+
+def calcular_distancia_traza_vectorizado(lats_ori, lons_ori, lats_des, lons_des, df_ruta):
+    ruta_lats = df_ruta['Latitud'].values
+    ruta_lons = df_ruta['Longitud'].values
+    ruta_cum = df_ruta['Dist_Acum'].values
+    
+    # Encontrar índices más cercanos en la ruta (Broadcasting: Zonas x Ruta)
+    idx_ori = np.argmin((lats_ori[:, None] - ruta_lats[None, :])**2 + (lons_ori[:, None] - ruta_lons[None, :])**2, axis=1)
+    idx_des = np.argmin((lats_des[:, None] - ruta_lats[None, :])**2 + (lons_des[:, None] - ruta_lons[None, :])**2, axis=1)
+    
+    # Devolvemos la diferencia CON SIGNO para detectar retrocesos
+    return ruta_cum[idx_des] - ruta_cum[idx_ori]
+
 # --- 4. INTERFAZ DE USUARIO ---
 #archivo_subido = st.sidebar.file_uploader("Cargar archivo Parquet", type=["parquet"])
 
@@ -85,13 +666,12 @@ if archivo_subido:
 
     st.sidebar.markdown("---")
     # Nuevo control para seleccionar el tipo de agrupación - Por Distancia o por Clusters DBSCAN
-    criterio_agrupacion = st.sidebar.radio("Agrupar Por:", ["Distancia", "Clusters", "KDE", "Por Parada"], index=0, key="criterio_agrupacion")
+    criterio_agrupacion = st.sidebar.radio("Agrupar Por:", ["Distancia", "Clusters", "KDE"], index=0, key="criterio_agrupacion")
     
     # Ajustamos las opciones del slider según el criterio
     label_slider = "Tamaño"
     val_default = 100
     kde_mode = "Unidos" # Valor por defecto para evitar NameError
-    n_paradas_agrupar = 1
     if criterio_agrupacion == 'Distancia':
         label_slider = "Agrupación (mts):"
         metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[100, 150, 200, 300, 400, 500, 800, 1000, 1500,3100], value=val_default)
@@ -103,10 +683,6 @@ if archivo_subido:
             "Modo Detección KDE:", ["Unidos", "Separados"], index=0, 
             help="**Unidos**: Detecta 'hubs' de actividad general (subidas+bajadas). **Separados**: Detecta hubs de subida y bajada de forma independiente y luego los combina."
         )
-    elif criterio_agrupacion == 'Por Parada':
-        n_paradas_agrupar = st.sidebar.slider("Paradas a agrupar:", 1, 10, value=1)
-        metros_sel = 100 # Valor dummy para evitar errores
-    
     else:
         label_slider = "Radio del Cluster (mts):"
         val_default = 200
@@ -189,22 +765,6 @@ if archivo_subido:
              st.session_state.view_state = pdk.ViewState(latitude=-34.921, longitude=-57.954, zoom=12, pitch=45, bearing=0)
 
     if not df_flujos.empty:
-        # --- CARGA Y FILTRADO DE PARADAS ---
-        df_paradas_all, dict_ramales = cargar_informacion_paradas()
-        df_paradas_sel = pd.DataFrame()
-        if ramal_sel != "Todos" and ramal_sel in dict_ramales:
-            codigo_buscado = dict_ramales[ramal_sel]
-            df_paradas_sel = df_paradas_all[df_paradas_all['Ramal_Cod'] == codigo_buscado].copy()
-            if sentido_sel != "Ambos":
-                df_paradas_sel = df_paradas_sel[df_paradas_sel['Sentido'] == sentido_sel]
-            
-            # Snapping de paradas a ruta para posicionamiento lineal
-            if not df_ruta.empty and not df_paradas_sel.empty:
-                r_lats, r_lons, r_cum = df_ruta['Latitud'].values, df_ruta['Longitud'].values, df_ruta['Dist_Acum'].values
-                p_lats, p_lons = df_paradas_sel['Latitud'].values, df_paradas_sel['Longitud'].values
-                dists_sq = (p_lats[:, None] - r_lats[None, :])**2 + (p_lons[:, None] - r_lons[None, :])**2
-                df_paradas_sel['Km_Posicion'] = r_cum[np.argmin(dists_sq, axis=1)]
-
         # Filtros de Mapa aplicados sobre los vectores
         # Optimización: Filtrado directo sin copia inicial
         mask_hora = (df_flujos['Hora_Int'] >= hora_rango[0]) & (df_flujos['Hora_Int'] <= hora_rango[1])
@@ -215,7 +775,7 @@ if archivo_subido:
 
         if not df_mapa.empty:
             capas = []
-            df_zonas = agrupar_por_zonas(df_mapa, df_ruta, metros_sel, criterio_agrupacion, kde_mode=kde_mode, df_paradas=df_paradas_sel, n_paradas=n_paradas_agrupar)
+            df_zonas = agrupar_por_zonas(df_mapa, df_ruta, metros_sel, criterio_agrupacion, kde_mode=kde_mode)
             
             # Verificamos que se hayan generado zonas antes de filtrar para evitar KeyError
             if not df_zonas.empty and 'Pasajeros' in df_zonas.columns:
@@ -360,16 +920,6 @@ if archivo_subido:
 
             # Puntos agrupados con estadísticas
             if not df_nodos.empty:
-                # Capa de Paradas (Puntos Azules) para Tab 1
-                if not df_paradas_sel.empty:
-                    df_p_3d = df_paradas_sel.copy()
-                    # Preparar campos vacíos para evitar errores en el tooltip global
-                    for c in ['Pasajeros','Subieron','Bajaron','Porcentaje_Actividad_Str','Porcentaje_Subieron_Str','Porcentaje_Bajaron_Str','Distancia_Str']:
-                        df_p_3d[c] = ""
-                    df_p_3d['Pasajeros'] = "Parada: " + df_p_3d['Nombre parada']
-                    capas.append(pdk.Layer("ScatterplotLayer", df_p_3d, get_position=["Longitud", "Latitud"],
-                                         get_color=[0, 100, 255, 200], get_radius=20, pickable=True, id="stops_3d"))
-
                 # Aseguramos que 'Pasajeros' esté vacío para el tooltip de nodos,
                 # ya que los nodos tienen 'Subieron' y 'Bajaron'
                 df_nodos['Pasajeros'] = ""
@@ -413,26 +963,8 @@ if archivo_subido:
             if capas:
                 max_p_display = int(df_zonas['Pasajeros'].max()) if not df_zonas.empty else 0
 
-                # --- FUNCIÓN DE COLOR COMPARTIDA (Gradiente de Matiz) ---
-                def get_color_shared(p):
-                    # Usamos max_p_display que está disponible en este scope
-                    ratio = p / max_p_display if max_p_display > 0 else 0
-                    alpha = int(40 + (215 * ratio))
-                    
-                    if ratio < 0.2: # Cian a Azul
-                        r, g, b = 0, int(255 * (1 - (ratio / 0.2))), 255
-                    elif ratio < 0.4: # Azul a Verde
-                        r, g, b = 0, int(255 * ((ratio - 0.2) / 0.2)), int(255 * (1 - ((ratio - 0.2) / 0.2)))
-                    elif ratio < 0.6: # Verde a Amarillo
-                        r, g, b = int(255 * ((ratio - 0.4) / 0.2)), 255, 0
-                    elif ratio < 0.8: # Amarillo a Naranja
-                        r, g, b = 255, int(255 - (90 * ((ratio - 0.6) / 0.2))), 0
-                    else: # Naranja a Rojo
-                        r, g, b = 255, int(165 * (1 - ((ratio - 0.8) / 0.2))), 0
-                    return [r, g, b, alpha]
-
                 # --- CREACIÓN DE PESTAÑAS DE VISUALIZACIÓN ---
-                tab1, tab2, tab3, tab4 = st.tabs(["🗺️ Mapa 3D (Arcos)", "🛰️ Vista 2D (Vectores)", "📈 Vista Lineal 1D", "📊 Matriz OD"])
+                tab1, tab2, tab3 = st.tabs(["🗺️ Mapa 3D (Arcos)", "🛰️ Vista 2D (Vectores)", "📈 Vista Lineal 1D"])
 
                 with tab1:
                     
@@ -466,7 +998,25 @@ if archivo_subido:
                         # 1. Cálculo de Colores (Gradiente de Matiz y Transparencia)
                         max_p_2d = df_2d['Pasajeros'].max()
                         
-                        df_2d['color_2d'] = df_2d['Pasajeros'].apply(get_color_shared)
+                        def get_color_2d(p):
+                            ratio = p / max_p_2d if max_p_2d > 0 else 0
+                            # Alpha: 40 (muy transparente) a 255 (opaco)
+                            alpha = int(40 + (215 * ratio))
+                            
+                            # Matiz: Cian -> Azul -> Verde -> Amarillo -> Naranja -> Rojo
+                            if ratio < 0.2: # Cian a Azul
+                                r, g, b = 0, int(255 * (1 - (ratio / 0.2))), 255
+                            elif ratio < 0.4: # Azul a Verde
+                                r, g, b = 0, int(255 * ((ratio - 0.2) / 0.2)), int(255 * (1 - ((ratio - 0.2) / 0.2)))
+                            elif ratio < 0.6: # Verde a Amarillo
+                                r, g, b = int(255 * ((ratio - 0.4) / 0.2)), 255, 0
+                            elif ratio < 0.8: # Amarillo a Naranja
+                                r, g, b = 255, int(255 - (90 * ((ratio - 0.6) / 0.2))), 0
+                            else: # Naranja a Rojo
+                                r, g, b = 255, int(165 * (1 - ((ratio - 0.8) / 0.2))), 0
+                            return [r, g, b, alpha]
+
+                        df_2d['color_2d'] = df_2d['Pasajeros'].apply(get_color_2d)
                         
                         # 2. Tamaño de Iconos (Aumentado)
                         # Aseguramos un tamaño base mínimo (ej. 5) + escalado
@@ -520,14 +1070,6 @@ if archivo_subido:
                             ))
                         
                         # Capa de Líneas (vectores principales)
-                        if not df_paradas_sel.empty:
-                            df_p_2d = df_paradas_sel.copy()
-                            for c in ['Pasajeros','Subieron','Bajaron','Porcentaje_Actividad_Str','Porcentaje_Subieron_Str','Porcentaje_Bajaron_Str','Distancia_Str']:
-                                df_p_2d[c] = ""
-                            df_p_2d['Pasajeros'] = "Parada: " + df_p_2d['Nombre parada']
-                            capas_2d.append(pdk.Layer("ScatterplotLayer", df_p_2d, get_position=["Longitud", "Latitud"],
-                                                  get_color=[0, 100, 255, 200], get_radius=20, pickable=True, id="stops_2d"))
-
                         capas_2d.append(pdk.Layer(
                             "LineLayer",
                             df_2d,
@@ -826,22 +1368,6 @@ if archivo_subido:
                                     # Guardamos como path continuo a1 -> mid -> a2
                                     arrows_data.append({'path': [a1, [mid_x, mid_y], a2], 'color': color, 'width': width})
 
-                            # Capa de Paradas (Puntos Azules) - Tab 3
-                            stops_1d_layer = None
-                            if not df_paradas_sel.empty:
-                                df_p_linear = df_paradas_sel.copy()
-                                def get_x_linear(km):
-                                    return BASE_LON + (km if is_southbound else (max_km_ruta - km)) * SCALE_X
-                                df_p_linear['pos'] = df_p_linear['Km_Posicion'].apply(lambda k: [get_x_linear(k), BASE_LAT])
-                                # Tooltip simplificado para paradas en 1D
-                                for c in ['Pasajeros', 'Distancia', 'Origen_km', 'Destino_km']: df_p_linear[c] = ""
-                                df_p_linear['Pasajeros'] = "Parada: " + df_p_linear['Nombre parada']
-                                
-                                stops_1d_layer = pdk.Layer(
-                                    "ScatterplotLayer", df_p_linear, get_position="pos",
-                                    get_color=[0, 100, 255, 255], get_radius=6, radius_units='pixels', pickable=True
-                                )
-
                             # --- RENDERIZADO PYDECK ---
                             
                             # Capa de Ruta (Línea Base negra)
@@ -867,10 +1393,8 @@ if archivo_subido:
                                 # Arcos (Brackets)
                                 pdk.Layer("PathLayer", pd.DataFrame(paths_data), get_path="path", get_color="color", get_width="width", width_units='pixels', pickable=True, rounded=True),
                                 # Flechas (Ahora PathLayer para uniones limpias)
-                                pdk.Layer("PathLayer", pd.DataFrame(arrows_data), get_path="path", get_color="color", get_width="width", width_units='pixels', rounded=True),
+                                pdk.Layer("PathLayer", pd.DataFrame(arrows_data), get_path="path", get_color="color", get_width="width", width_units='pixels', rounded=True)
                             ]
-                            if stops_1d_layer:
-                                layers_1d.append(stops_1d_layer)
 
                             # Vista Centrada en el medio del recorrido
                             cx = BASE_LON + (ruta_cum.max() * SCALE_X) / 2
@@ -889,116 +1413,6 @@ if archivo_subido:
 
                     else:
                         st.info("Se requiere cargar una ruta de referencia (ACTrec) para visualizar el gráfico 1D.")
-
-                with tab4:
-                    if not df_ruta.empty and not df_zonas.empty:
-                        with st.spinner("Generando Matriz Origen-Destino..."):
-                            # 1. Mapear flujos a Kilómetros de Ruta (Lógica OD)
-                            ruta_lats, ruta_lons, ruta_cum = df_ruta['Latitud'].values, df_ruta['Longitud'].values, df_ruta['Dist_Acum'].values
-                            max_km_od = ruta_cum.max()
-                            
-                            d_ori_od = (df_zonas['lat_ori'].values[:, None] - ruta_lats[None, :])**2 + (df_zonas['lon_ori'].values[:, None] - ruta_lons[None, :])**2
-                            km_ori_od = ruta_cum[np.argmin(d_ori_od, axis=1)]
-                            d_des_od = (df_zonas['lat_des'].values[:, None] - ruta_lats[None, :])**2 + (df_zonas['lon_des'].values[:, None] - ruta_lons[None, :])**2
-                            km_des_od = ruta_cum[np.argmin(d_des_od, axis=1)]
-                            
-                            df_od_matrix = df_zonas.copy()
-                            df_od_matrix['km_ori'], df_od_matrix['km_des'] = km_ori_od, km_des_od
-                            
-                            # 2. Configuración Visual de la Matriz
-                            SCALE_OD = 0.001 
-                            
-                            # Preparar orden y offsets para desplazar flujos paralelos
-                            df_od_matrix = df_od_matrix.sort_values(['km_ori', 'km_des'])
-                            df_od_matrix['ori_idx'] = df_od_matrix.groupby('km_ori').cumcount()
-                            df_od_matrix['ori_tot'] = df_od_matrix.groupby('km_ori')['km_des'].transform('count')
-                            df_od_matrix['des_idx'] = df_od_matrix.groupby('km_des').cumcount()
-                            df_od_matrix['des_tot'] = df_od_matrix.groupby('km_des')['km_ori'].transform('count')
-
-                            OFFSET_VAL = 0.00015  # Espaciado entre líneas para evitar superposición
-                            CURVE_VAL = 0.0005    # Radio de la curva (tramo a 45°)
-                            FIXED_WIDTH = 3.5     # Ancho fijo pedido
-                            
-                            paths_od = []
-                            for _, row in df_od_matrix.iterrows():
-                                # Calculamos los desplazamientos para que no se pisen los flujos
-                                off_y = (row['ori_idx'] - (row['ori_tot'] - 1) / 2) * OFFSET_VAL
-                                off_x = (row['des_idx'] - (row['des_tot'] - 1) / 2) * OFFSET_VAL
-                                
-                                y_s = -row['km_ori'] * SCALE_OD + off_y
-                                x_d = row['km_des'] * SCALE_OD + off_x
-                                
-                                # Geometría: Recto -> Curva 45° -> Recto final
-                                p1 = [0, y_s]
-                                p2 = [x_d - CURVE_VAL, y_s]
-                                p3 = [x_d, y_s + CURVE_VAL]
-                                p4 = [x_d, 0]
-                                
-                                paths_od.append({
-                                    'path': [p1, p2, p3, p4],
-                                    'color': get_color_shared(row['Pasajeros']),
-                                    'width': FIXED_WIDTH,
-                                    'Pasajeros': row['Pasajeros'],
-                                    'tooltip_od': f"<b>Pasajeros:</b> {row['Pasajeros']}"
-                                })
-                            
-                            # Capa de Paradas (Puntos Azules) - Tab 4 (En Ejes X e Y)
-                            stops_od_layers = []
-                            if not df_paradas_sel.empty:
-                                df_ps_y = df_paradas_sel.copy()
-                                df_ps_y['lon_od'], df_ps_y['lat_od'] = 0, -df_ps_y['Km_Posicion'] * SCALE_OD
-                                df_ps_y['tooltip_od'] = "<b>Parada (Origen):</b> " + df_ps_y['Nombre parada']
-                                df_ps_x = df_paradas_sel.copy()
-                                df_ps_x['lon_od'], df_ps_x['lat_od'] = df_ps_x['Km_Posicion'] * SCALE_OD, 0
-                                df_ps_x['tooltip_od'] = "<b>Parada (Destino):</b> " + df_ps_x['Nombre parada']
-                                stops_od_layers.append(pdk.Layer("ScatterplotLayer", df_ps_y, get_position=["lon_od", "lat_od"], get_color=[0, 100, 255, 180], get_radius=4, radius_units='pixels', pickable=True))
-                                stops_od_layers.append(pdk.Layer("ScatterplotLayer", df_ps_x, get_position=["lon_od", "lat_od"], get_color=[0, 100, 255, 180], get_radius=4, radius_units='pixels', pickable=True))
-                            
-                            # 3. Preparación de Nodos en Ejes (Independientes por Subida/Bajada)
-                            max_sub_od = df_nodos['Subieron'].max()
-                            max_baj_od = df_nodos['Bajaron'].max()
-                            
-                            # Nodos Origen (Eje Y - Izquierda)
-                            nodes_y = df_nodos.copy()
-                            nodes_y['lon_od'], nodes_y['lat_od'] = 0, -nodes_y['Km_Posicion'] * SCALE_OD
-                            # Radio según quienes SUBIERON
-                            nodes_y['radius_px'] = 6 + (nodes_y['Subieron'] / max_sub_od * 20) if max_sub_od > 0 else 6
-                            # Tooltip específico para Origen
-                            nodes_y['tooltip_od'] = nodes_y.apply(lambda r: f"<b>Origen (Subidas):</b> {r['Subieron']}<br/><b>%:</b> {r['Porcentaje_Subieron_Str']}", axis=1)
-                            
-                            # Nodos Destino (Eje X - Arriba)
-                            nodes_x = df_nodos.copy()
-                            nodes_x['lon_od'], nodes_x['lat_od'] = nodes_x['Km_Posicion'] * SCALE_OD, 0
-                            # Radio según quienes BAJARON
-                            nodes_x['radius_px'] = 6 + (nodes_x['Bajaron'] / max_baj_od * 20) if max_baj_od > 0 else 6
-                            # Tooltip específico para Destino
-                            nodes_x['tooltip_od'] = nodes_x.apply(lambda r: f"<b>Destino (Bajadas):</b> {r['Bajaron']}<br/><b>%:</b> {r['Porcentaje_Bajaron_Str']}", axis=1)
-                            
-                            layers_od = [
-                                # Fondo blanco para contraste
-                                pdk.Layer("PolygonLayer", pd.DataFrame({'poly': [[[-0.05, 0.05], [max_km_od*SCALE_OD + 0.05, 0.05], [max_km_od*SCALE_OD + 0.05, -max_km_od*SCALE_OD - 0.05], [-0.05, -max_km_od*SCALE_OD - 0.05]]]}), get_polygon="poly", get_fill_color=[255, 255, 255]),
-                                # Ejes de referencia (Y y X)
-                                pdk.Layer("PathLayer", pd.DataFrame({'path': [[[0, 0.01], [0, -max_km_od*SCALE_OD - 0.01]], [[-0.01, 0], [max_km_od*SCALE_OD + 0.01, 0]] ]}), get_path="path", get_color=[50, 50, 50], get_width=2, width_units='pixels'),
-                                # Flujos OD
-                                pdk.Layer("PathLayer", pd.DataFrame(paths_od), get_path="path", get_color="color", get_width="width", width_units='pixels', pickable=True),
-                                # Nodos Origen (Y)
-                                pdk.Layer("ScatterplotLayer", nodes_y, get_position=["lon_od", "lat_od"], get_color="color_nodo", get_radius="radius_px", radius_units='pixels', pickable=True),
-                                # Nodos Destino (X)
-                                pdk.Layer("ScatterplotLayer", nodes_x, get_position=["lon_od", "lat_od"], get_color="color_nodo", get_radius="radius_px", radius_units='pixels', pickable=True)
-                            ] + stops_od_layers
-                            
-                            # Centrar vista en el cuadrante inferior derecho del punto (0,0)
-                            v_lat, v_lon = -(max_km_od * SCALE_OD)/2, (max_km_od * SCALE_OD)/2
-                            st.pydeck_chart(pdk.Deck(
-                                map_provider=None, map_style=None,
-                                initial_view_state=pdk.ViewState(latitude=v_lat, longitude=v_lon, zoom=10, pitch=0, bearing=0),
-                                layers=layers_od,
-                                tooltip={"html": "{tooltip_od}"}
-                            ), use_container_width=True)
-                            
-                            st.info("Eje Y (Vertical): Orígenes por Km de Ruta | Eje X (Horizontal): Destinos por Km de Ruta. (0,0) en esquina superior izquierda.")
-                    else:
-                        st.info("Se requiere una ruta de referencia y datos de flujos para generar la matriz.")
 
                 # --- EXPORTACIÓN DE DATOS ---
                 if not df_zonas.empty:
