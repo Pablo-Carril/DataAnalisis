@@ -85,7 +85,7 @@ if archivo_subido:
 
     st.sidebar.markdown("---")
     # Nuevo control para seleccionar el tipo de agrupación - Por Distancia o por Clusters DBSCAN
-    criterio_agrupacion = st.sidebar.radio("Agrupar Por:", ["Distancia", "Clusters", "KDE", "Por Parada"], index=0, key="criterio_agrupacion")
+    criterio_agrupacion = st.sidebar.radio("Agrupar Por:", ["Distancia", "Clusters", "KDE", "Por Parada", "Por Sección"], index=0, key="criterio_agrupacion")
     
     # Ajustamos las opciones del slider según el criterio
     label_slider = "Tamaño"
@@ -106,6 +106,9 @@ if archivo_subido:
     elif criterio_agrupacion == 'Por Parada':
         n_paradas_agrupar = st.sidebar.slider("Paradas a agrupar:", 1, 10, value=1)
         metros_sel = 100 # Valor dummy para evitar errores
+    elif criterio_agrupacion == 'Por Sección': # New block for "Por Sección"
+        n_secciones_agrupar = st.sidebar.slider("Secciones a agrupar:", 1, 10, value=1)
+        metros_sel = 100 # Dummy value, not directly used for section grouping distance
     
     else:
         label_slider = "Radio del Cluster (mts):"
@@ -198,6 +201,15 @@ if archivo_subido:
             if sentido_sel != "Ambos":
                 df_paradas_sel = df_paradas_sel[df_paradas_sel['Sentido'] == sentido_sel]
             
+            # Ensure 'Seccion' column is numeric in df_paradas_sel for consistency
+            if 'Seccion' in df_paradas_sel.columns:
+                df_paradas_sel['Seccion'] = pd.to_numeric(df_paradas_sel['Seccion'], errors='coerce')
+                # Drop rows where 'Seccion' is NaN after conversion, or fill with a default
+                df_paradas_sel = df_paradas_sel.dropna(subset=['Seccion'])
+                if df_paradas_sel.empty:
+                    st.sidebar.warning("No hay paradas con información de sección válida para el ramal y sentido seleccionados.")
+
+
             # Snapping de paradas a ruta para posicionamiento lineal
             if not df_ruta.empty and not df_paradas_sel.empty:
                 r_lats, r_lons, r_cum = df_ruta['Latitud'].values, df_ruta['Longitud'].values, df_ruta['Dist_Acum'].values
@@ -215,7 +227,16 @@ if archivo_subido:
 
         if not df_mapa.empty:
             capas = []
-            df_zonas = agrupar_por_zonas(df_mapa, df_ruta, metros_sel, criterio_agrupacion, kde_mode=kde_mode, df_paradas=df_paradas_sel, n_paradas=n_paradas_agrupar)
+            
+            # Determine parameters to pass to agrupar_por_zonas based on criterion
+            n_param_for_grouping = 1 # Default value for n_paradas argument
+            if criterio_agrupacion == 'Por Parada':
+                n_param_for_grouping = n_paradas_agrupar
+            elif criterio_agrupacion == 'Por Sección':
+                n_param_for_grouping = n_secciones_agrupar # Use n_secciones_agrupar for n_paradas argument
+
+            df_zonas = agrupar_por_zonas(df_mapa, df_ruta, metros_sel, criterio_agrupacion,
+                                         kde_mode=kde_mode, df_paradas=df_paradas_sel, n_paradas=n_param_for_grouping)
             
             # Verificamos que se hayan generado zonas antes de filtrar para evitar KeyError
             if not df_zonas.empty and 'Pasajeros' in df_zonas.columns:
@@ -1002,8 +1023,23 @@ if archivo_subido:
 
                 # --- EXPORTACIÓN DE DATOS ---
                 if not df_zonas.empty:
-                    # st.markdown("---")
-                    col1_dl, col2_dl = st.columns(2)
+                    st.markdown("---")
+                    col1_dl, col2_dl, col3_dl = st.columns(3)
+
+                    # 1. Auditoría de Inferencia (Individual)
+                    # df_flujos es el DataFrame antes de la agrupación, que contiene los datos individuales
+                    if not df_flujos.empty:
+                        cols_audit = ['Tarjeta', 'Fecha Hora', 'Sentido', 'Fecha Hora_Siguiente', 'Sentido_Siguiente', 'distancia', 'distancia lineal']
+                        cols_audit_final = [c for c in cols_audit if c in df_flujos.columns]
+                        df_audit = df_flujos[cols_audit_final].copy()
+                        csv_audit = df_audit.to_csv(index=False, sep=';', decimal=',')
+                        with col1_dl: # Usamos la primera columna para el botón de auditoría
+                            st.download_button(
+                                label="📥 Auditoría (Individual)",
+                                data=csv_audit,
+                                file_name=f"auditoria_{ramal_sel}_{sentido_sel}.csv",
+                                mime="text/csv"
+                            )
 
                     df_export = df_zonas.copy()
                     df_export['Ramal'] = ramal_sel
@@ -1015,12 +1051,12 @@ if archivo_subido:
                     cols_export = ['Ramal', 'Sentido', 'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'distancia', 'Pasajeros', 'Porcentaje'] # Porcentaje is now float
                     cols_final = [c for c in cols_export if c in df_export.columns]
                     
-                    csv = df_export[cols_final].to_csv(index=False, sep=';', decimal=',')
+                    csv_flujos = df_export[cols_final].to_csv(index=False, sep=';', decimal=',')
                     
-                    with col1_dl:
+                    with col2_dl: # Ahora en la segunda columna
                         st.download_button( # Export flows
                             label="📥 Descargar CSV (Flujos)",
-                            data=csv,
+                            data=csv_flujos,
                             file_name=f"flujos_{ramal_sel}_{sentido_sel}.csv",
                             mime="text/csv"
                         )
@@ -1031,7 +1067,7 @@ if archivo_subido:
                         cols_nodos_final = [c for c in cols_nodos if c in df_nodos.columns]
                         csv_nodos = df_nodos[cols_nodos_final].to_csv(index=False, sep=';', decimal=',')
                         # Export nodes
-                        with col2_dl:
+                        with col3_dl:
                             st.download_button(
                                 label="📥 Descargar CSV (Estadísticas Nodos)",
                                 data=csv_nodos,

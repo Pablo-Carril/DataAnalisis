@@ -1,721 +1,746 @@
 "Latitud";"Longitud";"Nombre parada";"Ramal";"Sentido";"Orden";"Seccion"
--34.6284584;-58.5343730;Croacia y Bergamini;9434;Vuelta;1;15
--34.6279508;-58.5345072;San ignacio y Croacia;9434;Vuelta;2;15
--34.6271386;-58.5355800;San ignacio y G Roca;9434;Vuelta;3;15
--34.6284584;-58.5343730;Croacia y Bergamini;9432;Vuelta;1;15
--34.6284584;-58.5343730;Croacia y Bergamini;9433;Vuelta;1;15
--34.6279508;-58.5345072;San ignacio y Croacia;9433;Vuelta;2;15
+-34.6284584;-58.5343730;Croacia y Bergamini;9434;Vuelta;1;1
+-34.6279508;-58.5345072;San ignacio y Croacia;9434;Vuelta;2;1
+-34.6271386;-58.5355800;San ignacio y G Roca;9434;Vuelta;3;1
+-34.6284584;-58.5343730;Croacia y Bergamini;9432;Vuelta;1;1
+-34.6284584;-58.5343730;Croacia y Bergamini;9433;Vuelta;1;1
+-34.6279508;-58.5345072;San ignacio y Croacia;9433;Vuelta;2;1
 -34.7179332;-58.2120091;Cervantes y Echeverría;9433;Ida;1;1
--34.6265118;-58.5364598;San ignacio y Pelegrini;9434;Vuelta;4;15
--34.6284584;-58.5343730;Croacia y Bergamini;9435;Vuelta;1;15
--34.6279508;-58.5345072;San ignacio y Croacia;9435;Vuelta;2;15
--34.6271386;-58.5355800;San ignacio y G Roca;9435;Vuelta;3;15
--34.6252449;-58.5355693;Pelegrini y Necochea;9434;Vuelta;5;15
--34.6240000;-58.5341477;Pelegrini y Dardo Rocha;9434;Vuelta;6;15
--34.6226360;-58.5326350;Pelegrini y R A Siria;9434;Vuelta;7;15
--34.6216030;-58.5336220;Rep A Siria y San Roque;9434;Vuelta;8;15
--34.6207775;-58.5329998;San Roque y Los Andes;9434;Vuelta;9;15
--34.6192809;-58.5314494;San Roque Y Gral Paz;9434;Vuelta;10;15
--34.6179875;-58.5301888;Beiró y Irigoyen;9434;Vuelta;11;15
--34.6138287;-58.5248297;Beiró y Lopez de Vega;9434;Vuelta;12;15
--34.6110031;-58.5202163;Beiró y Bermudez;9434;Vuelta;13;15
--34.6075814;-58.5145140;Beiró y Marcos Paz;9434;Vuelta;14;15
--34.6062435;-58.5132855;Segurola y Navarro;9434;Vuelta;15;15
--34.6046054;-58.5136288;Cantilo y Sanabria;9434;Vuelta;16;14
--34.6036296;-58.5120088;Cantilo y Gualeguaychu;9434;Vuelta;17;14
--34.6048262;-58.5106087;Gualeguaychu y Beiró;9434;Vuelta;18;14
--34.6072679;-58.5120517;Segurola y Varela;9434;Vuelta;19;14
--34.6098993;-58.5098523;Segurola y Pedro Lozano;9434;Vuelta;20;14
--34.6121775;-58.5080069;Segurola y Nogoya;9434;Vuelta;21;14
--34.6150163;-58.5053462;Segurola y Santo tomé;9434;Vuelta;22;14
--34.6177535;-58.5026479;Segurola y Alvarez Jonte;9434;Vuelta;23;14
--34.6195591;-58.5005558;Segurola y Miranda;9434;Vuelta;24;14
--34.6204287;-58.4993809;Segurola y E Gonzalez;9434;Vuelta;25;14
--34.6216118;-58.4979218;Segurola y Pablo Podestá;9434;Vuelta;26;14
+-34.6265118;-58.5364598;San ignacio y Pelegrini;9434;Vuelta;4;1
+-34.6284584;-58.5343730;Croacia y Bergamini;9435;Vuelta;1;1
+-34.6279508;-58.5345072;San ignacio y Croacia;9435;Vuelta;2;1
+-34.6271386;-58.5355800;San ignacio y G Roca;9435;Vuelta;3;1
+-34.6252449;-58.5355693;Pelegrini y Necochea;9434;Vuelta;5;1
+-34.6240000;-58.5341477;Pelegrini y Dardo Rocha;9434;Vuelta;6;1
+-34.6226360;-58.5326350;Pelegrini y R A Siria;9434;Vuelta;7;1
+-34.6216030;-58.5336220;Rep A Siria y San Roque;9434;Vuelta;8;1
+-34.6207775;-58.5329998;San Roque y Los Andes;9434;Vuelta;9;1
+-34.6192809;-58.5314494;San Roque Y Gral Paz;9434;Vuelta;10;1
+-34.6179875;-58.5301888;Beiró y Irigoyen;9434;Vuelta;11;1
+-34.6138287;-58.5248297;Beiró y Lopez de Vega;9434;Vuelta;12;1
+-34.6110031;-58.5202163;Beiró y Bermudez;9434;Vuelta;13;1
+-34.6075814;-58.5145140;Beiró y Marcos Paz;9434;Vuelta;14;1
+-34.6062435;-58.5132855;Segurola y Navarro;9434;Vuelta;15;1
+-34.6046054;-58.5136288;Cantilo y Sanabria;9434;Vuelta;16;1
+-34.6036296;-58.5120088;Cantilo y Gualeguaychu;9434;Vuelta;17;1
+-34.6048262;-58.5106087;Gualeguaychu y Beiró;9434;Vuelta;18;1
+-34.6072679;-58.5120517;Segurola y Varela;9434;Vuelta;19;1
+-34.6098993;-58.5098523;Segurola y Pedro Lozano;9434;Vuelta;20;1
+-34.6121775;-58.5080069;Segurola y Nogoya;9434;Vuelta;21;1
+-34.6150163;-58.5053462;Segurola y Santo tomé;9434;Vuelta;22;1
+-34.6177535;-58.5026479;Segurola y Alvarez Jonte;9434;Vuelta;23;1
+-34.6195591;-58.5005558;Segurola y Miranda;9434;Vuelta;24;1
+-34.6204287;-58.4993809;Segurola y E Gonzalez;9434;Vuelta;25;1
+-34.6216118;-58.4979218;Segurola y Pablo Podestá;9434;Vuelta;26;1
 -34.7128402;-58.2197982;Cervantes y 25 bis;9433;Ida;2;1
 -34.7116275;-58.2216114;Cervantes y 23 bis;9433;Ida;3;1
 -34.7102782;-58.2234889;Cervantes y Iriarte (Pejerrey);9433;Ida;4;1
 -34.7093080;-58.2249695;Cervantes y Alamos;9433;Ida;5;1
 -34.7080115;-58.2271153;Cervantes y Olavarría;9433;Ida;6;1
--34.7071957;-58.2308865;Otamendi y Cervantes;9433;Ida;7;2
--34.7085070;-58.2334830;Otamendi y Yoldi;9433;Ida;8;2
--34.7092270;-58.2347350;Otamendi y Juan B Justo;9433;Ida;9;2
--34.7102120;-58.2364601;Otamendi y Panizza;9433;Ida;10;2
--34.7113189;-58.2383162;Otamendi y Brussa;9433;Ida;11;2
--34.7129019;-58.2410896;Otamendi y Toledo;9433;Ida;12;2
--34.7139514;-58.2427847;Otamendi y Lora;9433;Ida;13;2
--34.7149788;-58.2445496;Otamendi y Mozart;9433;Ida;14;2
--34.7160283;-58.2463306;Otamendi y Monrroe;9433;Ida;15;2
--34.7173026;-58.2474250;Ceballos y Otamendi;9433;Ida;16;2
--34.7194550;-58.2500350;Alem y Belgrano;9433;Ida;17;2
--34.7204250;-58.2519620;Alem y Paz;9433;Ida;18;2
--34.7213680;-58.2538650;Alem y Mitre;9433;Ida;19;3
--34.7223170;-58.2557270;Alem y Brown;9433;Ida;20;3
--34.7233200;-58.2576070;Alem y Moreno;9433;Ida;21;3
--34.7240928;-58.2592857;Alem y H Yrigoyen;9433;Ida;22;3
--34.7232904;-58.2602835;Yrigoyen y Alsina;9433;Ida;23;3
--34.7217340;-58.2614529;Yrigoyen y 9 de Julio;9433;Ida;24;3
--34.7207820;-58.2622130;Yrigoyen y Colon;9433;Ida;25;3
--34.7190223;-58.2634753;Yrigoyen y Alberdi;9433;Ida;26;3
--34.7197057;-58.2657820;Gran Canaria y P Oliveri;9433;Ida;27;3
--34.7206890;-58.2650256;Gran Canaria y R Lopez;9433;Ida;28;3
--34.7216750;-58.2665870;R Lopez y V Lopez;9433;Ida;29;3
--34.7226570;-58.2685150;R Lopez y B Irigoyen;9433;Ida;30;3
--34.7235850;-58.2703480;R Lopez y A Baranda;9433;Ida;31;3
--34.7244808;-58.2724124;R Lopez y Larrea;9433;Ida;32;3
--34.7254199;-58.2744133;R Lopez y Urquiza;9433;Ida;33;3
--34.7264649;-58.2763016;R Lopez y Blas Parera;9433;Ida;34;3
--34.7274833;-58.2783186;R Lopez y M Rodriguez;9433;Ida;35;3
--34.7285282;-58.2804000;R Lopez y Condarco;9433;Ida;36;3
--34.7295863;-58.2824063;Rodolfo Lopez y Av La Plata;9433;Ida;37;4
--34.7306709;-58.2846648;R Lopez y Marconi;9433;Ida;38;4
--34.7316143;-58.2866389;R Lopez y J V Gonzales;9433;Ida;39;4
--34.7325754;-58.2886827;R Lopez y L de La Torre;9433;Ida;40;4
--34.7335585;-58.2907802;R Lopez y Acha;9433;Ida;41;4
--34.7350442;-58.2937253;Rodolfo Lopez y Unamundo;9433;Ida;42;4
--34.7334836;-58.2963538;Av Calchaquí y San Luis;9433;Ida;43;4
--34.7324475;-58.2970405;Av Calchaquí y Rep del Libano;9433;Ida;44;4
--34.7300801;-58.2987410;Av Calchaquí y Jujuy;9433;Ida;45;4
--34.7245514;-58.3022976;Av Los Quilmes y Zapiola;9433;Ida;46;4
--34.7203892;-58.3035421;Av Los Quilmes y Cerrito;9433;Ida;47;4
--34.7165883;-58.3046794;Av Los Quilmes y Montevideo;9433;Ida;48;5
--34.7130342;-58.3081609;Av Los Quilmes y Los Andes;9433;Ida;49;5
--34.7088273;-58.3122647;Av Mitre y Neuquen;9433;Ida;50;5
--34.7078042;-58.3131981;Av Mitre y Caviglia;9433;Ida;51;5
--34.7059035;-58.3151990;Av Mitre y R Español;9433;Ida;52;5
--34.7032266;-58.3160681;Mariano Moreno y Las Flores;9433;Ida;53;5
--34.7028253;-58.3185410;Martin Fierro y Mitre;9433;Ida;54;5
--34.7039322;-58.3178759;Mitre y Onsari;9433;Ida;55;5
--34.7048143;-58.3184499;Onsari y Brandsen;9433;Ida;56;5
--34.7057845;-58.3195657;Onsari y Belgrano;9433;Ida;57;5
--34.7077822;-58.3219206;Onsari y Solier;9433;Ida;58;5
--34.7094227;-58.3238465;Onsari y Villegas;9433;Ida;59;5
--34.6230200;-58.4961301;Segurola y Camarones;9434;Vuelta;27;14
--34.6238544;-58.4950626;Segurola y M Cervantes;9434;Vuelta;28;14
--34.6255539;-58.4929329;Segurola y R Escalada SM;9434;Vuelta;29;14
--34.6266751;-58.4915435;Segurola y Juan B Justo;9434;Vuelta;30;13
--34.6275226;-58.4904063;Segurola y Gaona;9434;Vuelta;31;13
--34.6291073;-58.4884483;Segurola y Aranguren;9434;Vuelta;32;13
--34.6318882;-58.4850097;Segurola y Bacacay;9434;Vuelta;33;13
--34.6335963;-58.4807235;Rivadavia y Candelaria;9434;Vuelta;34;13
--34.6327224;-58.4772152;Rivadavia y dolores;9434;Vuelta;35;13
--34.6315792;-58.4726715;Rivadavia y José Marti;9434;Vuelta;36;13
--34.6305419;-58.4689111;Rivadavia y Nazca (metrobus);9434;Vuelta;37;12
--34.6281848;-58.4604943;Rivadavia y Bonorino;9434;Vuelta;38;12
--34.6263838;-58.4561062;Rivadavia y Carabobo;9434;Vuelta;39;12
--34.6254524;-58.4536171;Rivadavia y Curapaligue;9434;Vuelta;40;12
--34.6236910;-58.4491110;Rivadavia y Puan;9434;Vuelta;41;12
--34.6228744;-58.4467989;Rivadavia y Hortiguera;9434;Vuelta;42;12
--34.6206495;-58.4405279;Rosario y Centenera;9434;Vuelta;43;12
--34.6195149;-58.4364295;Rosario y José M Moreno;9434;Vuelta;44;11
--34.6187600;-58.4319717;Rosario y Doblas;9434;Vuelta;45;11
--34.6184245;-58.4292412;Rosario y Av La Plata;9434;Vuelta;46;11
--34.6215544;-58.4279805;Av La Plata y Alberdi;9434;Vuelta;47;11
--34.6247328;-58.4272939;Av La Plata y Pedro Goyena;9434;Vuelta;48;11
--34.6266045;-58.4268701;Av La Plata y Directorio;9434;Vuelta;49;11
--34.6309524;-58.4259206;Av La Plata y Asamblea;9434;Vuelta;50;11
--34.6333359;-58.4252930;Av La Plata y Santander;9434;Vuelta;51;11
--34.6365447;-58.4245098;Av La Plata Zaraza;9434;Vuelta;52;11
--34.6398373;-58.4235871;Av La Plata y Cobo;9434;Vuelta;53;10
--34.6420352;-58.4230828;Av La Plata F de la Cruz;9434;Vuelta;54;10
--34.6447141;-58.4212911;Av La Plata F Rivera;9434;Vuelta;55;10
--34.7105031;-58.3251125;Onsari y Mansilla;9433;Ida;60;5
--34.6469295;-58.4194511;Av La Plata Tabare;9434;Vuelta;56;10
--34.6480858;-58.4170103;Av La Plata Saenz;9434;Vuelta;57;10
--34.6513602;-58.4164739;Saenz y Esquiú (metrobus);9434;Vuelta;58;10
--34.6625727;-58.4174234;R de Escalada y Palacios;9434;Vuelta;59;9
--34.6663628;-58.4158409;Peron y Crotti;9434;Vuelta;60;9
--34.6674834;-58.4142959;Peron y L Valentinas;9434;Vuelta;61;9
--34.6687365;-58.4126329;Peron y Valparaiso;9434;Vuelta;62;9
--34.6700689;-58.4108520;Peron y Armenia;9434;Vuelta;63;9
--34.6712513;-58.4092373;Peron y Paso de Burgos;9434;Vuelta;64;9
--34.7112263;-58.3264321;Arredondo y Ascasubi;9433;Ida;61;6
--34.6719836;-58.4081858;Peron y Itapiru;9434;Vuelta;65;9
--34.6731748;-58.4066731;Peron y Rucci;9434;Vuelta;66;9
--34.6743218;-58.4051496;Peron y Balbin;9434;Vuelta;67;9
--34.6760159;-58.4027839;Peron y Oliden;9434;Vuelta;68;9
--34.6771497;-58.4012282;Peron y Rivadavia;9434;Vuelta;69;9
--34.6788525;-58.3996618;Peron y Humberto Primo;9434;Vuelta;70;9
--34.6804274;-58.3983260;Peron y La Rioja;9434;Vuelta;71;9
--34.6818567;-58.3971083;Peron y Fernandez;9434;Vuelta;72;9
--34.6829551;-58.3960944;Peron y Catamarca;9434;Vuelta;73;9
--34.6839785;-58.3952790;Peron y San Martín;9434;Vuelta;74;8
--34.6852180;-58.3936161;Peron y Santiago del Estero;9434;Vuelta;75;8
--34.6866075;-58.3917117;Peron y Noya;9434;Vuelta;76;8
--34.6880896;-58.3897215;Peron y Bolivia;9434;Vuelta;77;8
--34.6884910;-58.3879137;H Yrigoyen y Bourchard;9434;Vuelta;78;8
--34.6869383;-58.3872324;H Yrigoyen y Bueras;9434;Vuelta;79;8
--34.6847813;-58.3863419;H Yrigoyen y Brasil;9434;Vuelta;80;8
--34.6867398;-58.3832949;Puente Gerli;9434;Vuelta;81;8
--34.6895673;-58.3796310;Bustamante y Lacarra;9434;Vuelta;82;8
--34.6914683;-58.3772439;Bustamante y Donovan;9434;Vuelta;83;8
--34.6924034;-58.3762246;Bustamante y Mamberti;9434;Vuelta;84;8
--34.6944632;-58.3738375;Bustamante y Sarmiento;9434;Vuelta;85;8
--34.6963200;-58.3715791;Bustamante y Basavilbaso;9434;Vuelta;86;7
--34.6974403;-58.3702862;Bustamante y Salta;9434;Vuelta;87;7
--34.6994470;-58.3674109;Bustamante y Ferré;9434;Vuelta;88;7
--34.7002541;-58.3643800;C Belgrano y Madariaga;9434;Vuelta;89;7
--34.6993721;-58.3626312;Madariaga y Venezuela;9434;Vuelta;90;7
--34.6979166;-58.3611667;Madariaga y Cangallo;9434;Vuelta;91;7
--34.6963024;-58.3596003;Madariaga y Pitagoras;9434;Vuelta;92;7
--34.6953056;-58.3586830;Madariaga y Casacuberta;9434;Vuelta;93;7
--34.6932988;-58.3567250;Madariaga y Heredia;9434;Vuelta;94;7
--34.6908640;-58.3539945;Madariaga y C Larralde;9434;Vuelta;95;7
--34.6923902;-58.3517790;Larralde y R Sarrat;9434;Vuelta;96;7
--34.6940618;-58.3497781;Larralde y Deheza;9434;Vuelta;97;6
--34.6953321;-58.3482814;Larralde y Suipacha;9434;Vuelta;98;6
--34.6969243;-58.3463770;Larralde y el Salvador;9434;Vuelta;99;6
--34.6987987;-58.3441401;Larralde y Puerto de Palos;9434;Vuelta;100;6
--34.7007348;-58.3417958;Larralde y Pierres;9434;Vuelta;101;6
--34.7021417;-58.3401489;Larralde y Centenario Uru;9434;Vuelta;102;6
--34.7035927;-58.3381158;Larralde y Chascomus;9434;Vuelta;103;6
--34.7049951;-58.3362222;Larralde y B. de Los Italianos;9434;Vuelta;104;6
--34.7063490;-58.3346450;Larralde y Mendez;9434;Vuelta;105;6
--34.7070942;-58.3336794;Larralde y Cotagaita;9434;Vuelta;106;6
--34.7086730;-58.3317375;Larralde y Condarco;9434;Vuelta;107;6
--34.7102252;-58.3298117;Larralde y Paisandú;9434;Vuelta;108;6
--34.7116805;-58.3280200;Larralde y Ascasubi;9434;Vuelta;109;5
--34.7102164;-58.3277035;Arredondo y J Hernandez;9433;Ida;62;6
--34.7084304;-58.3298439;Arredondo y Condarco;9433;Ida;63;6
--34.7066885;-58.3320808;Arredondo y Cotagaita;9433;Ida;64;6
--34.7052950;-58.3337599;Arredondo y De La Peña;9433;Ida;65;6
--34.7040116;-58.3352673;Arredondo y B. de Los Italianos;9433;Ida;66;6
--34.7042806;-58.3368015;Matanza y Larralde;9433;Ida;67;6
--34.7107897;-58.3252949;Onsari y Mansilla;9434;Vuelta;110;5
+-34.7071957;-58.2308865;Otamendi y Cervantes;9433;Ida;7;1
+-34.7085070;-58.2334830;Otamendi y Yoldi;9433;Ida;8;1
+-34.7092270;-58.2347350;Otamendi y Juan B Justo;9433;Ida;9;1
+-34.7102120;-58.2364601;Otamendi y Panizza;9433;Ida;10;1
+-34.7113189;-58.2383162;Otamendi y Brussa;9433;Ida;11;1
+-34.7129019;-58.2410896;Otamendi y Toledo;9433;Ida;12;1
+-34.7139514;-58.2427847;Otamendi y Lora;9433;Ida;13;1
+-34.7149788;-58.2445496;Otamendi y Mozart;9433;Ida;14;1
+-34.7160283;-58.2463306;Otamendi y Monrroe;9433;Ida;15;1
+-34.7173026;-58.2474250;Ceballos y Otamendi;9433;Ida;16;1
+-34.7194550;-58.2500350;Alem y Belgrano;9433;Ida;17;1
+-34.7204250;-58.2519620;Alem y Paz;9433;Ida;18;1
+-34.7213680;-58.2538650;Alem y Mitre;9433;Ida;19;1
+-34.7223170;-58.2557270;Alem y Brown;9433;Ida;20;1
+-34.7233200;-58.2576070;Alem y Moreno;9433;Ida;21;1
+-34.7240928;-58.2592857;Alem y H Yrigoyen;9433;Ida;22;1
+-34.7232904;-58.2602835;Yrigoyen y Alsina;9433;Ida;23;1
+-34.7217340;-58.2614529;Yrigoyen y 9 de Julio;9433;Ida;24;1
+-34.7207820;-58.2622130;Yrigoyen y Colon;9433;Ida;25;1
+-34.7190223;-58.2634753;Yrigoyen y Alberdi;9433;Ida;26;1
+-34.7197057;-58.2657820;Gran Canaria y P Oliveri;9433;Ida;27;1
+-34.7206890;-58.2650256;Gran Canaria y R Lopez;9433;Ida;28;1
+-34.7216750;-58.2665870;R Lopez y V Lopez;9433;Ida;29;1
+-34.7226570;-58.2685150;R Lopez y B Irigoyen;9433;Ida;30;1
+-34.7235850;-58.2703480;R Lopez y A Baranda;9433;Ida;31;1
+-34.7244808;-58.2724124;R Lopez y Larrea;9433;Ida;32;1
+-34.7254199;-58.2744133;R Lopez y Urquiza;9433;Ida;33;1
+-34.7264649;-58.2763016;R Lopez y Blas Parera;9433;Ida;34;1
+-34.7274833;-58.2783186;R Lopez y M Rodriguez;9433;Ida;35;1
+-34.7285282;-58.2804000;R Lopez y Condarco;9433;Ida;36;1
+-34.7295863;-58.2824063;Rodolfo Lopez y Av La Plata;9433;Ida;37;1
+-34.7306709;-58.2846648;R Lopez y Marconi;9433;Ida;38;1
+-34.7316143;-58.2866389;R Lopez y J V Gonzales;9433;Ida;39;1
+-34.7325754;-58.2886827;R Lopez y L de La Torre;9433;Ida;40;1
+-34.7335585;-58.2907802;R Lopez y Acha;9433;Ida;41;1
+-34.7350442;-58.2937253;Rodolfo Lopez y Unamundo;9433;Ida;42;1
+-34.7334836;-58.2963538;Av Calchaquí y San Luis;9433;Ida;43;1
+-34.7324475;-58.2970405;Av Calchaquí y Rep del Libano;9433;Ida;44;1
+-34.7300801;-58.2987410;Av Calchaquí y Jujuy;9433;Ida;45;1
+-34.7245514;-58.3022976;Av Los Quilmes y Zapiola;9433;Ida;46;1
+-34.7203892;-58.3035421;Av Los Quilmes y Cerrito;9433;Ida;47;1
+-34.7165883;-58.3046794;Av Los Quilmes y Montevideo;9433;Ida;48;1
+-34.7130342;-58.3081609;Av Los Quilmes y Los Andes;9433;Ida;49;1
+-34.7088273;-58.3122647;Av Mitre y Neuquen;9433;Ida;50;1
+-34.7078042;-58.3131981;Av Mitre y Caviglia;9433;Ida;51;1
+-34.7059035;-58.3151990;Av Mitre y R Español;9433;Ida;52;1
+-34.7032266;-58.3160681;Mariano Moreno y Las Flores;9433;Ida;53;1
+-34.7028253;-58.3185410;Martin Fierro y Mitre;9433;Ida;54;1
+-34.7039322;-58.3178759;Mitre y Onsari;9433;Ida;55;1
+-34.7048143;-58.3184499;Onsari y Brandsen;9433;Ida;56;1
+-34.7057845;-58.3195657;Onsari y Belgrano;9433;Ida;57;1
+-34.7077822;-58.3219206;Onsari y Solier;9433;Ida;58;1
+-34.7094227;-58.3238465;Onsari y Villegas;9433;Ida;59;1
+-34.6230200;-58.4961301;Segurola y Camarones;9434;Vuelta;27;1
+-34.6238544;-58.4950626;Segurola y M Cervantes;9434;Vuelta;28;1
+-34.6255539;-58.4929329;Segurola y R Escalada SM;9434;Vuelta;29;1
+-34.6266751;-58.4915435;Segurola y Juan B Justo;9434;Vuelta;30;1
+-34.6275226;-58.4904063;Segurola y Gaona;9434;Vuelta;31;1
+-34.6291073;-58.4884483;Segurola y Aranguren;9434;Vuelta;32;1
+-34.6318882;-58.4850097;Segurola y Bacacay;9434;Vuelta;33;1
+-34.6335963;-58.4807235;Rivadavia y Candelaria;9434;Vuelta;34;1
+-34.6327224;-58.4772152;Rivadavia y dolores;9434;Vuelta;35;1
+-34.6315792;-58.4726715;Rivadavia y José Marti;9434;Vuelta;36;1
+-34.6305419;-58.4689111;Rivadavia y Nazca (metrobus);9434;Vuelta;37;1
+-34.6281848;-58.4604943;Rivadavia y Bonorino;9434;Vuelta;38;1
+-34.6263838;-58.4561062;Rivadavia y Carabobo;9434;Vuelta;39;1
+-34.6254524;-58.4536171;Rivadavia y Curapaligue;9434;Vuelta;40;1
+-34.6236910;-58.4491110;Rivadavia y Puan;9434;Vuelta;41;1
+-34.6228744;-58.4467989;Rivadavia y Hortiguera;9434;Vuelta;42;1
+-34.6206495;-58.4405279;Rosario y Centenera;9434;Vuelta;43;1
+-34.6195149;-58.4364295;Rosario y José M Moreno;9434;Vuelta;44;1
+-34.6187600;-58.4319717;Rosario y Doblas;9434;Vuelta;45;1
+-34.6184245;-58.4292412;Rosario y Av La Plata;9434;Vuelta;46;1
+-34.6215544;-58.4279805;Av La Plata y Alberdi;9434;Vuelta;47;1
+-34.6247328;-58.4272939;Av La Plata y Pedro Goyena;9434;Vuelta;48;1
+-34.6266045;-58.4268701;Av La Plata y Directorio;9434;Vuelta;49;1
+-34.6309524;-58.4259206;Av La Plata y Asamblea;9434;Vuelta;50;1
+-34.6333359;-58.4252930;Av La Plata y Santander;9434;Vuelta;51;1
+-34.6365447;-58.4245098;Av La Plata Zaraza;9434;Vuelta;52;1
+-34.6398373;-58.4235871;Av La Plata y Cobo;9434;Vuelta;53;1
+-34.6420352;-58.4230828;Av La Plata F de la Cruz;9434;Vuelta;54;1
+-34.6447141;-58.4212911;Av La Plata F Rivera;9434;Vuelta;55;1
+-34.7105031;-58.3251125;Onsari y Mansilla;9433;Ida;60;1
+-34.6469295;-58.4194511;Av La Plata Tabare;9434;Vuelta;56;1
+-34.6480858;-58.4170103;Av La Plata Saenz;9434;Vuelta;57;1
+-34.6513602;-58.4164739;Saenz y Esquiú (metrobus);9434;Vuelta;58;1
+-34.6625727;-58.4174234;R de Escalada y Palacios;9434;Vuelta;59;1
+-34.6663628;-58.4158409;Peron y Crotti;9434;Vuelta;60;1
+-34.6674834;-58.4142959;Peron y L Valentinas;9434;Vuelta;61;1
+-34.6687365;-58.4126329;Peron y Valparaiso;9434;Vuelta;62;1
+-34.6700689;-58.4108520;Peron y Armenia;9434;Vuelta;63;1
+-34.6712513;-58.4092373;Peron y Paso de Burgos;9434;Vuelta;64;1
+-34.7112263;-58.3264321;Arredondo y Ascasubi;9433;Ida;61;1
+-34.6719836;-58.4081858;Peron y Itapiru;9434;Vuelta;65;1
+-34.6731748;-58.4066731;Peron y Rucci;9434;Vuelta;66;1
+-34.6743218;-58.4051496;Peron y Balbin;9434;Vuelta;67;1
+-34.6760159;-58.4027839;Peron y Oliden;9434;Vuelta;68;1
+-34.6771497;-58.4012282;Peron y Rivadavia;9434;Vuelta;69;1
+-34.6788525;-58.3996618;Peron y Humberto Primo;9434;Vuelta;70;1
+-34.6804274;-58.3983260;Peron y La Rioja;9434;Vuelta;71;1
+-34.6818567;-58.3971083;Peron y Fernandez;9434;Vuelta;72;1
+-34.6829551;-58.3960944;Peron y Catamarca;9434;Vuelta;73;1
+-34.6839785;-58.3952790;Peron y San Martín;9434;Vuelta;74;1
+-34.6852180;-58.3936161;Peron y Santiago del Estero;9434;Vuelta;75;1
+-34.6866075;-58.3917117;Peron y Noya;9434;Vuelta;76;1
+-34.6880896;-58.3897215;Peron y Bolivia;9434;Vuelta;77;1
+-34.6884910;-58.3879137;H Yrigoyen y Bourchard;9434;Vuelta;78;1
+-34.6869383;-58.3872324;H Yrigoyen y Bueras;9434;Vuelta;79;1
+-34.6847813;-58.3863419;H Yrigoyen y Brasil;9434;Vuelta;80;1
+-34.6867398;-58.3832949;Puente Gerli;9434;Vuelta;81;1
+-34.6895673;-58.3796310;Bustamante y Lacarra;9434;Vuelta;82;1
+-34.6914683;-58.3772439;Bustamante y Donovan;9434;Vuelta;83;1
+-34.6924034;-58.3762246;Bustamante y Mamberti;9434;Vuelta;84;1
+-34.6944632;-58.3738375;Bustamante y Sarmiento;9434;Vuelta;85;1
+-34.6963200;-58.3715791;Bustamante y Basavilbaso;9434;Vuelta;86;1
+-34.6974403;-58.3702862;Bustamante y Salta;9434;Vuelta;87;1
+-34.6994470;-58.3674109;Bustamante y Ferré;9434;Vuelta;88;1
+-34.7002541;-58.3643800;C Belgrano y Madariaga;9434;Vuelta;89;1
+-34.6993721;-58.3626312;Madariaga y Venezuela;9434;Vuelta;90;1
+-34.6979166;-58.3611667;Madariaga y Cangallo;9434;Vuelta;91;1
+-34.6963024;-58.3596003;Madariaga y Pitagoras;9434;Vuelta;92;1
+-34.6953056;-58.3586830;Madariaga y Casacuberta;9434;Vuelta;93;1
+-34.6932988;-58.3567250;Madariaga y Heredia;9434;Vuelta;94;1
+-34.6908640;-58.3539945;Madariaga y C Larralde;9434;Vuelta;95;1
+-34.6923902;-58.3517790;Larralde y R Sarrat;9434;Vuelta;96;1
+-34.6940618;-58.3497781;Larralde y Deheza;9434;Vuelta;97;1
+-34.6953321;-58.3482814;Larralde y Suipacha;9434;Vuelta;98;1
+-34.6969243;-58.3463770;Larralde y el Salvador;9434;Vuelta;99;1
+-34.6987987;-58.3441401;Larralde y Puerto de Palos;9434;Vuelta;100;1
+-34.7007348;-58.3417958;Larralde y Pierres;9434;Vuelta;101;1
+-34.7021417;-58.3401489;Larralde y Centenario Uru;9434;Vuelta;102;1
+-34.7035927;-58.3381158;Larralde y Chascomus;9434;Vuelta;103;1
+-34.7049951;-58.3362222;Larralde y B. de Los Italianos;9434;Vuelta;104;1
+-34.7063490;-58.3346450;Larralde y Mendez;9434;Vuelta;105;1
+-34.7070942;-58.3336794;Larralde y Cotagaita;9434;Vuelta;106;1
+-34.7086730;-58.3317375;Larralde y Condarco;9434;Vuelta;107;1
+-34.7102252;-58.3298117;Larralde y Paisandú;9434;Vuelta;108;1
+-34.7116805;-58.3280200;Larralde y Ascasubi;9434;Vuelta;109;1
+-34.7102164;-58.3277035;Arredondo y J Hernandez;9433;Ida;62;1
+-34.7084304;-58.3298439;Arredondo y Condarco;9433;Ida;63;1
+-34.7066885;-58.3320808;Arredondo y Cotagaita;9433;Ida;64;1
+-34.7052950;-58.3337599;Arredondo y De La Peña;9433;Ida;65;1
+-34.7040116;-58.3352673;Arredondo y B. de Los Italianos;9433;Ida;66;1
+-34.7042806;-58.3368015;Matanza y Larralde;9433;Ida;67;1
+-34.7107897;-58.3252949;Onsari y Mansilla;9434;Vuelta;110;1
 -34.7179640;-58.2120091;Cervantes y Echeverría;9434;Ida;1;1
 -34.7128843;-58.2197285;Cervantes y 25 bis;9434;Ida;2;1
 -34.7115834;-58.2216382;Cervantes y 23 bis;9434;Ida;3;1
 -34.7102958;-58.2234943;Cervantes y Iriarte (Pejerrey);9434;Ida;4;1
 -34.7092860;-58.2249963;Cervantes y Alamos;9434;Ida;5;1
 -34.7080688;-58.2270241;Cervantes y Olavarría;9434;Ida;6;1
--34.7071648;-58.2308382;Otamendi y Cervantes;9434;Ida;7;2
--34.7085070;-58.2334830;Otamendi y Yoldi;9434;Ida;8;2
--34.7092270;-58.2347350;Otamendi y Juan B Justo;9434;Ida;9;2
--34.7102120;-58.2364601;Otamendi y Panizza;9434;Ida;10;2
--34.7113189;-58.2383162;Otamendi y Brussa;9434;Ida;11;2
--34.7129019;-58.2410896;Otamendi y Toledo;9434;Ida;12;2
--34.7139514;-58.2427847;Otamendi y Lora;9434;Ida;13;2
--34.7149788;-58.2445496;Otamendi y Mozart;9434;Ida;14;2
--34.7160283;-58.2463306;Otamendi y Monrroe;9434;Ida;15;2
--34.7173026;-58.2474250;Ceballos y Otamendi;9434;Ida;16;2
--34.7194550;-58.2500350;Alem y Belgrano;9434;Ida;17;2
--34.7204250;-58.2519620;Alem y Paz;9434;Ida;18;2
--34.7213680;-58.2538650;Alem y Mitre;9434;Ida;19;3
--34.7223170;-58.2557270;Alem y Brown;9434;Ida;20;3
--34.7233200;-58.2576070;Alem y Moreno;9434;Ida;21;3
--34.7240928;-58.2592857;Alem y H Yrigoyen;9434;Ida;22;3
--34.7232904;-58.2602835;Yrigoyen y Alsina;9434;Ida;23;3
--34.7217340;-58.2614529;Yrigoyen y 9 de Julio;9434;Ida;24;3
--34.7207820;-58.2622130;Yrigoyen y Colon;9434;Ida;25;3
--34.7190223;-58.2634753;Yrigoyen y Alberdi;9434;Ida;26;3
--34.7197057;-58.2657820;Gran Canaria y P Oliveri;9434;Ida;27;3
--34.7206890;-58.2650256;Gran Canaria y R Lopez;9434;Ida;28;3
--34.7216750;-58.2665870;R Lopez y V Lopez;9434;Ida;29;3
--34.7226570;-58.2685150;R Lopez y B Irigoyen;9434;Ida;30;3
--34.7235850;-58.2703480;R Lopez y A Baranda;9434;Ida;31;3
--34.7220646;-58.2716775;A Baranda y San Luis;9434;Ida;32;3
--34.7204773;-58.2728469;A Baranda y Rep Libano;9434;Ida;33;3
--34.7185813;-58.2741022;A Baranda y La Rioja;9434;Ida;34;3
--34.7168705;-58.2757330;Lamadrid y A Baranda;9434;Ida;35;3
--34.7176818;-58.2772672;Lamadrid y Larrea;9434;Ida;36;3
--34.7186695;-58.2792735;Lamadrid y Urquiza;9434;Ida;37;4
--34.7197454;-58.2813710;Lamadrid y Blas Parera;9434;Ida;38;4
--34.7207463;-58.2832378;Lamadrid y M Rodriguez;9434;Ida;39;4
--34.7218310;-58.2853729;Lamadrid y Condarco;9434;Ida;40;4
--34.7226334;-58.2878083;Lamadrid y D Rocha;9434;Ida;41;4
--34.7216017;-58.2884574;Dardo Rocha y Liniers;9434;Ida;42;4
--34.7196749;-58.2898039;Dardo Rocha y Zapiola;9434;Ida;43;4
--34.7189473;-58.2909089;Dardo Rocha y Don Bosco;9434;Ida;44;4
--34.7179905;-58.2929313;Dardo Rocha y Avellaneda;9434;Ida;45;4
--34.7165354;-58.2958496;Dardo Rocha y Alem;9434;Ida;46;4
--34.7154595;-58.2979363;Dardo Rocha y Cerrito;9434;Ida;47;4
--34.7138632;-58.3011281;Dardo Rocha y Montevideo;9434;Ida;48;5
--34.7126285;-58.3037567;Dardo Rocha y Formosa;9434;Ida;49;5
--34.7115349;-58.3063155;Dardo Rocha y Los Andes;9434;Ida;50;5
--34.7109396;-58.3077049;Dardo Rocha y La Pampa;9434;Ida;51;5
--34.7088979;-58.3120662;Av Mitre y Neuquen;9434;Ida;52;5
--34.7078042;-58.3131981;Av Mitre y Caviglia;9434;Ida;53;5
--34.7059035;-58.3151990;Av Mitre y R Español;9434;Ida;54;5
--34.7032266;-58.3160681;M Moreno y Las Flores;9434;Ida;55;5
--34.7028253;-58.3185410;M Fierro y Mitre;9434;Ida;56;5
--34.7039322;-58.3178759;Mitre y Onsari;9434;Ida;57;5
--34.7048143;-58.3184499;Onsari y Brandsen;9434;Ida;58;5
--34.7057845;-58.3195657;Onsari y Belgrano;9434;Ida;59;5
--34.7077822;-58.3219206;Onsari y Solier;9434;Ida;60;5
--34.7094227;-58.3238465;Onsari y Villegas;9434;Ida;61;5
--34.7105031;-58.3251125;Onsari y Mansilla;9434;Ida;62;5
--34.7112263;-58.3264321;Arredondo y Onsari;9434;Ida;63;6
--34.7102164;-58.3277035;Arredondo y J Hernandez;9434;Ida;64;6
--34.7084304;-58.3298439;Arredondo y Condarco;9434;Ida;65;6
--34.7066885;-58.3320808;Arredondo y Cotagaita;9434;Ida;66;6
+-34.7071648;-58.2308382;Otamendi y Cervantes;9434;Ida;7;1
+-34.7085070;-58.2334830;Otamendi y Yoldi;9434;Ida;8;1
+-34.7092270;-58.2347350;Otamendi y Juan B Justo;9434;Ida;9;1
+-34.7102120;-58.2364601;Otamendi y Panizza;9434;Ida;10;1
+-34.7113189;-58.2383162;Otamendi y Brussa;9434;Ida;11;1
+-34.7129019;-58.2410896;Otamendi y Toledo;9434;Ida;12;1
+-34.7139514;-58.2427847;Otamendi y Lora;9434;Ida;13;1
+-34.7149788;-58.2445496;Otamendi y Mozart;9434;Ida;14;1
+-34.7160283;-58.2463306;Otamendi y Monrroe;9434;Ida;15;1
+-34.7173026;-58.2474250;Ceballos y Otamendi;9434;Ida;16;1
+-34.7194550;-58.2500350;Alem y Belgrano;9434;Ida;17;1
+-34.7204250;-58.2519620;Alem y Paz;9434;Ida;18;1
+-34.7213680;-58.2538650;Alem y Mitre;9434;Ida;19;1
+-34.7223170;-58.2557270;Alem y Brown;9434;Ida;20;1
+-34.7233200;-58.2576070;Alem y Moreno;9434;Ida;21;1
+-34.7240928;-58.2592857;Alem y H Yrigoyen;9434;Ida;22;1
+-34.7232904;-58.2602835;Yrigoyen y Alsina;9434;Ida;23;1
+-34.7217340;-58.2614529;Yrigoyen y 9 de Julio;9434;Ida;24;1
+-34.7207820;-58.2622130;Yrigoyen y Colon;9434;Ida;25;1
+-34.7190223;-58.2634753;Yrigoyen y Alberdi;9434;Ida;26;1
+-34.7197057;-58.2657820;Gran Canaria y P Oliveri;9434;Ida;27;1
+-34.7206890;-58.2650256;Gran Canaria y R Lopez;9434;Ida;28;1
+-34.7216750;-58.2665870;R Lopez y V Lopez;9434;Ida;29;1
+-34.7226570;-58.2685150;R Lopez y B Irigoyen;9434;Ida;30;1
+-34.7235850;-58.2703480;R Lopez y A Baranda;9434;Ida;31;1
+-34.7220646;-58.2716775;A Baranda y San Luis;9434;Ida;32;1
+-34.7204773;-58.2728469;A Baranda y Rep Libano;9434;Ida;33;1
+-34.7185813;-58.2741022;A Baranda y La Rioja;9434;Ida;34;1
+-34.7168705;-58.2757330;Lamadrid y A Baranda;9434;Ida;35;1
+-34.7176818;-58.2772672;Lamadrid y Larrea;9434;Ida;36;1
+-34.7186695;-58.2792735;Lamadrid y Urquiza;9434;Ida;37;1
+-34.7197454;-58.2813710;Lamadrid y Blas Parera;9434;Ida;38;1
+-34.7207463;-58.2832378;Lamadrid y M Rodriguez;9434;Ida;39;1
+-34.7218310;-58.2853729;Lamadrid y Condarco;9434;Ida;40;1
+-34.7226334;-58.2878083;Lamadrid y D Rocha;9434;Ida;41;1
+-34.7216017;-58.2884574;Dardo Rocha y Liniers;9434;Ida;42;1
+-34.7196749;-58.2898039;Dardo Rocha y Zapiola;9434;Ida;43;1
+-34.7189473;-58.2909089;Dardo Rocha y Don Bosco;9434;Ida;44;1
+-34.7179905;-58.2929313;Dardo Rocha y Avellaneda;9434;Ida;45;1
+-34.7165354;-58.2958496;Dardo Rocha y Alem;9434;Ida;46;1
+-34.7154595;-58.2979363;Dardo Rocha y Cerrito;9434;Ida;47;1
+-34.7138632;-58.3011281;Dardo Rocha y Montevideo;9434;Ida;48;1
+-34.7126285;-58.3037567;Dardo Rocha y Formosa;9434;Ida;49;1
+-34.7115349;-58.3063155;Dardo Rocha y Los Andes;9434;Ida;50;1
+-34.7109396;-58.3077049;Dardo Rocha y La Pampa;9434;Ida;51;1
+-34.7088979;-58.3120662;Av Mitre y Neuquen;9434;Ida;52;1
+-34.7078042;-58.3131981;Av Mitre y Caviglia;9434;Ida;53;1
+-34.7059035;-58.3151990;Av Mitre y R Español;9434;Ida;54;1
+-34.7032266;-58.3160681;M Moreno y Las Flores;9434;Ida;55;1
+-34.7028253;-58.3185410;M Fierro y Mitre;9434;Ida;56;1
+-34.7039322;-58.3178759;Mitre y Onsari;9434;Ida;57;1
+-34.7048143;-58.3184499;Onsari y Brandsen;9434;Ida;58;1
+-34.7057845;-58.3195657;Onsari y Belgrano;9434;Ida;59;1
+-34.7077822;-58.3219206;Onsari y Solier;9434;Ida;60;1
+-34.7094227;-58.3238465;Onsari y Villegas;9434;Ida;61;1
+-34.7105031;-58.3251125;Onsari y Mansilla;9434;Ida;62;1
+-34.7112263;-58.3264321;Arredondo y Onsari;9434;Ida;63;1
+-34.7102164;-58.3277035;Arredondo y J Hernandez;9434;Ida;64;1
+-34.7084304;-58.3298439;Arredondo y Condarco;9434;Ida;65;1
+-34.7066885;-58.3320808;Arredondo y Cotagaita;9434;Ida;66;1
 -34.7179376;-58.2119823;Cervantes y Echeverría;9432;Ida;1;1
 -34.7139426;-58.2181513;Cervantes y Franklin;9432;Ida;2;1
--34.7093300;-58.3236265;Onsari y Villegas;9434;Vuelta;111;5
--34.7080512;-58.3220494;Onsari y Solier;9434;Vuelta;112;5
--34.7062696;-58.3199948;Onsari y Belgrano;9434;Vuelta;113;5
--34.7046070;-58.3181441;Onsari y Mitre;9434;Vuelta;114;5
--34.7050789;-58.3164597;Mitre y Echeverria;9434;Vuelta;115;5
--34.7063578;-58.3151293;Mitre y Victor Hugo;9434;Vuelta;116;5
 -34.7126418;-58.2200986;Cervantes y 25 bis;9432;Ida;3;1
 -34.7115261;-58.2217669;Cervantes y 23 bis;9432;Ida;4;1
 -34.7102737;-58.2235157;Cervantes y Iriarte (Pejerrey);9432;Ida;5;1
 -34.7092419;-58.2250339;Cervantes y Alamos;9432;Ida;6;1
 -34.7080380;-58.2270402;Cervantes y Olavarría;9432;Ida;7;1
--34.7071383;-58.2308811;Otamendi y Cervantes;9432;Ida;8;2
--34.7085070;-58.2334830;Otamendi y Yoldi;9432;Ida;9;2
--34.7092270;-58.2347350;Otamendi y Juan B Justo;9432;Ida;10;2
--34.7102120;-58.2364601;Otamendi y Panizza;9432;Ida;11;2
--34.7113189;-58.2383162;Otamendi y Brussa;9432;Ida;12;2
--34.7129019;-58.2410896;Otamendi y Toledo;9432;Ida;13;2
--34.7139514;-58.2427847;Otamendi y Lora;9432;Ida;14;2
--34.7149788;-58.2445496;Otamendi y Mozart;9432;Ida;15;2
--34.7160283;-58.2463306;Otamendi y Monrroe;9432;Ida;16;2
--34.7173026;-58.2474250;Ceballos y Otamendi;9432;Ida;17;2
--34.7194550;-58.2500350;Alem y Belgrano;9432;Ida;18;2
--34.7204250;-58.2519620;Alem y Paz;9432;Ida;19;2
--34.7213680;-58.2538650;Alem y Mitre;9432;Ida;20;3
--34.7223170;-58.2557270;Alem y Brown;9432;Ida;21;3
--34.7233200;-58.2576070;Alem y Moreno;9432;Ida;22;3
--34.7240928;-58.2592857;Alem y H Yrigoyen;9432;Ida;23;3
--34.7232904;-58.2602835;Yrigoyen y Alsina;9432;Ida;24;3
--34.7217340;-58.2614529;Yrigoyen y 9 de Julio;9432;Ida;25;3
--34.7207820;-58.2622130;Yrigoyen y Colon;9432;Ida;26;3
--34.7190223;-58.2634753;Yrigoyen y Alberdi;9432;Ida;27;3
--34.7197057;-58.2657820;Gran Canaria y P Oliveri;9432;Ida;28;3
--34.7206890;-58.2650256;Gran Canaria y R Lopez;9432;Ida;29;3
--34.7216750;-58.2665870;R Lopez y V Lopez;9432;Ida;30;3
--34.7226570;-58.2685150;R Lopez y B Irigoyen;9432;Ida;31;3
--34.7235850;-58.2703480;R Lopez y A Baranda;9432;Ida;32;3
--34.7221308;-58.2716131;A Baranda y San Luis;9432;Ida;33;3
--34.7204156;-58.2728630;A Baranda y Rep Libano;9432;Ida;34;3
--34.7187130;-58.2740420;A Baranda y La Rioja;9432;Ida;35;3
--34.7169950;-58.2751920;A Baranda y Lamadrid;9432;Ida;36;3
--34.7151100;-58.2766050;Belgrano y Boedo;9432;Ida;37;3
--34.7136600;-58.2777200;Belgrano y Zapiola;9432;Ida;38;4
--34.7122493;-58.2755613;Zapiola y San Martin;9432;Ida;39;4
--34.7108294;-58.2773960;San Martin y Don Bosco;9432;Ida;40;4
--34.7097887;-58.2798529;San Martín y 9 de Julio;9432;Ida;41;4
--34.7075529;-58.2854962;San Martín y LN Alem;9432;Ida;42;4
--34.7066312;-58.2875562;San Martín y Cerrito;9432;Ida;43;4
--34.7050524;-58.2908070;San Martín y Montevideo;9432;Ida;44;4
--34.7038749;-58.2948947;San Martín y Formosa;9432;Ida;45;4
--34.7035309;-58.2961446;San Martin y Chaco;9432;Ida;46;4
--34.7029047;-58.2982314;San Martin y Los Andes;9432;Ida;47;4
--34.7019741;-58.3009833;San Martin y Bermejo;9432;Ida;48;5
--34.7001042;-58.3061492;Ramón Franco y Caviglia;9432;Ida;49;5
--34.6978240;-58.3111542;Ramón Franco y Las Flores;9432;Ida;50;5
--34.6984050;-58.3132750;Martín Fierro y Sodera;9432;Ida;51;5
--34.6993250;-58.3143550;M Fierro y Zola;9432;Ida;52;5
--34.7001615;-58.3153975;M Fierro y Bragado;9432;Ida;53;5
--34.7010744;-58.3164275;M Fierro y Zeballos;9432;Ida;54;5
--34.7027459;-58.3184981;M Fierro y Mitre;9432;Ida;55;5
--34.7022167;-58.3195174;Mitre y Bahia Blanca;9432;Ida;56;5
--34.7006511;-58.3214968;Mitre y Lomas de Zamora;9432;Ida;57;5
--34.6990369;-58.3235192;Mitre y Lobos;9432;Ida;58;5
--34.6969750;-58.3259520;D Alighieri y Mitre;9432;Ida;59;5
--34.6980570;-58.3273080;B. de los Italianos y Mitre;9432;Ida;60;6
--34.6989170;-58.3283680;B. de los Italianos y Belgrano;9432;Ida;61;6
--34.7006370;-58.3304680;B. de los Italianos y Solier;9432;Ida;62;6
--34.7024650;-58.3327020;B. de los italianos y Villegas;9432;Ida;63;6
--34.7035001;-58.3340657;B. de los Italianos y Mansilla;9432;Ida;64;6
--34.7039852;-58.3353102;Arredondo y B. de los Italianos;9432;Ida;65;6
--34.7024813;-58.3372575;Arredondo y Chascomus;9432;Ida;66;6
--34.7010877;-58.3390117;Arredondo y Centerario U;9432;Ida;67;6
--34.6998748;-58.3405674;Arredondo y Pierres;9432;Ida;68;6
--34.6983577;-58.3424449;Arredondo y P Palos;9432;Ida;69;6
--34.6968405;-58.3442044;Arredondo y Pedernera;9432;Ida;70;6
--34.6956673;-58.3456528;Arredondo y El Salvador;9432;Ida;71;6
--34.6944808;-58.3470154;Arredondo y Suipacha;9432;Ida;72;6
--34.6932282;-58.3485550;Arredondo y Deheza;9432;Ida;73;7
--34.6917480;-58.3504170;Arredondo y Molina;9432;Ida;74;7
--34.6906038;-58.3517522;Arredondo y Sarrat;9432;Ida;75;7
--34.6905200;-58.3535814;Madariaga y C. Larralde;9432;Ida;76;7
--34.6895937;-58.3549118;Larralde y Ferre;9432;Ida;77;7
--34.6881028;-58.3566284;Larralde y  Supisiche;9432;Ida;78;7
--34.6869163;-58.3580661;Larralde y Salta;9432;Ida;79;7
--34.6854121;-58.3599061;Larralde y O Higgins;9432;Ida;80;7
--34.6838329;-58.3618534;Larralde y Sarmiento;9432;Ida;81;7
--34.6825350;-58.3635020;Larralde y Tres Sargentos;9432;Ida;82;7
--34.6796330;-58.3641470;Eva Peron y Elisalde;9432;Ida;83;7
--34.6767580;-58.3645480;Eva Peron y Guemes;9432;Ida;84;7
--34.6740920;-58.3622500;Pitágoras (Museo);9432;Ida;85;7
--34.6749836;-58.3642191;Guemes y Lanares;9432;Ida;86;7
--34.6768100;-58.3662683;Guemes y villegas (Alto Avell);9432;Ida;87;7
--34.6776300;-58.3694420;Larralde y Larrazabal;9432;Ida;88;7
--34.7060799;-58.3389097;Matanza y La Fuente;9433;Ida;68;6
--34.7068120;-58.3398163;Matanza y Heredia;9433;Ida;69;6
--34.7085319;-58.3417368;Matanza y Casacuberta;9433;Ida;70;6
--34.7093389;-58.3426809;Matanza y De La Serna;9433;Ida;71;6
--34.7106706;-58.3441830;Matanza y Cangallo;9433;Ida;72;6
--34.7125448;-58.3464038;Matanza y Caxaraville;9433;Ida;73;6
--34.7141013;-58.3482921;Matanza y C G Belgrano;9433;Ida;74;6
--34.7135590;-58.3488983;Belgrano y Chascomus;9433;Ida;75;6
--34.7121170;-58.3505613;Belgrano y Centenario U;9433;Ida;76;7
--34.7099254;-58.3531255;Belgrano y Posadas;9433;Ida;77;7
--34.7083246;-58.3549708;Belgrano y Barcelo;9433;Ida;78;7
--34.7071692;-58.3563012;Belgrano y Pedernera;9433;Ida;79;7
--34.7057712;-58.3579695;Belgrano y San Lorenzo  ;9433;Ida;80;7
--34.7045938;-58.3592999;Belgrano y Suipacha;9433;Ida;81;7
--34.7041660;-58.3608180;Bustamante y Dehesa;9433;Ida;82;7
--34.7034780;-58.3622879;Bustamante y Cao;9433;Ida;83;7
--34.7023710;-58.3638006;Bustamante y J B Justo;9433;Ida;84;7
--34.7015507;-58.3647555;Bustamante y Madariaga;9433;Ida;85;7
--34.6998748;-58.3667994;Bustamante y Ferre;9433;Ida;86;7
--34.6977887;-58.3697820;Bustamante y Salta;9433;Ida;87;7
--34.6966288;-58.3711660;Bustamante y Basavilbaso;9433;Ida;88;8
--34.6947543;-58.3733654;Bustamante y Sarmiento;9433;Ida;89;8
--34.6926857;-58.3757633;Bustamante y Mamberti;9433;Ida;90;8
--34.6917594;-58.3768576;Bustamante y Donovan;9433;Ida;91;8
--34.6896290;-58.3794433;Bustamante y LaCarra;9433;Ida;92;8
--34.6864708;-58.3835793;Puente Gerli;9433;Ida;93;8
--34.6845563;-58.3861488;Brasil y Yrigoyen;9433;Ida;94;8
--34.6814750;-58.3859370;Cabildo y Beguerenstain;9433;Ida;95;8
--34.6800568;-58.3875275;Cabildo y Santiago;9433;Ida;96;8
--34.6790466;-58.3887023;Cabildo y Santa Fe;9433;Ida;97;8
--34.6783050;-58.3896270;Cabildo y Catamarca;9433;Ida;98;8
--34.6279508;-58.5345072;San ignacio y Croacia;9432;Vuelta;2;15
--34.6271386;-58.5355800;San ignacio y G Roca;9432;Vuelta;3;15
--34.6265118;-58.5364598;San ignacio y Pelegrini;9432;Vuelta;4;15
--34.6252449;-58.5355693;Pelegrini y Necochea;9432;Vuelta;5;15
--34.6240000;-58.5341477;Pelegrini y Dardo Rocha;9432;Vuelta;6;15
--34.6226360;-58.5326350;Pelegrini y R A Siria;9432;Vuelta;7;15
--34.6216030;-58.5336220;Rep A Siria y San Roque;9432;Vuelta;8;15
--34.6207775;-58.5329998;San Roque y Los Andes;9432;Vuelta;9;15
--34.6192809;-58.5314494;San Roque Y Gral Paz;9432;Vuelta;10;15
--34.6179875;-58.5301888;Beiró y Irigoyen;9432;Vuelta;11;15
--34.6138287;-58.5248297;Beiró y Lopez de Vega;9432;Vuelta;12;15
--34.6110031;-58.5202163;Beiró y Bermudez;9432;Vuelta;13;15
--34.6075814;-58.5145140;Beiró y Marcos Paz;9432;Vuelta;14;15
--34.6062435;-58.5132855;Segurola y Navarro;9432;Vuelta;15;15
--34.6046054;-58.5136288;Cantilo y Sanabria;9432;Vuelta;16;14
--34.6036296;-58.5120088;Cantilo y Gualeguaychu;9432;Vuelta;17;14
--34.6048262;-58.5106087;Gualeguaychu y Beiró;9432;Vuelta;18;14
--34.6072679;-58.5120517;Segurola y Varela;9432;Vuelta;19;14
--34.6098993;-58.5098523;Segurola y Pedro Lozano;9432;Vuelta;20;14
--34.6121775;-58.5080069;Segurola y Nogoya;9432;Vuelta;21;14
--34.6150163;-58.5053462;Segurola y Santo tomé;9432;Vuelta;22;14
--34.6177535;-58.5026479;Segurola y Alvarez Jonte;9432;Vuelta;23;14
--34.6195591;-58.5005558;Segurola y Miranda;9432;Vuelta;24;14
--34.6204287;-58.4993809;Segurola y E Gonzalez;9432;Vuelta;25;14
--34.6216118;-58.4979218;Segurola y Pablo Podestá;9432;Vuelta;26;14
--34.6230200;-58.4961301;Segurola y Camarones;9432;Vuelta;27;14
--34.6238544;-58.4950626;Segurola y M Cervantes;9432;Vuelta;28;14
--34.6255539;-58.4929329;Segurola y R Escalada SM;9432;Vuelta;29;14
--34.6266751;-58.4915435;Segurola y Juan B Justo;9432;Vuelta;30;13
--34.6275226;-58.4904063;Segurola y Gaona;9432;Vuelta;31;13
--34.6291073;-58.4884483;Segurola y Aranguren;9432;Vuelta;32;13
--34.6318882;-58.4850097;Segurola y Bacacay;9432;Vuelta;33;13
--34.6335963;-58.4807235;Rivadavia y Candelaria;9432;Vuelta;34;13
--34.6327224;-58.4772152;Rivadavia y dolores;9432;Vuelta;35;13
--34.6315792;-58.4726715;Rivadavia y José Marti;9432;Vuelta;36;13
--34.6305419;-58.4689111;Rivadavia y Nazca (metrobus);9432;Vuelta;37;12
--34.6281848;-58.4604943;Rivadavia y Bonorino;9432;Vuelta;38;12
--34.6263838;-58.4561062;Rivadavia y Carabobo;9432;Vuelta;39;12
--34.6254524;-58.4536171;Rivadavia y Curapaligue;9432;Vuelta;40;12
--34.6236910;-58.4491110;Rivadavia y Puan;9432;Vuelta;41;12
--34.6228744;-58.4467989;Rivadavia y Hortiguera;9432;Vuelta;42;12
--34.6206495;-58.4405279;Rosario y Centenera;9432;Vuelta;43;12
--34.6195149;-58.4364295;Rosario y José M Moreno;9432;Vuelta;44;11
--34.6187600;-58.4319717;Rosario y Doblas;9432;Vuelta;45;11
--34.6184245;-58.4292412;Rosario y Av La Plata;9432;Vuelta;46;11
--34.6214794;-58.4278679;Av La Plata y Alberdi;9432;Vuelta;47;11
--34.6247328;-58.4272939;Av La Plata y Pedro Goyena;9432;Vuelta;48;11
--34.6266045;-58.4268701;Av La Plata y Directorio;9432;Vuelta;49;11
--34.6309524;-58.4259206;Av La Plata y Asamblea;9432;Vuelta;50;11
--34.6333359;-58.4252930;Av La Plata y Santander;9432;Vuelta;51;11
--34.6365447;-58.4245098;Av La Plata Zaraza;9432;Vuelta;52;11
--34.6398373;-58.4235871;Av La Plata y Cobo;9432;Vuelta;53;10
--34.6420352;-58.4230828;Av La Plata F de la Cruz;9432;Vuelta;54;10
--34.6447141;-58.4212911;Av La Plata F Rivera;9432;Vuelta;55;10
--34.6469295;-58.4194511;Av La Plata Tabare;9432;Vuelta;56;10
--34.6480858;-58.4170103;Av La Plata Saenz;9432;Vuelta;57;10
--34.6513602;-58.4164739;Saenz y Esquiú (metrobus);9432;Vuelta;58;10
--34.6625727;-58.4174234;R de Escalada y Palacios;9432;Vuelta;59;9
--34.6663628;-58.4158409;Peron y Crotti;9432;Vuelta;60;9
--34.6674834;-58.4142959;Peron y L Valentinas;9432;Vuelta;61;9
--34.6687365;-58.4126329;Peron y Valparaiso;9432;Vuelta;62;9
--34.6700689;-58.4108520;Peron y Armenia;9432;Vuelta;63;9
--34.6712513;-58.4092373;Peron y Paso de Burgos;9432;Vuelta;64;9
--34.6719836;-58.4081858;Peron y Itapiru;9432;Vuelta;65;9
--34.7077425;-58.3137560;Mitre y Lynch;9434;Vuelta;117;5
--34.7092507;-58.3122861;Mitre y Neuquén;9434;Vuelta;118;5
--34.7109352;-58.3104408;Av Los Quilmes y Pilcomayo;9434;Vuelta;119;5
--34.7109705;-58.3084774;D Rocha y Pampa;9434;Vuelta;120;5
--34.7124081;-58.3051568;D Rocha y Chaco;9434;Vuelta;121;5
--34.7136207;-58.3022547;D Rocha y Montevideo;9434;Vuelta;122;4
--34.7153581;-58.2987463;D Rocha y Cerrito;9434;Vuelta;123;4
--34.7165971;-58.2962197;D Rocha y Alem;9434;Vuelta;124;4
--34.7178318;-58.2937628;D Rocha y Avellaneda;9434;Vuelta;125;4
--34.7194279;-58.2906032;D Rocha y Zapiola;9434;Vuelta;126;4
--34.7218177;-58.2885218;D Rocha y Liniers;9434;Vuelta;127;4
--34.7229641;-58.2874382;Lamadir y Dardo Rocha;9434;Vuelta;128;4
--34.7220117;-58.2854640;Lamadird y Condarco;9434;Vuelta;129;4
--34.7210241;-58.2836080;Lamadrid y M Rodriguez;9434;Vuelta;130;4
--34.7199747;-58.2816339;Lamadrid y Blas Parera;9434;Vuelta;131;4
--34.7189341;-58.2797134;Lamadir y Urquiza;9434;Vuelta;132;3
--34.7178141;-58.2774067;Lamadrid y Larrea;9434;Vuelta;133;3
--34.7169763;-58.2758510;Lamadrid y A Baranda;9434;Vuelta;134;3
--34.7182462;-58.2744348;A Baranda y La Rioja;9434;Vuelta;135;3
--34.7202040;-58.2731634;A Baranda y Rep del Libano;9434;Vuelta;136;3
--34.7218486;-58.2718921;A Baranda y San Luis;9434;Vuelta;137;3
--34.7235505;-58.2702345;R Lopez y A Baranda;9434;Vuelta;138;3
--34.7227613;-58.2686895;R Lopez y B de Irigoyen;9434;Vuelta;139;3
--34.7218089;-58.2668012;R Lopez y V Lopez;9434;Vuelta;140;3
--34.7201378;-58.2656801;I Olivieri y Gran Canaria;9434;Vuelta;141;3
--34.7205920;-58.2623059;Yrigoyen y Colon;9434;Vuelta;142;3
--34.7222631;-58.2611471;Yrigoyen y Videla;9434;Vuelta;143;3
--34.7244500;-58.2598543;Alem y Gaboto;9434;Vuelta;144;3
--34.7246836;-58.2581592;Garibaldi y San Martin;9434;Vuelta;145;3
--34.7241854;-58.2572097;Garibaldi y Moreno;9434;Vuelta;146;3
--34.7232948;-58.2554072;Garibaldi y Brown;9434;Vuelta;147;3
--34.7227789;-58.2544255;Garibaldi y Alvear;9434;Vuelta;148;3
--34.7218133;-58.2525212;Garibaldi y Sarmiento;9434;Vuelta;149;2
--34.6731748;-58.4066731;Peron y Rucci;9432;Vuelta;66;9
--34.6743218;-58.4051496;Peron y Balbin;9432;Vuelta;67;9
--34.6760159;-58.4027839;Peron y Oliden;9432;Vuelta;68;9
--34.6771497;-58.4012282;Peron y Rivadavia;9432;Vuelta;69;9
--34.6755615;-58.3981276;Rivadavia Rep Argentina;9432;Vuelta;70;9
--34.6740969;-58.3964646;Rivadavia y Paraguay;9432;Vuelta;71;9
--34.6725351;-58.3947694;Rivadavia y Chile;9432;Vuelta;72;8
--34.6732630;-58.3938253;Chile y Cabildo;9432;Vuelta;73;8
--34.6753851;-58.3930260;Cabildo y Mendoza;9432;Vuelta;74;8
--34.6771100;-58.3910358;Cabildo y Peru;9432;Vuelta;75;8
--34.6779394;-58.3901024;Cabildo y Catamarca;9432;Vuelta;76;8
--34.6789143;-58.3890188;Cabildo y Santa Fe;9432;Vuelta;77;8
--34.6801495;-58.3876187;Cabildo y Sgo del Estero;9432;Vuelta;78;8
--34.6815038;-58.3860040;Cabildo y Beguerestein;9432;Vuelta;79;8
--34.6809215;-58.3846521;Yrigoyen y Chile;9432;Vuelta;80;8
--34.6794260;-58.3840513;Yrigoyen y Mario Brabo;9432;Vuelta;81;8
--34.6773306;-58.3830911;Yrigoyen y Galicia;9432;Vuelta;82;8
--34.6749351;-58.3821362;Yrigoyen y Uruguay;9432;Vuelta;83;8
--34.6743924;-58.3802640;Gutemberg y Heredia;9432;Vuelta;84;8
--34.6717321;-58.3771205;Larralde y Puente Alsina;9432;Vuelta;85;8
--34.6765277;-58.3708709;Larralde y Velez Sarfield;9432;Vuelta;86;7
--34.6777805;-58.3693206;Larralde y Larrazabal;9432;Vuelta;87;7
--34.6781202;-58.3674002;Guemes y Arredondo;9432;Vuelta;88;7
--34.6768321;-58.3659196;Guemes y Berizo;9432;Vuelta;89;7
--34.6758924;-58.3649057;Eva Peron y Guemes;9432;Vuelta;90;7
--34.6793731;-58.3642459;Eva Peron y Ocampo;9432;Vuelta;91;7
--34.6825757;-58.3635056;Larralde y Tres Sargentos;9432;Vuelta;92;7
--34.6838285;-58.3619070;Larralde y Sarmiento;9432;Vuelta;93;7
--34.6853106;-58.3600938;Larralde y O Higgins;9432;Vuelta;94;7
--34.6867751;-58.3584094;Larralde y Salta;9432;Vuelta;95;7
--34.6879837;-58.3569503;Larralde y Supisiche;9432;Vuelta;96;7
--34.6894570;-58.3552659;Larralde y Ferre;9432;Vuelta;97;7
--34.6906303;-58.3538282;Larralde y Madariaga;9432;Vuelta;98;7
--34.6923902;-58.3517790;Larralde y R Sarrat;9432;Vuelta;99;7
--34.6940618;-58.3497781;Larralde y Deheza;9432;Vuelta;100;6
--34.6953321;-58.3482814;Larralde y Suipacha;9432;Vuelta;101;6
--34.6969243;-58.3463770;Larralde y el Salvador;9432;Vuelta;102;6
--34.6987987;-58.3441401;Larralde y Puerto de Palos;9432;Vuelta;103;6
--34.7007348;-58.3417958;Larralde y Pierres;9432;Vuelta;104;6
--34.7021417;-58.3401489;Larralde y Centenario Uru;9432;Vuelta;105;6
--34.7035927;-58.3381158;Larralde y Chascomus;9432;Vuelta;106;6
--34.7049951;-58.3362222;Larralde y B. de Los Italianos;9432;Vuelta;107;6
--34.7036147;-58.3340979;B de Los Italianos y Mansilla;9432;Vuelta;108;6
--34.7026092;-58.3328426;B de Los Italianos y Villegas;9432;Vuelta;109;6
--34.7009510;-58.3307397;B de Los Italianos y Soilier;9432;Vuelta;110;6
--34.6990545;-58.3284438;B de Los Italianos y Belgrano;9432;Vuelta;111;6
--34.6975020;-58.3265179;B de Los Italianos y Mitre;9432;Vuelta;112;5
--34.6983489;-58.3249784;B Mitre y Mendez;9432;Vuelta;113;5
--34.6998043;-58.3231598;B Mitre y Corvalan;9432;Vuelta;114;5
--34.7013391;-58.3211964;B Mitre y Rondeau;9432;Vuelta;115;5
--34.7029752;-58.3190560;B Mitre y Rodo;9432;Vuelta;116;5
--34.7045629;-58.3180904;Onsari y Mitre;9432;Vuelta;117;5
--34.7031825;-58.3164972;Las Flores y M Moreno;9432;Vuelta;118;5
--34.7022828;-58.3154511;Las Flores y Zeballos;9432;Vuelta;119;5
--34.6996852;-58.3123988;Las Flores y Soreda;9432;Vuelta;120;5
--34.6992530;-58.3082682;Ramón Franco y R Español;9432;Vuelta;121;4
--34.7021902;-58.3005917;San Martín y Pilcomayo;9432;Vuelta;122;4
--34.7035530;-58.2967615;San Martín y Chaco;9432;Vuelta;123;4
--34.7039940;-58.2950020;San Martín y formosa;9432;Vuelta;124;4
--34.7047834;-58.2917351;San Martín y Montevideo;9432;Vuelta;125;4
--34.7057360;-58.2896322;San Martín y C Franco;9432;Vuelta;126;4
--34.7069884;-58.2869983;San Martín y Zeballos;9432;Vuelta;127;4
--34.7091007;-58.2820898;San Martín y 25 de Mayo;9432;Vuelta;128;4
--34.7097049;-58.2805127;San Martín y 9 de Julio;9432;Vuelta;129;4
--34.7106706;-58.2781416;San Martín y Don bosco;9432;Vuelta;130;4
--34.7116760;-58.2759798;San Martín y Zapiola;9432;Vuelta;131;4
--34.7132415;-58.2777178;Zapiola y Belgrano;9432;Vuelta;132;3
--34.7147540;-58.2769668;Berlgrano y Boedo;9432;Vuelta;133;3
--34.7164075;-58.2757545;Berlgrano y Lamadrid;9432;Vuelta;134;3
--34.7182462;-58.2744348;A Baranda y La Rioja;9432;Vuelta;135;3
--34.7202260;-58.2731634;A Baranda y Rep del Libano;9432;Vuelta;136;3
--34.7218486;-58.2718921;A Baranda y San Luis;9432;Vuelta;137;3
--34.7235505;-58.2702345;R Lopez y A Baranda;9432;Vuelta;138;3
--34.7227613;-58.2686895;R Lopez y B de Irigoyen;9432;Vuelta;139;3
--34.7218089;-58.2668012;R Lopez y V Lopez;9432;Vuelta;140;3
--34.7201378;-58.2656801;I Olivieri y Gran Canaria;9432;Vuelta;141;3
--34.7205920;-58.2623059;Yrigoyen y Colon;9432;Vuelta;142;3
--34.7222631;-58.2611471;Yrigoyen y Videla;9432;Vuelta;143;3
--34.7244500;-58.2598543;Alem y Gaboto;9432;Vuelta;144;3
--34.7246836;-58.2581592;Garibaldi y San Martin;9432;Vuelta;145;3
--34.7241854;-58.2572097;Garibaldi y Moreno;9432;Vuelta;146;3
--34.7232948;-58.2554072;Garibaldi y Brown;9432;Vuelta;147;3
--34.7227789;-58.2544255;Garibaldi y Alvear;9432;Vuelta;148;3
--34.7218133;-58.2525212;Garibaldi y Sarmiento;9432;Vuelta;149;2
--34.7212710;-58.2515609;Garibaldi y Paz;9432;Vuelta;150;2
--34.7208565;-58.2506061;Garibaldi y Pringles;9432;Vuelta;151;2
--34.7203715;-58.2497263;Garibaldi y Belgrano;9432;Vuelta;152;2
--34.7193750;-58.2478327;Garibaldi y Allison Bell;9432;Vuelta;153;2
--34.7183962;-58.2461751;Garibaldi y Cevallos;9432;Vuelta;154;2
--34.7173335;-58.2470709;Cevallos y Otamendi;9432;Vuelta;155;2
--34.7163458;-58.2463950;Otamendi y Monrroe;9432;Vuelta;156;2
--34.7152699;-58.2447052;Otamendi y Mozart;9432;Vuelta;157;2
--34.7142204;-58.2428920;Otamendi y A Lora;9432;Vuelta;158;2
--34.7131224;-58.2411003;Otamendi y Toledo;9432;Vuelta;159;2
--34.7115702;-58.2385039;Otamendi y Tte Brussa;9432;Vuelta;160;2
--34.7104634;-58.2366693;Otamendi y Panizza;9432;Vuelta;161;2
--34.7094447;-58.2348132;Otamendi y J B Justo;9432;Vuelta;162;2
--34.7086465;-58.2334399;Otamendi y Yoldi;9432;Vuelta;163;2
+-34.7093300;-58.3236265;Onsari y Villegas;9434;Vuelta;111;1
+-34.7080512;-58.3220494;Onsari y Solier;9434;Vuelta;112;1
+-34.7062696;-58.3199948;Onsari y Belgrano;9434;Vuelta;113;1
+-34.7046070;-58.3181441;Onsari y Mitre;9434;Vuelta;114;1
+-34.7050789;-58.3164597;Mitre y Echeverria;9434;Vuelta;115;1
+-34.7063578;-58.3151293;Mitre y Victor Hugo;9434;Vuelta;116;1
+-34.7071383;-58.2308811;Otamendi y Cervantes;9432;Ida;8;1
+-34.7085070;-58.2334830;Otamendi y Yoldi;9432;Ida;9;1
+-34.7092270;-58.2347350;Otamendi y Juan B Justo;9432;Ida;10;1
+-34.7102120;-58.2364601;Otamendi y Panizza;9432;Ida;11;1
+-34.7113189;-58.2383162;Otamendi y Brussa;9432;Ida;12;1
+-34.7129019;-58.2410896;Otamendi y Toledo;9432;Ida;13;1
+-34.7139514;-58.2427847;Otamendi y Lora;9432;Ida;14;1
+-34.7149788;-58.2445496;Otamendi y Mozart;9432;Ida;15;1
+-34.7160283;-58.2463306;Otamendi y Monrroe;9432;Ida;16;1
+-34.7173026;-58.2474250;Ceballos y Otamendi;9432;Ida;17;1
+-34.7194550;-58.2500350;Alem y Belgrano;9432;Ida;18;1
+-34.7204250;-58.2519620;Alem y Paz;9432;Ida;19;1
+-34.7213680;-58.2538650;Alem y Mitre;9432;Ida;20;1
+-34.7223170;-58.2557270;Alem y Brown;9432;Ida;21;1
+-34.7233200;-58.2576070;Alem y Moreno;9432;Ida;22;1
+-34.7240928;-58.2592857;Alem y H Yrigoyen;9432;Ida;23;1
+-34.7232904;-58.2602835;Yrigoyen y Alsina;9432;Ida;24;1
+-34.7217340;-58.2614529;Yrigoyen y 9 de Julio;9432;Ida;25;1
+-34.7207820;-58.2622130;Yrigoyen y Colon;9432;Ida;26;1
+-34.7190223;-58.2634753;Yrigoyen y Alberdi;9432;Ida;27;1
+-34.7197057;-58.2657820;Gran Canaria y P Oliveri;9432;Ida;28;1
+-34.7206890;-58.2650256;Gran Canaria y R Lopez;9432;Ida;29;1
+-34.7216750;-58.2665870;R Lopez y V Lopez;9432;Ida;30;1
+-34.7226570;-58.2685150;R Lopez y B Irigoyen;9432;Ida;31;1
+-34.7235850;-58.2703480;R Lopez y A Baranda;9432;Ida;32;1
+-34.7221308;-58.2716131;A Baranda y San Luis;9432;Ida;33;1
+-34.7204156;-58.2728630;A Baranda y Rep Libano;9432;Ida;34;1
+-34.7187130;-58.2740420;A Baranda y La Rioja;9432;Ida;35;1
+-34.7169950;-58.2751920;A Baranda y Lamadrid;9432;Ida;36;1
+-34.7151100;-58.2766050;Belgrano y Boedo;9432;Ida;37;1
+-34.7136600;-58.2777200;Belgrano y Zapiola;9432;Ida;38;1
+-34.7122493;-58.2755613;Zapiola y San Martin;9432;Ida;39;1
+-34.7108294;-58.2773960;San Martin y Don Bosco;9432;Ida;40;1
+-34.7097887;-58.2798529;San Martín y 9 de Julio;9432;Ida;41;1
+-34.7075529;-58.2854962;San Martín y LN Alem;9432;Ida;42;1
+-34.7066312;-58.2875562;San Martín y Cerrito;9432;Ida;43;1
+-34.7050524;-58.2908070;San Martín y Montevideo;9432;Ida;44;1
+-34.7038749;-58.2948947;San Martín y Formosa;9432;Ida;45;1
+-34.7035309;-58.2961446;San Martin y Chaco;9432;Ida;46;1
+-34.7029047;-58.2982314;San Martin y Los Andes;9432;Ida;47;1
+-34.7019741;-58.3009833;San Martin y Bermejo;9432;Ida;48;1
+-34.7001042;-58.3061492;Ramón Franco y Caviglia;9432;Ida;49;1
+-34.6978240;-58.3111542;Ramón Franco y Las Flores;9432;Ida;50;1
+-34.6984050;-58.3132750;Martín Fierro y Sodera;9432;Ida;51;1
+-34.6993250;-58.3143550;M Fierro y Zola;9432;Ida;52;1
+-34.7001615;-58.3153975;M Fierro y Bragado;9432;Ida;53;1
+-34.7010744;-58.3164275;M Fierro y Zeballos;9432;Ida;54;1
+-34.7027459;-58.3184981;M Fierro y Mitre;9432;Ida;55;1
+-34.7022167;-58.3195174;Mitre y Bahia Blanca;9432;Ida;56;1
+-34.7006511;-58.3214968;Mitre y Lomas de Zamora;9432;Ida;57;1
+-34.6990369;-58.3235192;Mitre y Lobos;9432;Ida;58;1
+-34.6969750;-58.3259520;D Alighieri y Mitre;9432;Ida;59;1
+-34.6980570;-58.3273080;B. de los Italianos y Mitre;9432;Ida;60;1
+-34.6989170;-58.3283680;B. de los Italianos y Belgrano;9432;Ida;61;1
+-34.7006370;-58.3304680;B. de los Italianos y Solier;9432;Ida;62;1
+-34.7024650;-58.3327020;B. de los italianos y Villegas;9432;Ida;63;1
+-34.7035001;-58.3340657;B. de los Italianos y Mansilla;9432;Ida;64;1
+-34.7039852;-58.3353102;Arredondo y B. de los Italianos;9432;Ida;65;1
+-34.7024813;-58.3372575;Arredondo y Chascomus;9432;Ida;66;1
+-34.7010877;-58.3390117;Arredondo y Centerario U;9432;Ida;67;1
+-34.6998748;-58.3405674;Arredondo y Pierres;9432;Ida;68;1
+-34.6983577;-58.3424449;Arredondo y P Palos;9432;Ida;69;1
+-34.6968405;-58.3442044;Arredondo y Pedernera;9432;Ida;70;1
+-34.6956673;-58.3456528;Arredondo y El Salvador;9432;Ida;71;1
+-34.6944808;-58.3470154;Arredondo y Suipacha;9432;Ida;72;1
+-34.6932282;-58.3485550;Arredondo y Deheza;9432;Ida;73;1
+-34.6917480;-58.3504170;Arredondo y Molina;9432;Ida;74;1
+-34.6906038;-58.3517522;Arredondo y Sarrat;9432;Ida;75;1
+-34.6905200;-58.3535814;Madariaga y C. Larralde;9432;Ida;76;1
+-34.6895937;-58.3549118;Larralde y Ferre;9432;Ida;77;1
+-34.6881028;-58.3566284;Larralde y  Supisiche;9432;Ida;78;1
+-34.6869163;-58.3580661;Larralde y Salta;9432;Ida;79;1
+-34.6854121;-58.3599061;Larralde y O Higgins;9432;Ida;80;1
+-34.6838329;-58.3618534;Larralde y Sarmiento;9432;Ida;81;1
+-34.6825350;-58.3635020;Larralde y Tres Sargentos;9432;Ida;82;1
+-34.6796330;-58.3641470;Eva Peron y Elisalde;9432;Ida;83;1
+-34.6767580;-58.3645480;Eva Peron y Guemes;9432;Ida;84;1
+-34.6740920;-58.3622500;Pitágoras (Museo);9432;Ida;85;1
+-34.6749836;-58.3642191;Guemes y Lanares;9432;Ida;86;1
+-34.6768100;-58.3662683;Guemes y villegas (Alto Avell);9432;Ida;87;1
+-34.6776300;-58.3694420;Larralde y Larrazabal;9432;Ida;88;1
+-34.6768365;-58.3703184;C. Larralde y Velez Sarfield;9432;Ida;89;1
+-34.6715557;-58.3778930;Puente Alsina;9432;Ida;90;1
+-34.6739910;-58.3804250;Gutemberg y Heredia;9432;Ida;91;1
+-34.6740174;-58.3821255;Heredia y Yrigoyen;9432;Ida;92;1
+-34.6765983;-58.3829087;Yrigoyen y Galicia;9432;Ida;93;1
+-34.6794084;-58.3842713;Yrigoyen y Mario Bravo;9432;Ida;94;1
+-34.6814750;-58.3859370;Cabildo y Beguerenstain;9432;Ida;95;1
+-34.6800568;-58.3875275;Cabildo y Santiago;9432;Ida;96;1
+-34.6790466;-58.3887023;Cabildo y Santa Fe;9432;Ida;97;1
+-34.6783050;-58.3896270;Cabildo y Catamarca;9432;Ida;98;1
+-34.6770747;-58.3909929;Cabildo y Peru;9432;Ida;99;1
+-34.6753350;-58.3930670;Cabildo y Mendoza;9432;Ida;100;1
+-34.6734880;-58.3951970;Guatemala y Cabildo;9432;Ida;101;1
+-34.6736866;-58.3963412;Rivadavia y Paraguay;9432;Ida;102;1
+-34.6751204;-58.3979398;Rivadavia y Rep.Argentina;9432;Ida;103;1
+-34.6758130;-58.3989161;Rivadavia y Colombia;9432;Ida;104;1
+-34.6769865;-58.4006757;Rivadavia y Pte Perón;9432;Ida;105;1
+-34.6762409;-58.4023869;Pte Perón y Oliden;9432;Ida;106;1
+-34.6757230;-58.4031220;Pte Perón y Ucrania;9432;Ida;107;1
+-34.7060799;-58.3389097;Matanza y La Fuente;9433;Ida;68;1
+-34.7068120;-58.3398163;Matanza y Heredia;9433;Ida;69;1
+-34.7085319;-58.3417368;Matanza y Casacuberta;9433;Ida;70;1
+-34.7093389;-58.3426809;Matanza y De La Serna;9433;Ida;71;1
+-34.7106706;-58.3441830;Matanza y Cangallo;9433;Ida;72;1
+-34.7125448;-58.3464038;Matanza y Caxaraville;9433;Ida;73;1
+-34.7141013;-58.3482921;Matanza y C G Belgrano;9433;Ida;74;1
+-34.7135590;-58.3488983;Belgrano y Chascomus;9433;Ida;75;1
+-34.7121170;-58.3505613;Belgrano y Centenario U;9433;Ida;76;1
+-34.7099254;-58.3531255;Belgrano y Posadas;9433;Ida;77;1
+-34.7083246;-58.3549708;Belgrano y Barcelo;9433;Ida;78;1
+-34.7071692;-58.3563012;Belgrano y Pedernera;9433;Ida;79;1
+-34.7057712;-58.3579695;Belgrano y San Lorenzo  ;9433;Ida;80;1
+-34.7045938;-58.3592999;Belgrano y Suipacha;9433;Ida;81;1
+-34.7041660;-58.3608180;Bustamante y Dehesa;9433;Ida;82;1
+-34.7034780;-58.3622879;Bustamante y Cao;9433;Ida;83;1
+-34.7023710;-58.3638006;Bustamante y J B Justo;9433;Ida;84;1
+-34.7015507;-58.3647555;Bustamante y Madariaga;9433;Ida;85;1
+-34.6998748;-58.3667994;Bustamante y Ferre;9433;Ida;86;1
+-34.6977887;-58.3697820;Bustamante y Salta;9433;Ida;87;1
+-34.6966288;-58.3711660;Bustamante y Basavilbaso;9433;Ida;88;1
+-34.6947543;-58.3733654;Bustamante y Sarmiento;9433;Ida;89;1
+-34.6926857;-58.3757633;Bustamante y Mamberti;9433;Ida;90;1
+-34.6917594;-58.3768576;Bustamante y Donovan;9433;Ida;91;1
+-34.6896290;-58.3794433;Bustamante y LaCarra;9433;Ida;92;1
+-34.6864708;-58.3835793;Puente Gerli;9433;Ida;93;1
+-34.6845563;-58.3861488;Brasil y Yrigoyen;9433;Ida;94;1
+-34.6814750;-58.3859370;Cabildo y Beguerenstain;9433;Ida;95;1
+-34.6800568;-58.3875275;Cabildo y Santiago;9433;Ida;96;1
+-34.6790466;-58.3887023;Cabildo y Santa Fe;9433;Ida;97;1
+-34.6783050;-58.3896270;Cabildo y Catamarca;9433;Ida;98;1
+-34.6279508;-58.5345072;San ignacio y Croacia;9432;Vuelta;2;1
+-34.6271386;-58.5355800;San ignacio y G Roca;9432;Vuelta;3;1
+-34.6265118;-58.5364598;San ignacio y Pelegrini;9432;Vuelta;4;1
+-34.6252449;-58.5355693;Pelegrini y Necochea;9432;Vuelta;5;1
+-34.6240000;-58.5341477;Pelegrini y Dardo Rocha;9432;Vuelta;6;1
+-34.6226360;-58.5326350;Pelegrini y R A Siria;9432;Vuelta;7;1
+-34.6216030;-58.5336220;Rep A Siria y San Roque;9432;Vuelta;8;1
+-34.6207775;-58.5329998;San Roque y Los Andes;9432;Vuelta;9;1
+-34.6192809;-58.5314494;San Roque Y Gral Paz;9432;Vuelta;10;1
+-34.6179875;-58.5301888;Beiró y Irigoyen;9432;Vuelta;11;1
+-34.6138287;-58.5248297;Beiró y Lopez de Vega;9432;Vuelta;12;1
+-34.6110031;-58.5202163;Beiró y Bermudez;9432;Vuelta;13;1
+-34.6075814;-58.5145140;Beiró y Marcos Paz;9432;Vuelta;14;1
+-34.6062435;-58.5132855;Segurola y Navarro;9432;Vuelta;15;1
+-34.6046054;-58.5136288;Cantilo y Sanabria;9432;Vuelta;16;1
+-34.6036296;-58.5120088;Cantilo y Gualeguaychu;9432;Vuelta;17;1
+-34.6048262;-58.5106087;Gualeguaychu y Beiró;9432;Vuelta;18;1
+-34.6072679;-58.5120517;Segurola y Varela;9432;Vuelta;19;1
+-34.6098993;-58.5098523;Segurola y Pedro Lozano;9432;Vuelta;20;1
+-34.6121775;-58.5080069;Segurola y Nogoya;9432;Vuelta;21;1
+-34.6150163;-58.5053462;Segurola y Santo tomé;9432;Vuelta;22;1
+-34.6177535;-58.5026479;Segurola y Alvarez Jonte;9432;Vuelta;23;1
+-34.6195591;-58.5005558;Segurola y Miranda;9432;Vuelta;24;1
+-34.6204287;-58.4993809;Segurola y E Gonzalez;9432;Vuelta;25;1
+-34.6216118;-58.4979218;Segurola y Pablo Podestá;9432;Vuelta;26;1
+-34.6230200;-58.4961301;Segurola y Camarones;9432;Vuelta;27;1
+-34.6238544;-58.4950626;Segurola y M Cervantes;9432;Vuelta;28;1
+-34.6255539;-58.4929329;Segurola y R Escalada SM;9432;Vuelta;29;1
+-34.6266751;-58.4915435;Segurola y Juan B Justo;9432;Vuelta;30;1
+-34.6275226;-58.4904063;Segurola y Gaona;9432;Vuelta;31;1
+-34.6291073;-58.4884483;Segurola y Aranguren;9432;Vuelta;32;1
+-34.6318882;-58.4850097;Segurola y Bacacay;9432;Vuelta;33;1
+-34.6335963;-58.4807235;Rivadavia y Candelaria;9432;Vuelta;34;1
+-34.6327224;-58.4772152;Rivadavia y dolores;9432;Vuelta;35;1
+-34.6315792;-58.4726715;Rivadavia y José Marti;9432;Vuelta;36;1
+-34.6305419;-58.4689111;Rivadavia y Nazca (metrobus);9432;Vuelta;37;1
+-34.6281848;-58.4604943;Rivadavia y Bonorino;9432;Vuelta;38;1
+-34.6263838;-58.4561062;Rivadavia y Carabobo;9432;Vuelta;39;1
+-34.6254524;-58.4536171;Rivadavia y Curapaligue;9432;Vuelta;40;1
+-34.6236910;-58.4491110;Rivadavia y Puan;9432;Vuelta;41;1
+-34.6228744;-58.4467989;Rivadavia y Hortiguera;9432;Vuelta;42;1
+-34.6206495;-58.4405279;Rosario y Centenera;9432;Vuelta;43;1
+-34.6195149;-58.4364295;Rosario y José M Moreno;9432;Vuelta;44;1
+-34.6187600;-58.4319717;Rosario y Doblas;9432;Vuelta;45;1
+-34.6184245;-58.4292412;Rosario y Av La Plata;9432;Vuelta;46;1
+-34.6214794;-58.4278679;Av La Plata y Alberdi;9432;Vuelta;47;1
+-34.6247328;-58.4272939;Av La Plata y Pedro Goyena;9432;Vuelta;48;1
+-34.6266045;-58.4268701;Av La Plata y Directorio;9432;Vuelta;49;1
+-34.6309524;-58.4259206;Av La Plata y Asamblea;9432;Vuelta;50;1
+-34.6333359;-58.4252930;Av La Plata y Santander;9432;Vuelta;51;1
+-34.6365447;-58.4245098;Av La Plata Zaraza;9432;Vuelta;52;1
+-34.6398373;-58.4235871;Av La Plata y Cobo;9432;Vuelta;53;1
+-34.6420352;-58.4230828;Av La Plata F de la Cruz;9432;Vuelta;54;1
+-34.6447141;-58.4212911;Av La Plata F Rivera;9432;Vuelta;55;1
+-34.6469295;-58.4194511;Av La Plata Tabare;9432;Vuelta;56;1
+-34.6480858;-58.4170103;Av La Plata Saenz;9432;Vuelta;57;1
+-34.6513602;-58.4164739;Saenz y Esquiú (metrobus);9432;Vuelta;58;1
+-34.6625727;-58.4174234;R de Escalada y Palacios;9432;Vuelta;59;1
+-34.6663628;-58.4158409;Peron y Crotti;9432;Vuelta;60;1
+-34.6674834;-58.4142959;Peron y L Valentinas;9432;Vuelta;61;1
+-34.6687365;-58.4126329;Peron y Valparaiso;9432;Vuelta;62;1
+-34.6700689;-58.4108520;Peron y Armenia;9432;Vuelta;63;1
+-34.6712513;-58.4092373;Peron y Paso de Burgos;9432;Vuelta;64;1
+-34.6719836;-58.4081858;Peron y Itapiru;9432;Vuelta;65;1
+-34.7077425;-58.3137560;Mitre y Lynch;9434;Vuelta;117;1
+-34.7092507;-58.3122861;Mitre y Neuquén;9434;Vuelta;118;1
+-34.7109352;-58.3104408;Av Los Quilmes y Pilcomayo;9434;Vuelta;119;1
+-34.7109705;-58.3084774;D Rocha y Pampa;9434;Vuelta;120;1
+-34.7124081;-58.3051568;D Rocha y Chaco;9434;Vuelta;121;1
+-34.7136207;-58.3022547;D Rocha y Montevideo;9434;Vuelta;122;1
+-34.7153581;-58.2987463;D Rocha y Cerrito;9434;Vuelta;123;1
+-34.7165971;-58.2962197;D Rocha y Alem;9434;Vuelta;124;1
+-34.7178318;-58.2937628;D Rocha y Avellaneda;9434;Vuelta;125;1
+-34.7194279;-58.2906032;D Rocha y Zapiola;9434;Vuelta;126;1
+-34.7218177;-58.2885218;D Rocha y Liniers;9434;Vuelta;127;1
+-34.7229641;-58.2874382;Lamadir y Dardo Rocha;9434;Vuelta;128;1
+-34.7220117;-58.2854640;Lamadird y Condarco;9434;Vuelta;129;1
+-34.7210241;-58.2836080;Lamadrid y M Rodriguez;9434;Vuelta;130;1
+-34.7199747;-58.2816339;Lamadrid y Blas Parera;9434;Vuelta;131;1
+-34.7189341;-58.2797134;Lamadir y Urquiza;9434;Vuelta;132;1
+-34.7178141;-58.2774067;Lamadrid y Larrea;9434;Vuelta;133;1
+-34.7169763;-58.2758510;Lamadrid y A Baranda;9434;Vuelta;134;1
+-34.7182462;-58.2744348;A Baranda y La Rioja;9434;Vuelta;135;1
+-34.7202040;-58.2731634;A Baranda y Rep del Libano;9434;Vuelta;136;1
+-34.7218486;-58.2718921;A Baranda y San Luis;9434;Vuelta;137;1
+-34.7235505;-58.2702345;R Lopez y A Baranda;9434;Vuelta;138;1
+-34.7227613;-58.2686895;R Lopez y B de Irigoyen;9434;Vuelta;139;1
+-34.7218089;-58.2668012;R Lopez y V Lopez;9434;Vuelta;140;1
+-34.7201378;-58.2656801;I Olivieri y Gran Canaria;9434;Vuelta;141;1
+-34.7205920;-58.2623059;Yrigoyen y Colon;9434;Vuelta;142;1
+-34.7222631;-58.2611471;Yrigoyen y Videla;9434;Vuelta;143;1
+-34.7244500;-58.2598543;Alem y Gaboto;9434;Vuelta;144;1
+-34.7246836;-58.2581592;Garibaldi y San Martin;9434;Vuelta;145;1
+-34.7241854;-58.2572097;Garibaldi y Moreno;9434;Vuelta;146;1
+-34.7232948;-58.2554072;Garibaldi y Brown;9434;Vuelta;147;1
+-34.7227789;-58.2544255;Garibaldi y Alvear;9434;Vuelta;148;1
+-34.7218133;-58.2525212;Garibaldi y Sarmiento;9434;Vuelta;149;1
+-34.6731748;-58.4066731;Peron y Rucci;9432;Vuelta;66;1
+-34.6743218;-58.4051496;Peron y Balbin;9432;Vuelta;67;1
+-34.6760159;-58.4027839;Peron y Oliden;9432;Vuelta;68;1
+-34.6771497;-58.4012282;Peron y Rivadavia;9432;Vuelta;69;1
+-34.6755615;-58.3981276;Rivadavia Rep Argentina;9432;Vuelta;70;1
+-34.6740969;-58.3964646;Rivadavia y Paraguay;9432;Vuelta;71;1
+-34.6725351;-58.3947694;Rivadavia y Chile;9432;Vuelta;72;1
+-34.6732630;-58.3938253;Chile y Cabildo;9432;Vuelta;73;1
+-34.6753851;-58.3930260;Cabildo y Mendoza;9432;Vuelta;74;1
+-34.6771100;-58.3910358;Cabildo y Peru;9432;Vuelta;75;1
+-34.6779394;-58.3901024;Cabildo y Catamarca;9432;Vuelta;76;1
+-34.6789143;-58.3890188;Cabildo y Santa Fe;9432;Vuelta;77;1
+-34.6801495;-58.3876187;Cabildo y Sgo del Estero;9432;Vuelta;78;1
+-34.6815038;-58.3860040;Cabildo y Beguerestein;9432;Vuelta;79;1
+-34.6809215;-58.3846521;Yrigoyen y Chile;9432;Vuelta;80;1
+-34.6794260;-58.3840513;Yrigoyen y Mario Brabo;9432;Vuelta;81;1
+-34.6773306;-58.3830911;Yrigoyen y Galicia;9432;Vuelta;82;1
+-34.6749351;-58.3821362;Yrigoyen y Uruguay;9432;Vuelta;83;1
+-34.6743924;-58.3802640;Gutemberg y Heredia;9432;Vuelta;84;1
+-34.6717321;-58.3771205;Larralde y Puente Alsina;9432;Vuelta;85;1
+-34.6765277;-58.3708709;Larralde y Velez Sarfield;9432;Vuelta;86;1
+-34.6777805;-58.3693206;Larralde y Larrazabal;9432;Vuelta;87;1
+-34.6781202;-58.3674002;Guemes y Arredondo;9432;Vuelta;88;1
+-34.6768321;-58.3659196;Guemes y Berizo;9432;Vuelta;89;1
+-34.6758924;-58.3649057;Eva Peron y Guemes;9432;Vuelta;90;1
+-34.6793731;-58.3642459;Eva Peron y Ocampo;9432;Vuelta;91;1
+-34.6825757;-58.3635056;Larralde y Tres Sargentos;9432;Vuelta;92;1
+-34.6838285;-58.3619070;Larralde y Sarmiento;9432;Vuelta;93;1
+-34.6853106;-58.3600938;Larralde y O Higgins;9432;Vuelta;94;1
+-34.6867751;-58.3584094;Larralde y Salta;9432;Vuelta;95;1
+-34.6879837;-58.3569503;Larralde y Supisiche;9432;Vuelta;96;1
+-34.6894570;-58.3552659;Larralde y Ferre;9432;Vuelta;97;1
+-34.6906303;-58.3538282;Larralde y Madariaga;9432;Vuelta;98;1
+-34.6923902;-58.3517790;Larralde y R Sarrat;9432;Vuelta;99;1
+-34.6940618;-58.3497781;Larralde y Deheza;9432;Vuelta;100;1
+-34.6953321;-58.3482814;Larralde y Suipacha;9432;Vuelta;101;1
+-34.6969243;-58.3463770;Larralde y el Salvador;9432;Vuelta;102;1
+-34.6987987;-58.3441401;Larralde y Puerto de Palos;9432;Vuelta;103;1
+-34.7007348;-58.3417958;Larralde y Pierres;9432;Vuelta;104;1
+-34.7021417;-58.3401489;Larralde y Centenario Uru;9432;Vuelta;105;1
+-34.7035927;-58.3381158;Larralde y Chascomus;9432;Vuelta;106;1
+-34.7049951;-58.3362222;Larralde y B. de Los Italianos;9432;Vuelta;107;1
+-34.7036147;-58.3340979;B de Los Italianos y Mansilla;9432;Vuelta;108;1
+-34.7026092;-58.3328426;B de Los Italianos y Villegas;9432;Vuelta;109;1
+-34.7009510;-58.3307397;B de Los Italianos y Soilier;9432;Vuelta;110;1
+-34.6990545;-58.3284438;B de Los Italianos y Belgrano;9432;Vuelta;111;1
+-34.6975020;-58.3265179;B de Los Italianos y Mitre;9432;Vuelta;112;1
+-34.6983489;-58.3249784;B Mitre y Mendez;9432;Vuelta;113;1
+-34.6998043;-58.3231598;B Mitre y Corvalan;9432;Vuelta;114;1
+-34.7013391;-58.3211964;B Mitre y Rondeau;9432;Vuelta;115;1
+-34.7029752;-58.3190560;B Mitre y Rodo;9432;Vuelta;116;1
+-34.7045629;-58.3180904;Onsari y Mitre;9432;Vuelta;117;1
+-34.7031825;-58.3164972;Las Flores y M Moreno;9432;Vuelta;118;1
+-34.7022828;-58.3154511;Las Flores y Zeballos;9432;Vuelta;119;1
+-34.6996852;-58.3123988;Las Flores y Soreda;9432;Vuelta;120;1
+-34.6992530;-58.3082682;Ramón Franco y R Español;9432;Vuelta;121;1
+-34.7021902;-58.3005917;San Martín y Pilcomayo;9432;Vuelta;122;1
+-34.7035530;-58.2967615;San Martín y Chaco;9432;Vuelta;123;1
+-34.7039940;-58.2950020;San Martín y formosa;9432;Vuelta;124;1
+-34.7047834;-58.2917351;San Martín y Montevideo;9432;Vuelta;125;1
+-34.7057360;-58.2896322;San Martín y C Franco;9432;Vuelta;126;1
+-34.7069884;-58.2869983;San Martín y Zeballos;9432;Vuelta;127;1
+-34.7091007;-58.2820898;San Martín y 25 de Mayo;9432;Vuelta;128;1
+-34.7097049;-58.2805127;San Martín y 9 de Julio;9432;Vuelta;129;1
+-34.7106706;-58.2781416;San Martín y Don bosco;9432;Vuelta;130;1
+-34.7116760;-58.2759798;San Martín y Zapiola;9432;Vuelta;131;1
+-34.7132415;-58.2777178;Zapiola y Belgrano;9432;Vuelta;132;1
+-34.7147540;-58.2769668;Berlgrano y Boedo;9432;Vuelta;133;1
+-34.7164075;-58.2757545;Berlgrano y Lamadrid;9432;Vuelta;134;1
+-34.7182462;-58.2744348;A Baranda y La Rioja;9432;Vuelta;135;1
+-34.7202260;-58.2731634;A Baranda y Rep del Libano;9432;Vuelta;136;1
+-34.7218486;-58.2718921;A Baranda y San Luis;9432;Vuelta;137;1
+-34.7235505;-58.2702345;R Lopez y A Baranda;9432;Vuelta;138;1
+-34.7227613;-58.2686895;R Lopez y B de Irigoyen;9432;Vuelta;139;1
+-34.7218089;-58.2668012;R Lopez y V Lopez;9432;Vuelta;140;1
+-34.7201378;-58.2656801;I Olivieri y Gran Canaria;9432;Vuelta;141;1
+-34.7205920;-58.2623059;Yrigoyen y Colon;9432;Vuelta;142;1
+-34.7222631;-58.2611471;Yrigoyen y Videla;9432;Vuelta;143;1
+-34.7244500;-58.2598543;Alem y Gaboto;9432;Vuelta;144;1
+-34.7246836;-58.2581592;Garibaldi y San Martin;9432;Vuelta;145;1
+-34.7241854;-58.2572097;Garibaldi y Moreno;9432;Vuelta;146;1
+-34.7232948;-58.2554072;Garibaldi y Brown;9432;Vuelta;147;1
+-34.7227789;-58.2544255;Garibaldi y Alvear;9432;Vuelta;148;1
+-34.7218133;-58.2525212;Garibaldi y Sarmiento;9432;Vuelta;149;1
+-34.7212710;-58.2515609;Garibaldi y Paz;9432;Vuelta;150;1
+-34.7208565;-58.2506061;Garibaldi y Pringles;9432;Vuelta;151;1
+-34.7203715;-58.2497263;Garibaldi y Belgrano;9432;Vuelta;152;1
+-34.7193750;-58.2478327;Garibaldi y Allison Bell;9432;Vuelta;153;1
+-34.7183962;-58.2461751;Garibaldi y Cevallos;9432;Vuelta;154;1
+-34.7173335;-58.2470709;Cevallos y Otamendi;9432;Vuelta;155;1
+-34.7163458;-58.2463950;Otamendi y Monrroe;9432;Vuelta;156;1
+-34.7152699;-58.2447052;Otamendi y Mozart;9432;Vuelta;157;1
+-34.7142204;-58.2428920;Otamendi y A Lora;9432;Vuelta;158;1
+-34.7131224;-58.2411003;Otamendi y Toledo;9432;Vuelta;159;1
+-34.7115702;-58.2385039;Otamendi y Tte Brussa;9432;Vuelta;160;1
+-34.7104634;-58.2366693;Otamendi y Panizza;9432;Vuelta;161;1
+-34.7094447;-58.2348132;Otamendi y J B Justo;9432;Vuelta;162;1
+-34.7086465;-58.2334399;Otamendi y Yoldi;9432;Vuelta;163;1
 -34.7072045;-58.2310367;Otamendi y Cervantes;9432;Vuelta;164;1
--34.6271386;-58.5355800;San ignacio y G Roca;9433;Vuelta;3;15
--34.6265118;-58.5364598;San ignacio y Pelegrini;9433;Vuelta;4;15
--34.6252449;-58.5355693;Pelegrini y Necochea;9433;Vuelta;5;15
--34.6240000;-58.5341477;Pelegrini y Dardo Rocha;9433;Vuelta;6;15
--34.6226360;-58.5326350;Pelegrini y R A Siria;9433;Vuelta;7;15
--34.6216030;-58.5336220;Rep A Siria y San Roque;9433;Vuelta;8;15
--34.6207775;-58.5329998;San Roque y Los Andes;9433;Vuelta;9;15
--34.6192809;-58.5314494;San Roque Y Gral Paz;9433;Vuelta;10;15
--34.6179875;-58.5301888;Beiró y Irigoyen;9433;Vuelta;11;15
--34.6138287;-58.5248297;Beiró y Lopez de Vega;9433;Vuelta;12;15
--34.6110031;-58.5202163;Beiró y Bermudez;9433;Vuelta;13;15
--34.6075814;-58.5145140;Beiró y Marcos Paz;9433;Vuelta;14;15
--34.6062435;-58.5132855;Segurola y Navarro;9433;Vuelta;15;15
--34.6046054;-58.5136288;Cantilo y Sanabria;9433;Vuelta;16;14
--34.6036296;-58.5120088;Cantilo y Gualeguaychu;9433;Vuelta;17;14
--34.6048262;-58.5106087;Gualeguaychu y Beiró;9433;Vuelta;18;14
--34.6072679;-58.5120517;Segurola y Varela;9433;Vuelta;19;14
--34.6098993;-58.5098523;Segurola y Pedro Lozano;9433;Vuelta;20;14
--34.6121775;-58.5080069;Segurola y Nogoya;9433;Vuelta;21;14
--34.6150163;-58.5053462;Segurola y Santo tomé;9433;Vuelta;22;14
--34.6177535;-58.5026479;Segurola y Alvarez Jonte;9433;Vuelta;23;14
--34.6195591;-58.5005558;Segurola y Miranda;9433;Vuelta;24;14
--34.6204287;-58.4993809;Segurola y E Gonzalez;9433;Vuelta;25;14
--34.6216118;-58.4979218;Segurola y Pablo Podestá;9433;Vuelta;26;14
--34.6230200;-58.4961301;Segurola y Camarones;9433;Vuelta;27;14
--34.6238544;-58.4950626;Segurola y M Cervantes;9433;Vuelta;28;14
--34.6255539;-58.4929329;Segurola y R Escalada SM;9433;Vuelta;29;14
--34.6266751;-58.4915435;Segurola y Juan B Justo;9433;Vuelta;30;13
--34.6275226;-58.4904063;Segurola y Gaona;9433;Vuelta;31;13
--34.6291073;-58.4884483;Segurola y Aranguren;9433;Vuelta;32;13
--34.6318882;-58.4850097;Segurola y Bacacay;9433;Vuelta;33;13
--34.6335963;-58.4807235;Rivadavia y Candelaria;9433;Vuelta;34;13
--34.6327224;-58.4772152;Rivadavia y dolores;9433;Vuelta;35;13
--34.6315792;-58.4726715;Rivadavia y José Marti;9433;Vuelta;36;13
--34.6305419;-58.4689111;Rivadavia y Nazca (metrobus);9433;Vuelta;37;12
--34.6281848;-58.4604943;Rivadavia y Bonorino;9433;Vuelta;38;12
--34.6263838;-58.4561062;Rivadavia y Carabobo;9433;Vuelta;39;12
--34.6254524;-58.4536171;Rivadavia y Curapaligue;9433;Vuelta;40;12
--34.6236910;-58.4491110;Rivadavia y Puan;9433;Vuelta;41;12
--34.6228744;-58.4467989;Rivadavia y Hortiguera;9433;Vuelta;42;12
--34.6206495;-58.4405279;Rosario y Centenera;9433;Vuelta;43;12
--34.6195149;-58.4364295;Rosario y José M Moreno;9433;Vuelta;44;11
--34.6187600;-58.4319717;Rosario y Doblas;9433;Vuelta;45;11
--34.6184245;-58.4292412;Rosario y Av La Plata;9433;Vuelta;46;11
--34.6215456;-58.4279054;Av La Plata y Alberdi;9433;Vuelta;47;11
--34.6247328;-58.4272939;Av La Plata y Pedro Goyena;9433;Vuelta;48;11
--34.6266045;-58.4268701;Av La Plata y Directorio;9433;Vuelta;49;11
--34.6309524;-58.4259206;Av La Plata y Asamblea;9433;Vuelta;50;11
--34.6333359;-58.4252930;Av La Plata y Santander;9433;Vuelta;51;11
--34.6365447;-58.4245098;Av La Plata Zaraza;9433;Vuelta;52;11
--34.6398373;-58.4235871;Av La Plata y Cobo;9433;Vuelta;53;10
--34.6420352;-58.4230828;Av La Plata F de la Cruz;9433;Vuelta;54;10
--34.6447141;-58.4212911;Av La Plata F Rivera;9433;Vuelta;55;10
--34.6469295;-58.4194511;Av La Plata Tabare;9433;Vuelta;56;10
--34.6480858;-58.4170103;Av La Plata Saenz;9433;Vuelta;57;10
--34.6513602;-58.4164739;Saenz y Esquiú (metrobus);9433;Vuelta;58;10
--34.6625727;-58.4174234;R de Escalada y Palacios;9433;Vuelta;59;9
--34.6663628;-58.4158409;Peron y Crotti;9433;Vuelta;60;9
--34.6674834;-58.4142959;Peron y L Valentinas;9433;Vuelta;61;9
--34.6687365;-58.4126329;Peron y Valparaiso;9433;Vuelta;62;9
--34.6700689;-58.4108520;Peron y Armenia;9433;Vuelta;63;9
--34.6712513;-58.4092373;Peron y Paso de Burgos;9433;Vuelta;64;9
--34.6719836;-58.4081858;Peron y Itapiru;9433;Vuelta;65;9
--34.6731748;-58.4066731;Peron y Rucci;9433;Vuelta;66;9
--34.6743218;-58.4051496;Peron y Balbin;9433;Vuelta;67;9
--34.6760159;-58.4027839;Peron y Oliden;9433;Vuelta;68;9
--34.6771497;-58.4012282;Peron y Rivadavia;9433;Vuelta;69;9
--34.6755262;-58.3981061;Rivadavia Rep Argentina;9433;Vuelta;70;9
--34.6740792;-58.3964753;Rivadavia y Paraguay;9433;Vuelta;71;9
--34.6724557;-58.3945978;Rivadavia y Chile;9433;Vuelta;72;8
--34.6732233;-58.3938575;Chile y Cabildo;9433;Vuelta;73;8
--34.6752792;-58.3930957;Cabildo y Mendoza;9433;Vuelta;74;8
--34.6769644;-58.3911860;Cabildo y Peru;9433;Vuelta;75;8
--34.6780585;-58.3899736;Cabildo y Catamarca;9433;Vuelta;76;8
--34.6789319;-58.3889759;Cabildo y Santa Fe;9433;Vuelta;77;8
--34.6802951;-58.3874524;Cabildo y Sgo del Estero;9433;Vuelta;78;8
--34.6815788;-58.3859128;Cabildo y Beguerestein;9433;Vuelta;79;8
--34.6844593;-58.3864170;Brasil y Yrigoyen;9433;Vuelta;80;8
--34.6867398;-58.3832949;Bustamante y Est Gerli;9433;Vuelta;81;8
--34.6895673;-58.3796310;Bustamante y  Lacarra;9433;Vuelta;82;8
--34.6914683;-58.3772439;Bustamante y Donovan;9433;Vuelta;83;8
--34.6924034;-58.3762246;Bustamante y Mamberti;9433;Vuelta;84;8
--34.6944632;-58.3738375;Bustamante y Sarmiento;9433;Vuelta;85;8
--34.6963200;-58.3715791;Bustamante y Basavilbaso;9433;Vuelta;86;7
--34.6974403;-58.3702862;Bustamante y Salta;9433;Vuelta;87;7
--34.6994470;-58.3674109;Bustamante y Ferré;9433;Vuelta;88;7
--34.7011362;-58.3653671;Bustamante y Madariaga;9433;Vuelta;89;7
--34.7020800;-58.3642673;Bustamante y J B Justo;9433;Vuelta;90;7
--34.7032310;-58.3627868;Bustamante y Cao;9433;Vuelta;91;7
--34.7043115;-58.3606356;Bustamante y  Deheza;9433;Vuelta;92;7
--34.7046864;-58.3592838;C G Belgrano y Suipacha;9433;Vuelta;93;7
--34.7076852;-58.3558559;C G Belgrano y Barcelo;9433;Vuelta;94;7
--34.7092286;-58.3540535;C G Belgrano y Posadas;9433;Vuelta;95;7
--34.7116584;-58.3512533;C G Belgrano y Centenario;9433;Vuelta;96;6
--34.7132988;-58.3493650;C G Belgrano y Chascomus;9433;Vuelta;97;6
--34.7147540;-58.3476537;B de los Italianos y C G Belgrano;9433;Vuelta;98;6
--34.7134311;-58.3458674;B de los Italianos y Caxaraville;9433;Vuelta;99;6
--34.7124389;-58.3446872;B de los Italianos y Campichuelo;9433;Vuelta;100;6
--34.6768365;-58.3703184;C. Larralde y Velez Sarfield;9432;Ida;89;8
--34.6715557;-58.3778930;Puente Alsina;9432;Ida;90;8
--34.6739910;-58.3804250;Gutemberg y Heredia;9432;Ida;91;8
--34.6740174;-58.3821255;Heredia y Yrigoyen;9432;Ida;92;8
--34.6765983;-58.3829087;Yrigoyen y Galicia;9432;Ida;93;8
--34.6794084;-58.3842713;Yrigoyen y Mario Bravo;9432;Ida;94;8
--34.6814750;-58.3859370;Cabildo y Beguerenstain;9432;Ida;95;8
--34.6800568;-58.3875275;Cabildo y Santiago;9432;Ida;96;8
--34.6790466;-58.3887023;Cabildo y Santa Fe;9432;Ida;97;8
--34.6783050;-58.3896270;Cabildo y Catamarca;9432;Ida;98;8
--34.6770747;-58.3909929;Cabildo y Peru;9432;Ida;99;8
--34.6753350;-58.3930670;Cabildo y Mendoza;9432;Ida;100;8
--34.6734880;-58.3951970;Guatemala y Cabildo;9432;Ida;101;9
--34.6736866;-58.3963412;Rivadavia y Paraguay;9432;Ida;102;9
--34.6751204;-58.3979398;Rivadavia y Rep.Argentina;9432;Ida;103;9
--34.6758130;-58.3989161;Rivadavia y Colombia;9432;Ida;104;9
--34.6769865;-58.4006757;Rivadavia y Pte Perón;9432;Ida;105;9
--34.6762409;-58.4023869;Pte Perón y Oliden;9432;Ida;106;9
--34.6757230;-58.4031220;Pte Perón y Ucrania;9432;Ida;107;9
--34.6747277;-58.4044361;Pte Perón y P de la Patria;9432;Ida;108;9
--34.6740307;-58.4053749;Pte Perón y Juan Farrel;9432;Ida;109;9
--34.6727204;-58.4071344;Pte Perón y J Rucci;9432;Ida;110;9
--34.6714542;-58.4088832;Pte Perón y Burgos;9432;Ida;111;9
--34.6701880;-58.4105462;Pte Perón y Armenia;9432;Ida;112;9
--34.6689924;-58.4121609;Pte Perón y Valparaíso;9432;Ida;113;9
--34.6677790;-58.4137541;Pte Perón y Lomas Valentinas;9432;Ida;114;9
--34.6666099;-58.4153634;Pte Perón y Crotti;9432;Ida;115;9
--34.6656304;-58.4166992;Pte Perón y La Habana;9432;Ida;116;9
--34.6625594;-58.4171551;R de Escalada y A L Palacios;9432;Ida;117;10
--34.6514838;-58.4162700;Av Saenz y Esquiú  (metrobus);9432;Ida;118;10
--34.6480450;-58.4170370;Av La Plata y Saenz;9432;Ida;119;10
--34.6431350;-58.4225570;Av La Plata y Chiclana;9432;Ida;120;10
--34.6404287;-58.4233725;Av La Plata y Caceros;9432;Ida;121;11
--34.6387350;-58.4238520;Av La Plata y Rondeau;9432;Ida;122;11
--34.6341350;-58.4250600;Av La Plata y Inclan;9432;Ida;123;11
--34.6317620;-58.4256750;Av La Plata y Pavón;9432;Ida;124;11
--34.6273200;-58.4266780;Av La Plata y San juan;9432;Ida;125;11
--34.6223888;-58.4276694;Av La Plata e Independencia;9432;Ida;126;11
--34.6186232;-58.4283936;Av La Plata y Venezuela;9432;Ida;127;11
--34.6159037;-58.4290159;Av La Plata y Rivadavia;9432;Ida;128;11
--34.6172180;-58.4340480;Rivadavia y Campichuelo;9432;Ida;129;11
--34.6186020;-58.4371670;Rivadavia y Acoyte;9432;Ida;130;12
--34.6200800;-58.4406298;Rivadavia y Colpayo;9432;Ida;131;12
--34.6224771;-58.4463805;Rivadavia y Paynsandu;9432;Ida;132;12
--34.6238764;-58.4498459;Rivadavia y Miró;9432;Ida;133;12
--34.6254500;-58.4535320;Rivadavia y Curapaligue;9432;Ida;134;12
--34.6269488;-58.4575707;Rivadavia y F.L.Beltrán;9432;Ida;135;12
--34.6277420;-58.4593820;Rivadavia y Gabilán (Metrobus);9432;Ida;136;13
--34.6294825;-58.4651023;Rivadavia y Pedernera;9432;Ida;137;13
+-34.6271386;-58.5355800;San ignacio y G Roca;9433;Vuelta;3;1
+-34.6265118;-58.5364598;San ignacio y Pelegrini;9433;Vuelta;4;1
+-34.6252449;-58.5355693;Pelegrini y Necochea;9433;Vuelta;5;1
+-34.6240000;-58.5341477;Pelegrini y Dardo Rocha;9433;Vuelta;6;1
+-34.6226360;-58.5326350;Pelegrini y R A Siria;9433;Vuelta;7;1
+-34.6216030;-58.5336220;Rep A Siria y San Roque;9433;Vuelta;8;1
+-34.6207775;-58.5329998;San Roque y Los Andes;9433;Vuelta;9;1
+-34.6192809;-58.5314494;San Roque Y Gral Paz;9433;Vuelta;10;1
+-34.6179875;-58.5301888;Beiró y Irigoyen;9433;Vuelta;11;1
+-34.6138287;-58.5248297;Beiró y Lopez de Vega;9433;Vuelta;12;1
+-34.6110031;-58.5202163;Beiró y Bermudez;9433;Vuelta;13;1
+-34.6075814;-58.5145140;Beiró y Marcos Paz;9433;Vuelta;14;1
+-34.6062435;-58.5132855;Segurola y Navarro;9433;Vuelta;15;1
+-34.6046054;-58.5136288;Cantilo y Sanabria;9433;Vuelta;16;1
+-34.6036296;-58.5120088;Cantilo y Gualeguaychu;9433;Vuelta;17;1
+-34.6048262;-58.5106087;Gualeguaychu y Beiró;9433;Vuelta;18;1
+-34.6072679;-58.5120517;Segurola y Varela;9433;Vuelta;19;1
+-34.6098993;-58.5098523;Segurola y Pedro Lozano;9433;Vuelta;20;1
+-34.6121775;-58.5080069;Segurola y Nogoya;9433;Vuelta;21;1
+-34.6150163;-58.5053462;Segurola y Santo tomé;9433;Vuelta;22;1
+-34.6177535;-58.5026479;Segurola y Alvarez Jonte;9433;Vuelta;23;1
+-34.6195591;-58.5005558;Segurola y Miranda;9433;Vuelta;24;1
+-34.6204287;-58.4993809;Segurola y E Gonzalez;9433;Vuelta;25;1
+-34.6216118;-58.4979218;Segurola y Pablo Podestá;9433;Vuelta;26;1
+-34.6230200;-58.4961301;Segurola y Camarones;9433;Vuelta;27;1
+-34.6238544;-58.4950626;Segurola y M Cervantes;9433;Vuelta;28;1
+-34.6255539;-58.4929329;Segurola y R Escalada SM;9433;Vuelta;29;1
+-34.6266751;-58.4915435;Segurola y Juan B Justo;9433;Vuelta;30;1
+-34.6275226;-58.4904063;Segurola y Gaona;9433;Vuelta;31;1
+-34.6291073;-58.4884483;Segurola y Aranguren;9433;Vuelta;32;1
+-34.6318882;-58.4850097;Segurola y Bacacay;9433;Vuelta;33;1
+-34.6335963;-58.4807235;Rivadavia y Candelaria;9433;Vuelta;34;1
+-34.6327224;-58.4772152;Rivadavia y dolores;9433;Vuelta;35;1
+-34.6315792;-58.4726715;Rivadavia y José Marti;9433;Vuelta;36;1
+-34.6305419;-58.4689111;Rivadavia y Nazca (metrobus);9433;Vuelta;37;1
+-34.6281848;-58.4604943;Rivadavia y Bonorino;9433;Vuelta;38;1
+-34.6263838;-58.4561062;Rivadavia y Carabobo;9433;Vuelta;39;1
+-34.6254524;-58.4536171;Rivadavia y Curapaligue;9433;Vuelta;40;1
+-34.6236910;-58.4491110;Rivadavia y Puan;9433;Vuelta;41;1
+-34.6228744;-58.4467989;Rivadavia y Hortiguera;9433;Vuelta;42;1
+-34.6206495;-58.4405279;Rosario y Centenera;9433;Vuelta;43;1
+-34.6195149;-58.4364295;Rosario y José M Moreno;9433;Vuelta;44;1
+-34.6187600;-58.4319717;Rosario y Doblas;9433;Vuelta;45;1
+-34.6184245;-58.4292412;Rosario y Av La Plata;9433;Vuelta;46;1
+-34.6215456;-58.4279054;Av La Plata y Alberdi;9433;Vuelta;47;1
+-34.6247328;-58.4272939;Av La Plata y Pedro Goyena;9433;Vuelta;48;1
+-34.6266045;-58.4268701;Av La Plata y Directorio;9433;Vuelta;49;1
+-34.6309524;-58.4259206;Av La Plata y Asamblea;9433;Vuelta;50;1
+-34.6333359;-58.4252930;Av La Plata y Santander;9433;Vuelta;51;1
+-34.6365447;-58.4245098;Av La Plata Zaraza;9433;Vuelta;52;1
+-34.6398373;-58.4235871;Av La Plata y Cobo;9433;Vuelta;53;1
+-34.6420352;-58.4230828;Av La Plata F de la Cruz;9433;Vuelta;54;1
+-34.6447141;-58.4212911;Av La Plata F Rivera;9433;Vuelta;55;1
+-34.6469295;-58.4194511;Av La Plata Tabare;9433;Vuelta;56;1
+-34.6480858;-58.4170103;Av La Plata Saenz;9433;Vuelta;57;1
+-34.6513602;-58.4164739;Saenz y Esquiú (metrobus);9433;Vuelta;58;1
+-34.6625727;-58.4174234;R de Escalada y Palacios;9433;Vuelta;59;1
+-34.6663628;-58.4158409;Peron y Crotti;9433;Vuelta;60;1
+-34.6674834;-58.4142959;Peron y L Valentinas;9433;Vuelta;61;1
+-34.6687365;-58.4126329;Peron y Valparaiso;9433;Vuelta;62;1
+-34.6700689;-58.4108520;Peron y Armenia;9433;Vuelta;63;1
+-34.6712513;-58.4092373;Peron y Paso de Burgos;9433;Vuelta;64;1
+-34.6719836;-58.4081858;Peron y Itapiru;9433;Vuelta;65;1
+-34.6731748;-58.4066731;Peron y Rucci;9433;Vuelta;66;1
+-34.6743218;-58.4051496;Peron y Balbin;9433;Vuelta;67;1
+-34.6760159;-58.4027839;Peron y Oliden;9433;Vuelta;68;1
+-34.6771497;-58.4012282;Peron y Rivadavia;9433;Vuelta;69;1
+-34.6755262;-58.3981061;Rivadavia Rep Argentina;9433;Vuelta;70;1
+-34.6740792;-58.3964753;Rivadavia y Paraguay;9433;Vuelta;71;1
+-34.6724557;-58.3945978;Rivadavia y Chile;9433;Vuelta;72;1
+-34.6732233;-58.3938575;Chile y Cabildo;9433;Vuelta;73;1
+-34.6752792;-58.3930957;Cabildo y Mendoza;9433;Vuelta;74;1
+-34.6769644;-58.3911860;Cabildo y Peru;9433;Vuelta;75;1
+-34.6780585;-58.3899736;Cabildo y Catamarca;9433;Vuelta;76;1
+-34.6789319;-58.3889759;Cabildo y Santa Fe;9433;Vuelta;77;1
+-34.6802951;-58.3874524;Cabildo y Sgo del Estero;9433;Vuelta;78;1
+-34.6815788;-58.3859128;Cabildo y Beguerestein;9433;Vuelta;79;1
+-34.6844593;-58.3864170;Brasil y Yrigoyen;9433;Vuelta;80;1
+-34.6867398;-58.3832949;Bustamante y Est Gerli;9433;Vuelta;81;1
+-34.6895673;-58.3796310;Bustamante y  Lacarra;9433;Vuelta;82;1
+-34.6914683;-58.3772439;Bustamante y Donovan;9433;Vuelta;83;1
+-34.6924034;-58.3762246;Bustamante y Mamberti;9433;Vuelta;84;1
+-34.6944632;-58.3738375;Bustamante y Sarmiento;9433;Vuelta;85;1
+-34.6963200;-58.3715791;Bustamante y Basavilbaso;9433;Vuelta;86;1
+-34.6974403;-58.3702862;Bustamante y Salta;9433;Vuelta;87;1
+-34.6994470;-58.3674109;Bustamante y Ferré;9433;Vuelta;88;1
+-34.7011362;-58.3653671;Bustamante y Madariaga;9433;Vuelta;89;1
+-34.7020800;-58.3642673;Bustamante y J B Justo;9433;Vuelta;90;1
+-34.7032310;-58.3627868;Bustamante y Cao;9433;Vuelta;91;1
+-34.7043115;-58.3606356;Bustamante y  Deheza;9433;Vuelta;92;1
+-34.7046864;-58.3592838;C G Belgrano y Suipacha;9433;Vuelta;93;1
+-34.7076852;-58.3558559;C G Belgrano y Barcelo;9433;Vuelta;94;1
+-34.7092286;-58.3540535;C G Belgrano y Posadas;9433;Vuelta;95;1
+-34.7116584;-58.3512533;C G Belgrano y Centenario;9433;Vuelta;96;1
+-34.7132988;-58.3493650;C G Belgrano y Chascomus;9433;Vuelta;97;1
+-34.7147540;-58.3476537;B de los Italianos y C G Belgrano;9433;Vuelta;98;1
+-34.7134311;-58.3458674;B de los Italianos y Caxaraville;9433;Vuelta;99;1
+-34.7124389;-58.3446872;B de los Italianos y Campichuelo;9433;Vuelta;100;1
+-34.6747277;-58.4044361;Pte Perón y P de la Patria;9432;Ida;108;1
+-34.6740307;-58.4053749;Pte Perón y Juan Farrel;9432;Ida;109;1
+-34.6727204;-58.4071344;Pte Perón y J Rucci;9432;Ida;110;1
+-34.6714542;-58.4088832;Pte Perón y Burgos;9432;Ida;111;1
+-34.6701880;-58.4105462;Pte Perón y Armenia;9432;Ida;112;1
+-34.6689924;-58.4121609;Pte Perón y Valparaíso;9432;Ida;113;1
+-34.6677790;-58.4137541;Pte Perón y Lomas Valentinas;9432;Ida;114;1
+-34.6666099;-58.4153634;Pte Perón y Crotti;9432;Ida;115;1
+-34.6656304;-58.4166992;Pte Perón y La Habana;9432;Ida;116;1
+-34.6625594;-58.4171551;R de Escalada y A L Palacios;9432;Ida;117;1
+-34.6514838;-58.4162700;Av Saenz y Esquiú  (metrobus);9432;Ida;118;1
+-34.6480450;-58.4170370;Av La Plata y Saenz;9432;Ida;119;1
+-34.6431350;-58.4225570;Av La Plata y Chiclana;9432;Ida;120;1
+-34.6404287;-58.4233725;Av La Plata y Caceros;9432;Ida;121;1
+-34.6387350;-58.4238520;Av La Plata y Rondeau;9432;Ida;122;1
+-34.6341350;-58.4250600;Av La Plata y Inclan;9432;Ida;123;1
+-34.6317620;-58.4256750;Av La Plata y Pavón;9432;Ida;124;1
+-34.6273200;-58.4266780;Av La Plata y San juan;9432;Ida;125;1
+-34.6223888;-58.4276694;Av La Plata e Independencia;9432;Ida;126;1
+-34.6186232;-58.4283936;Av La Plata y Venezuela;9432;Ida;127;1
+-34.6159037;-58.4290159;Av La Plata y Rivadavia;9432;Ida;128;1
+-34.6172180;-58.4340480;Rivadavia y Campichuelo;9432;Ida;129;1
+-34.6186020;-58.4371670;Rivadavia y Acoyte;9432;Ida;130;1
+-34.6200800;-58.4406298;Rivadavia y Colpayo;9432;Ida;131;1
+-34.6224771;-58.4463805;Rivadavia y Paynsandu;9432;Ida;132;1
+-34.6238764;-58.4498459;Rivadavia y Miró;9432;Ida;133;1
+-34.6254500;-58.4535320;Rivadavia y Curapaligue;9432;Ida;134;1
+-34.6269488;-58.4575707;Rivadavia y F.L.Beltrán;9432;Ida;135;1
+-34.6277420;-58.4593820;Rivadavia y Gabilán (Metrobus);9432;Ida;136;1
+-34.6294825;-58.4651023;Rivadavia y Pedernera;9432;Ida;137;1
+-34.6309391;-58.4708422;Rivadavia y Argeritch;9432;Ida;138;1
+-34.6317999;-58.4740287;Rivadavia y Cuenca;9432;Ida;139;1
+-34.6327709;-58.4776819;Rivadavia y San Nicolás;9432;Ida;140;1
+-34.6338303;-58.4822041;Rivadavia y Segurola;9432;Ida;141;1
+-34.6320100;-58.4839100;Mercedez y Bacacay;9432;Ida;142;1
+-34.6300470;-58.4848320;Mercedez y Avellaneda;9432;Ida;143;1
+-34.6277120;-58.4859020;Mercedez y Morón;9432;Ida;144;1
+-34.6266320;-58.4876530;Av Gaona y Gualeguaychu;9432;Ida;145;1
+-34.6268720;-58.4893000;Sanabria y Juan B. Justo;9432;Ida;146;1
+-34.6249920;-58.4916500;Sanabria y R.deE.San Martin;9432;Ida;147;1
+-34.6232250;-58.4938600;Sanabria y M Cervantes;9432;Ida;148;1
+-34.6216251;-58.4958780;Sanabria y San Blas;9432;Ida;149;1
+-34.6192589;-58.4988284;Sanabria y Miranda;9432;Ida;150;1
+-34.6171380;-58.5013630;Sanabria y A.Jonte;9432;Ida;151;1
+-34.6144970;-58.5033830;Sanabria y Snato Tomé;9432;Ida;152;1
+-34.6115080;-58.5060470;Sanabria y Nogoyá;9432;Ida;153;1
+-34.6091630;-58.5081070;Sanabria y P.Lozano;9432;Ida;154;1
+-34.6074003;-58.5095894;Sanabria y Simbron;9432;Ida;155;1
+-34.6058638;-58.5109091;Sanabria y Beiró;9432;Ida;156;1
+-34.6075151;-58.5145569;Beiró y Marcos Paz;9432;Ida;157;1
+-34.6096079;-58.5178721;Beiró y Desaguadero;9432;Ida;158;1
+-34.6110750;-58.5202920;Beiró y Bermudez;9432;Ida;159;1
+-34.6138200;-58.5248970;Beiró y L.de Vega;9432;Ida;160;1
+-34.6158066;-58.5274637;Beiró y Moliere;9432;Ida;161;1
+-34.6174665;-58.5296202;Beiró y Gral Paz;9432;Ida;162;1
 -34.7179376;-58.2119823;Cervantes y Echeverría;213;Ida;1;1
 -34.7139426;-58.2181513;Cervantes y Franklin;213;Ida;2;1
 -34.7126418;-58.2200986;Cervantes y 25 bis;213;Ida;3;1
@@ -747,231 +772,231 @@
 -34.7206890;-58.2650256;Gran Canaria y R Lopez;213;Ida;29;1
 -34.7216750;-58.2665870;R Lopez y V Lopez;213;Ida;30;1
 -34.7226570;-58.2685150;R Lopez y B Irigoyen;213;Ida;31;1
--34.7105957;-58.3424824;B de los Italianos y De La Serna;9433;Vuelta;101;6
--34.7086289;-58.3401597;B de los Italianos y Helguera;9433;Vuelta;102;6
--34.7071119;-58.3383679;B de los Italianos y La Fuente;9433;Vuelta;103;6
--34.6096079;-58.5178721;Beiró y Desaguadero;9435;Ida;41;15
--34.6110750;-58.5202920;Beiró y Bermudez;9435;Ida;42;15
--34.6138200;-58.5248970;Beiró y L.de Vega;9435;Ida;43;15
--34.6158066;-58.5274637;Beiró y Moliere;9435;Ida;44;15
--34.6174665;-58.5296202;Beiró y Gral Paz;9435;Ida;45;15
--34.6191176;-58.5312724;Av Gral Paz y San Roque;9435;Ida;46;15
--34.6228214;-58.5313421;Roca y R A Siria;9435;Ida;47;15
--34.6240177;-58.5326779;Roca y Mansoni;9435;Ida;48;15
--34.6251670;-58.5340070;Roca y Barragán;9435;Ida;49;15
--34.6267650;-58.5358100;Roca y San Ignacio;9435;Ida;50;15
--34.6285500;-58.5348670;Bergamini y Croacia;9435;Ida;51;15
--34.6317620;-58.4256750;Av La Plata y Pavón;9434;Ida;124;11
--34.6273200;-58.4266780;Av La Plata y San juan;9434;Ida;125;11
--34.6223888;-58.4276694;Av La Plata e Independencia;9434;Ida;126;11
--34.6186232;-58.4283936;Av La Plata y Venezuela;9434;Ida;127;11
--34.6159037;-58.4290159;Av La Plata y Rivadavia;9434;Ida;128;11
--34.6172180;-58.4340480;Rivadavia y Campichuelo;9434;Ida;129;11
--34.6186020;-58.4371670;Rivadavia y Acoyte;9434;Ida;130;12
--34.6200800;-58.4406298;Rivadavia y Colpayo;9434;Ida;131;12
--34.6224771;-58.4463805;Rivadavia y Paynsandu;9434;Ida;132;12
--34.6238764;-58.4498459;Rivadavia y Miró;9434;Ida;133;12
--34.6254500;-58.4535320;Rivadavia y Curapaligue;9434;Ida;134;12
--34.6269488;-58.4575707;Rivadavia y F.L.Beltrán;9434;Ida;135;12
--34.6277420;-58.4593820;Rivadavia y Gabilán (Metrobus);9434;Ida;136;13
--34.6294825;-58.4651023;Rivadavia y Pedernera;9434;Ida;137;13
--34.6309391;-58.4708422;Rivadavia y Argeritch;9434;Ida;138;13
--34.6317999;-58.4740287;Rivadavia y Cuenca;9434;Ida;139;13
--34.6327709;-58.4776819;Rivadavia y San Nicolás;9434;Ida;140;13
--34.6338303;-58.4822041;Rivadavia y Segurola;9434;Ida;141;13
--34.6320100;-58.4839100;Mercedez y Bacacay;9434;Ida;142;13
--34.6300470;-58.4848320;Mercedez y Avellaneda;9434;Ida;143;13
--34.6277120;-58.4859020;Mercedez y Morón;9434;Ida;144;13
--34.6266320;-58.4876530;Av Gaona y Gualeguaychu;9434;Ida;145;13
--34.6268720;-58.4893000;Sanabria y Juan B. Justo;9434;Ida;146;14
--34.6249920;-58.4916500;Sanabria y R.deE.San Martin;9434;Ida;147;14
--34.6232250;-58.4938600;Sanabria y M Cervantes;9434;Ida;148;14
--34.6216251;-58.4958780;Sanabria y San Blas;9434;Ida;149;14
--34.6192589;-58.4988284;Sanabria y Miranda;9434;Ida;150;14
--34.6171380;-58.5013630;Sanabria y A.Jonte;9434;Ida;151;14
--34.6144970;-58.5033830;Sanabria y Snato Tomé;9434;Ida;152;14
--34.6115080;-58.5060470;Sanabria y Nogoyá;9434;Ida;153;14
--34.6091630;-58.5081070;Sanabria y P.Lozano;9434;Ida;154;14
--34.6074003;-58.5095894;Sanabria y Simbron;9434;Ida;155;14
--34.6265118;-58.5364598;San ignacio y Pelegrini;9435;Vuelta;4;15
--34.6252449;-58.5355693;Pelegrini y Necochea;9435;Vuelta;5;15
--34.6240000;-58.5341477;Pelegrini y Dardo Rocha;9435;Vuelta;6;15
--34.6226360;-58.5326350;Pelegrini y R A Siria;9435;Vuelta;7;15
--34.6216030;-58.5336220;Rep A Siria y San Roque;9435;Vuelta;8;15
--34.6207775;-58.5329998;San Roque y Los Andes;9435;Vuelta;9;15
--34.6192809;-58.5314494;San Roque Y Gral Paz;9435;Vuelta;10;15
--34.6179875;-58.5301888;Beiró y Irigoyen;9435;Vuelta;11;15
--34.6138287;-58.5248297;Beiró y Lopez de Vega;9435;Vuelta;12;15
--34.6110031;-58.5202163;Beiró y Bermudez;9435;Vuelta;13;15
--34.6075814;-58.5145140;Beiró y Marcos Paz;9435;Vuelta;14;15
--34.6062435;-58.5132855;Segurola y Navarro;9435;Vuelta;15;15
--34.6046054;-58.5136288;Cantilo y Sanabria;9435;Vuelta;16;14
--34.6036296;-58.5120088;Cantilo y Gualeguaychu;9435;Vuelta;17;14
--34.6048262;-58.5106087;Gualeguaychu y Beiró;9435;Vuelta;18;14
--34.6072679;-58.5120517;Segurola y Varela;9435;Vuelta;19;14
--34.6098993;-58.5098523;Segurola y Pedro Lozano;9435;Vuelta;20;14
--34.6121775;-58.5080069;Segurola y Nogoya;9435;Vuelta;21;14
--34.6150163;-58.5053462;Segurola y Santo tomé;9435;Vuelta;22;14
--34.6177535;-58.5026479;Segurola y Alvarez Jonte;9435;Vuelta;23;14
--34.6195591;-58.5005558;Segurola y Miranda;9435;Vuelta;24;14
--34.6204287;-58.4993809;Segurola y E Gonzalez;9435;Vuelta;25;14
--34.6216118;-58.4979218;Segurola y Pablo Podestá;9435;Vuelta;26;14
--34.6230200;-58.4961301;Segurola y Camarones;9435;Vuelta;27;14
--34.6238544;-58.4950626;Segurola y M Cervantes;9435;Vuelta;28;14
--34.6255539;-58.4929329;Segurola y R Escalada SM;9435;Vuelta;29;14
--34.6266751;-58.4915435;Segurola y Juan B Justo;9435;Vuelta;30;13
--34.6275226;-58.4904063;Segurola y Gaona;9435;Vuelta;31;13
--34.6291073;-58.4884483;Segurola y Aranguren;9435;Vuelta;32;13
--34.6318882;-58.4850097;Segurola y Bacacay;9435;Vuelta;33;13
--34.6335963;-58.4807235;Rivadavia y Candelaria;9435;Vuelta;34;13
--34.6327224;-58.4772152;Rivadavia y dolores;9435;Vuelta;35;13
--34.6315792;-58.4726715;Rivadavia y José Marti;9435;Vuelta;36;13
--34.6305419;-58.4689111;Rivadavia y Nazca (metrobus);9435;Vuelta;37;12
--34.6281848;-58.4604943;Rivadavia y Bonorino;9435;Vuelta;38;12
--34.6263838;-58.4561062;Rivadavia y Carabobo;9435;Vuelta;39;12
--34.6254524;-58.4536171;Rivadavia y Curapaligue;9435;Vuelta;40;12
--34.6236910;-58.4491110;Rivadavia y Puan;9435;Vuelta;41;12
--34.6228744;-58.4467989;Rivadavia y Hortiguera;9435;Vuelta;42;12
--34.6206495;-58.4405279;Rosario y Centenera;9435;Vuelta;43;12
--34.6195149;-58.4364295;Rosario y José M Moreno;9435;Vuelta;44;11
--34.6187600;-58.4319717;Rosario y Doblas;9435;Vuelta;45;11
--34.6184245;-58.4292412;Rosario y Av La Plata;9435;Vuelta;46;11
--34.6215191;-58.4278947;Av La Plata y Alberdi;9435;Vuelta;47;11
--34.6247328;-58.4272939;Av La Plata y Pedro Goyena;9435;Vuelta;48;11
--34.6266045;-58.4268701;Av La Plata y Directorio;9435;Vuelta;49;11
--34.6309524;-58.4259206;Av La Plata y Asamblea;9435;Vuelta;50;11
--34.6333359;-58.4252930;Av La Plata y Santander;9435;Vuelta;51;11
--34.6365447;-58.4245098;Av La Plata Zaraza;9435;Vuelta;52;11
--34.6398373;-58.4235871;Av La Plata y Cobo;9435;Vuelta;53;10
--34.6420352;-58.4230828;Av La Plata F de la Cruz;9435;Vuelta;54;10
--34.6447141;-58.4212911;Av La Plata F Rivera;9435;Vuelta;55;10
--34.6469295;-58.4194511;Av La Plata Tabare;9435;Vuelta;56;10
--34.6480858;-58.4170103;Av La Plata Saenz;9435;Vuelta;57;10
--34.6513602;-58.4164739;Saenz y Esquiú (metrobus);9435;Vuelta;58;10
--34.6770747;-58.3909929;Cabildo y Peru;9433;Ida;99;8
--34.6753350;-58.3930670;Cabildo y Mendoza;9433;Ida;100;9
--34.6734880;-58.3951970;Guatemala y Cabildo;9433;Ida;101;9
--34.6736866;-58.3963412;Rivadavia y Paraguay;9433;Ida;102;9
--34.6751204;-58.3979398;Rivadavia y Rep.Argentina;9433;Ida;103;9
--34.6758130;-58.3989161;Rivadavia y Colombia;9433;Ida;104;9
--34.6769865;-58.4006757;Rivadavia y Pte Perón;9433;Ida;105;9
--34.6762409;-58.4023869;Pte Perón y Oliden;9433;Ida;106;9
--34.6757230;-58.4031220;Pte Perón y Ucrania;9433;Ida;107;9
--34.6747277;-58.4044361;Pte Perón y P de la Patria;9433;Ida;108;9
--34.6740307;-58.4053749;Pte Perón y Juan Farrel;9433;Ida;109;9
--34.6727204;-58.4071344;Pte Perón y J Rucci;9433;Ida;110;9
--34.6714542;-58.4088832;Pte Perón y Burgos;9433;Ida;111;9
--34.6701880;-58.4105462;Pte Perón y Armenia;9433;Ida;112;9
--34.6689924;-58.4121609;Pte Perón y Valparaíso;9433;Ida;113;9
--34.6677790;-58.4137541;Pte Perón y Lomas Valentinas;9433;Ida;114;9
--34.6666099;-58.4153634;Pte Perón y Crotti;9433;Ida;115;9
--34.6656304;-58.4166992;Pte Perón y La Habana;9433;Ida;116;9
--34.6625594;-58.4171551;R de Escalada y A L Palacios;9433;Ida;117;10
--34.6514838;-58.4162700;Av Saenz y Esquiú  (metrobus);9433;Ida;118;10
--34.6480450;-58.4170370;Av La Plata y Saenz;9433;Ida;119;10
--34.6431350;-58.4225570;Av La Plata y Chiclana;9433;Ida;120;10
--34.6404287;-58.4233725;Av La Plata y Caceros;9433;Ida;121;11
--34.6387350;-58.4238520;Av La Plata y Rondeau;9433;Ida;122;11
+-34.7105957;-58.3424824;B de los Italianos y De La Serna;9433;Vuelta;101;1
+-34.7086289;-58.3401597;B de los Italianos y Helguera;9433;Vuelta;102;1
+-34.7071119;-58.3383679;B de los Italianos y La Fuente;9433;Vuelta;103;1
+-34.6096079;-58.5178721;Beiró y Desaguadero;9435;Ida;41;1
+-34.6110750;-58.5202920;Beiró y Bermudez;9435;Ida;42;1
+-34.6138200;-58.5248970;Beiró y L.de Vega;9435;Ida;43;1
+-34.6158066;-58.5274637;Beiró y Moliere;9435;Ida;44;1
+-34.6174665;-58.5296202;Beiró y Gral Paz;9435;Ida;45;1
+-34.6191176;-58.5312724;Av Gral Paz y San Roque;9435;Ida;46;1
+-34.6228214;-58.5313421;Roca y R A Siria;9435;Ida;47;1
+-34.6240177;-58.5326779;Roca y Mansoni;9435;Ida;48;1
+-34.6251670;-58.5340070;Roca y Barragán;9435;Ida;49;1
+-34.6267650;-58.5358100;Roca y San Ignacio;9435;Ida;50;1
+-34.6285500;-58.5348670;Bergamini y Croacia;9435;Ida;51;1
+-34.6317620;-58.4256750;Av La Plata y Pavón;9434;Ida;124;1
+-34.6273200;-58.4266780;Av La Plata y San juan;9434;Ida;125;1
+-34.6223888;-58.4276694;Av La Plata e Independencia;9434;Ida;126;1
+-34.6186232;-58.4283936;Av La Plata y Venezuela;9434;Ida;127;1
+-34.6159037;-58.4290159;Av La Plata y Rivadavia;9434;Ida;128;1
+-34.6172180;-58.4340480;Rivadavia y Campichuelo;9434;Ida;129;1
+-34.6186020;-58.4371670;Rivadavia y Acoyte;9434;Ida;130;1
+-34.6200800;-58.4406298;Rivadavia y Colpayo;9434;Ida;131;1
+-34.6224771;-58.4463805;Rivadavia y Paynsandu;9434;Ida;132;1
+-34.6238764;-58.4498459;Rivadavia y Miró;9434;Ida;133;1
+-34.6254500;-58.4535320;Rivadavia y Curapaligue;9434;Ida;134;1
+-34.6269488;-58.4575707;Rivadavia y F.L.Beltrán;9434;Ida;135;1
+-34.6277420;-58.4593820;Rivadavia y Gabilán (Metrobus);9434;Ida;136;1
+-34.6294825;-58.4651023;Rivadavia y Pedernera;9434;Ida;137;1
+-34.6309391;-58.4708422;Rivadavia y Argeritch;9434;Ida;138;1
+-34.6317999;-58.4740287;Rivadavia y Cuenca;9434;Ida;139;1
+-34.6327709;-58.4776819;Rivadavia y San Nicolás;9434;Ida;140;1
+-34.6338303;-58.4822041;Rivadavia y Segurola;9434;Ida;141;1
+-34.6320100;-58.4839100;Mercedez y Bacacay;9434;Ida;142;1
+-34.6300470;-58.4848320;Mercedez y Avellaneda;9434;Ida;143;1
+-34.6277120;-58.4859020;Mercedez y Morón;9434;Ida;144;1
+-34.6266320;-58.4876530;Av Gaona y Gualeguaychu;9434;Ida;145;1
+-34.6268720;-58.4893000;Sanabria y Juan B. Justo;9434;Ida;146;1
+-34.6249920;-58.4916500;Sanabria y R.deE.San Martin;9434;Ida;147;1
+-34.6232250;-58.4938600;Sanabria y M Cervantes;9434;Ida;148;1
+-34.6216251;-58.4958780;Sanabria y San Blas;9434;Ida;149;1
+-34.6192589;-58.4988284;Sanabria y Miranda;9434;Ida;150;1
+-34.6171380;-58.5013630;Sanabria y A.Jonte;9434;Ida;151;1
+-34.6144970;-58.5033830;Sanabria y Snato Tomé;9434;Ida;152;1
+-34.6115080;-58.5060470;Sanabria y Nogoyá;9434;Ida;153;1
+-34.6091630;-58.5081070;Sanabria y P.Lozano;9434;Ida;154;1
+-34.6074003;-58.5095894;Sanabria y Simbron;9434;Ida;155;1
+-34.6265118;-58.5364598;San ignacio y Pelegrini;9435;Vuelta;4;1
+-34.6252449;-58.5355693;Pelegrini y Necochea;9435;Vuelta;5;1
+-34.6240000;-58.5341477;Pelegrini y Dardo Rocha;9435;Vuelta;6;1
+-34.6226360;-58.5326350;Pelegrini y R A Siria;9435;Vuelta;7;1
+-34.6216030;-58.5336220;Rep A Siria y San Roque;9435;Vuelta;8;1
+-34.6207775;-58.5329998;San Roque y Los Andes;9435;Vuelta;9;1
+-34.6192809;-58.5314494;San Roque Y Gral Paz;9435;Vuelta;10;1
+-34.6179875;-58.5301888;Beiró y Irigoyen;9435;Vuelta;11;1
+-34.6138287;-58.5248297;Beiró y Lopez de Vega;9435;Vuelta;12;1
+-34.6110031;-58.5202163;Beiró y Bermudez;9435;Vuelta;13;1
+-34.6075814;-58.5145140;Beiró y Marcos Paz;9435;Vuelta;14;1
+-34.6062435;-58.5132855;Segurola y Navarro;9435;Vuelta;15;1
+-34.6046054;-58.5136288;Cantilo y Sanabria;9435;Vuelta;16;1
+-34.6036296;-58.5120088;Cantilo y Gualeguaychu;9435;Vuelta;17;1
+-34.6048262;-58.5106087;Gualeguaychu y Beiró;9435;Vuelta;18;1
+-34.6072679;-58.5120517;Segurola y Varela;9435;Vuelta;19;1
+-34.6098993;-58.5098523;Segurola y Pedro Lozano;9435;Vuelta;20;1
+-34.6121775;-58.5080069;Segurola y Nogoya;9435;Vuelta;21;1
+-34.6150163;-58.5053462;Segurola y Santo tomé;9435;Vuelta;22;1
+-34.6177535;-58.5026479;Segurola y Alvarez Jonte;9435;Vuelta;23;1
+-34.6195591;-58.5005558;Segurola y Miranda;9435;Vuelta;24;1
+-34.6204287;-58.4993809;Segurola y E Gonzalez;9435;Vuelta;25;1
+-34.6216118;-58.4979218;Segurola y Pablo Podestá;9435;Vuelta;26;1
+-34.6230200;-58.4961301;Segurola y Camarones;9435;Vuelta;27;1
+-34.6238544;-58.4950626;Segurola y M Cervantes;9435;Vuelta;28;1
+-34.6255539;-58.4929329;Segurola y R Escalada SM;9435;Vuelta;29;1
+-34.6266751;-58.4915435;Segurola y Juan B Justo;9435;Vuelta;30;1
+-34.6275226;-58.4904063;Segurola y Gaona;9435;Vuelta;31;1
+-34.6291073;-58.4884483;Segurola y Aranguren;9435;Vuelta;32;1
+-34.6318882;-58.4850097;Segurola y Bacacay;9435;Vuelta;33;1
+-34.6335963;-58.4807235;Rivadavia y Candelaria;9435;Vuelta;34;1
+-34.6327224;-58.4772152;Rivadavia y dolores;9435;Vuelta;35;1
+-34.6315792;-58.4726715;Rivadavia y José Marti;9435;Vuelta;36;1
+-34.6305419;-58.4689111;Rivadavia y Nazca (metrobus);9435;Vuelta;37;1
+-34.6281848;-58.4604943;Rivadavia y Bonorino;9435;Vuelta;38;1
+-34.6263838;-58.4561062;Rivadavia y Carabobo;9435;Vuelta;39;1
+-34.6254524;-58.4536171;Rivadavia y Curapaligue;9435;Vuelta;40;1
+-34.6236910;-58.4491110;Rivadavia y Puan;9435;Vuelta;41;1
+-34.6228744;-58.4467989;Rivadavia y Hortiguera;9435;Vuelta;42;1
+-34.6206495;-58.4405279;Rosario y Centenera;9435;Vuelta;43;1
+-34.6195149;-58.4364295;Rosario y José M Moreno;9435;Vuelta;44;1
+-34.6187600;-58.4319717;Rosario y Doblas;9435;Vuelta;45;1
+-34.6184245;-58.4292412;Rosario y Av La Plata;9435;Vuelta;46;1
+-34.6215191;-58.4278947;Av La Plata y Alberdi;9435;Vuelta;47;1
+-34.6247328;-58.4272939;Av La Plata y Pedro Goyena;9435;Vuelta;48;1
+-34.6266045;-58.4268701;Av La Plata y Directorio;9435;Vuelta;49;1
+-34.6309524;-58.4259206;Av La Plata y Asamblea;9435;Vuelta;50;1
+-34.6333359;-58.4252930;Av La Plata y Santander;9435;Vuelta;51;1
+-34.6365447;-58.4245098;Av La Plata Zaraza;9435;Vuelta;52;1
+-34.6398373;-58.4235871;Av La Plata y Cobo;9435;Vuelta;53;1
+-34.6420352;-58.4230828;Av La Plata F de la Cruz;9435;Vuelta;54;1
+-34.6447141;-58.4212911;Av La Plata F Rivera;9435;Vuelta;55;1
+-34.6469295;-58.4194511;Av La Plata Tabare;9435;Vuelta;56;1
+-34.6480858;-58.4170103;Av La Plata Saenz;9435;Vuelta;57;1
+-34.6513602;-58.4164739;Saenz y Esquiú (metrobus);9435;Vuelta;58;1
+-34.6770747;-58.3909929;Cabildo y Peru;9433;Ida;99;1
+-34.6753350;-58.3930670;Cabildo y Mendoza;9433;Ida;100;1
+-34.6734880;-58.3951970;Guatemala y Cabildo;9433;Ida;101;1
+-34.6736866;-58.3963412;Rivadavia y Paraguay;9433;Ida;102;1
+-34.6751204;-58.3979398;Rivadavia y Rep.Argentina;9433;Ida;103;1
+-34.6758130;-58.3989161;Rivadavia y Colombia;9433;Ida;104;1
+-34.6769865;-58.4006757;Rivadavia y Pte Perón;9433;Ida;105;1
+-34.6762409;-58.4023869;Pte Perón y Oliden;9433;Ida;106;1
+-34.6757230;-58.4031220;Pte Perón y Ucrania;9433;Ida;107;1
+-34.6747277;-58.4044361;Pte Perón y P de la Patria;9433;Ida;108;1
+-34.6740307;-58.4053749;Pte Perón y Juan Farrel;9433;Ida;109;1
+-34.6727204;-58.4071344;Pte Perón y J Rucci;9433;Ida;110;1
+-34.6714542;-58.4088832;Pte Perón y Burgos;9433;Ida;111;1
+-34.6701880;-58.4105462;Pte Perón y Armenia;9433;Ida;112;1
+-34.6689924;-58.4121609;Pte Perón y Valparaíso;9433;Ida;113;1
+-34.6677790;-58.4137541;Pte Perón y Lomas Valentinas;9433;Ida;114;1
+-34.6666099;-58.4153634;Pte Perón y Crotti;9433;Ida;115;1
+-34.6656304;-58.4166992;Pte Perón y La Habana;9433;Ida;116;1
+-34.6625594;-58.4171551;R de Escalada y A L Palacios;9433;Ida;117;1
+-34.6514838;-58.4162700;Av Saenz y Esquiú  (metrobus);9433;Ida;118;1
+-34.6480450;-58.4170370;Av La Plata y Saenz;9433;Ida;119;1
+-34.6431350;-58.4225570;Av La Plata y Chiclana;9433;Ida;120;1
+-34.6404287;-58.4233725;Av La Plata y Caceros;9433;Ida;121;1
+-34.6387350;-58.4238520;Av La Plata y Rondeau;9433;Ida;122;1
 -34.7079277;-58.2279146;Cervantes y Olavarría;9432;Vuelta;165;1
 -34.7101723;-58.2240576;Cervantes y Iriarte;9432;Vuelta;166;1
 -34.7126374;-58.2201898;Cervantes y 25 bis;9432;Vuelta;167;1
 -34.7176422;-58.2124436;Cervantes y Echeverría;9432;Vuelta;168;1
--34.6514838;-58.4162700;Av Saenz y Esquiú (metrobus);9435;Ida;1;10
--34.6480450;-58.4170370;Av La Plata y Saenz;9435;Ida;2;10
--34.6431350;-58.4225570;Av La Plata y Chiclana;9435;Ida;3;10
--34.6404287;-58.4233725;Av La Plata y Caceros;9435;Ida;4;11
--34.6387350;-58.4238520;Av La Plata y Rondeau;9435;Ida;5;11
--34.6341350;-58.4250600;Av La Plata y Inclan;9435;Ida;6;11
--34.6317620;-58.4256750;Av La Plata y Pavón;9435;Ida;7;11
--34.6273200;-58.4266780;Av La Plata y San juan;9435;Ida;8;11
--34.6223888;-58.4276694;Av La Plata e Independencia;9435;Ida;9;11
--34.6186232;-58.4283936;Av La Plata y Venezuela;9435;Ida;10;11
--34.6159037;-58.4290159;Av La Plata y Rivadavia;9435;Ida;11;11
--34.6172180;-58.4340480;Rivadavia y Campichuelo;9435;Ida;12;11
--34.6186020;-58.4371670;Rivadavia y Acoyte;9435;Ida;13;12
--34.6200800;-58.4406298;Rivadavia y Colpayo;9435;Ida;14;12
--34.6224771;-58.4463805;Rivadavia y Paynsandu;9435;Ida;15;12
--34.6238764;-58.4498459;Rivadavia y Miró;9435;Ida;16;12
--34.6254500;-58.4535320;Rivadavia y Curapaligue;9435;Ida;17;12
--34.6269488;-58.4575707;Rivadavia y F.L.Beltrán;9435;Ida;18;12
--34.6277420;-58.4593820;Rivadavia y Gabilán (Metrobus);9435;Ida;19;13
--34.6294825;-58.4651023;Rivadavia y Pedernera;9435;Ida;20;13
--34.6309391;-58.4708422;Rivadavia y Argeritch;9435;Ida;21;13
--34.6317999;-58.4740287;Rivadavia y Cuenca;9435;Ida;22;13
--34.6327709;-58.4776819;Rivadavia y San Nicolás;9435;Ida;23;13
--34.6338303;-58.4822041;Rivadavia y Segurola;9435;Ida;24;13
--34.6320100;-58.4839100;Mercedez y Bacacay;9435;Ida;25;13
--34.6300470;-58.4848320;Mercedez y Avellaneda;9435;Ida;26;13
--34.6277120;-58.4859020;Mercedez y Morón;9435;Ida;27;13
--34.6266320;-58.4876530;Av Gaona y Gualeguaychu;9435;Ida;28;13
--34.6268720;-58.4893000;Sanabria y Juan B. Justo;9435;Ida;29;14
--34.6249920;-58.4916500;Sanabria y R.deE.San Martin;9435;Ida;30;14
--34.6232250;-58.4938600;Sanabria y M Cervantes;9435;Ida;31;14
--34.6216251;-58.4958780;Sanabria y San Blas;9435;Ida;32;14
--34.6192589;-58.4988284;Sanabria y Miranda;9435;Ida;33;14
--34.6171380;-58.5013630;Sanabria y A.Jonte;9435;Ida;34;14
--34.6144970;-58.5033830;Sanabria y Snato Tomé;9435;Ida;35;14
--34.6115080;-58.5060470;Sanabria y Nogoyá;9435;Ida;36;14
--34.6091630;-58.5081070;Sanabria y P.Lozano;9435;Ida;37;14
--34.6074003;-58.5095894;Sanabria y Simbron;9435;Ida;38;14
--34.6058638;-58.5109091;Sanabria y Beiró;9435;Ida;39;15
--34.6074975;-58.5145408;Beiró y Marcos Paz;9435;Ida;40;15
+-34.6514838;-58.4162700;Av Saenz y Esquiú (metrobus);9435;Ida;1;1
+-34.6480450;-58.4170370;Av La Plata y Saenz;9435;Ida;2;1
+-34.6431350;-58.4225570;Av La Plata y Chiclana;9435;Ida;3;1
+-34.6404287;-58.4233725;Av La Plata y Caceros;9435;Ida;4;1
+-34.6387350;-58.4238520;Av La Plata y Rondeau;9435;Ida;5;1
+-34.6341350;-58.4250600;Av La Plata y Inclan;9435;Ida;6;1
+-34.6317620;-58.4256750;Av La Plata y Pavón;9435;Ida;7;1
+-34.6273200;-58.4266780;Av La Plata y San juan;9435;Ida;8;1
+-34.6223888;-58.4276694;Av La Plata e Independencia;9435;Ida;9;1
+-34.6186232;-58.4283936;Av La Plata y Venezuela;9435;Ida;10;1
+-34.6159037;-58.4290159;Av La Plata y Rivadavia;9435;Ida;11;1
+-34.6172180;-58.4340480;Rivadavia y Campichuelo;9435;Ida;12;1
+-34.6186020;-58.4371670;Rivadavia y Acoyte;9435;Ida;13;1
+-34.6200800;-58.4406298;Rivadavia y Colpayo;9435;Ida;14;1
+-34.6224771;-58.4463805;Rivadavia y Paynsandu;9435;Ida;15;1
+-34.6238764;-58.4498459;Rivadavia y Miró;9435;Ida;16;1
+-34.6254500;-58.4535320;Rivadavia y Curapaligue;9435;Ida;17;1
+-34.6269488;-58.4575707;Rivadavia y F.L.Beltrán;9435;Ida;18;1
+-34.6277420;-58.4593820;Rivadavia y Gabilán (Metrobus);9435;Ida;19;1
+-34.6294825;-58.4651023;Rivadavia y Pedernera;9435;Ida;20;1
+-34.6309391;-58.4708422;Rivadavia y Argeritch;9435;Ida;21;1
+-34.6317999;-58.4740287;Rivadavia y Cuenca;9435;Ida;22;1
+-34.6327709;-58.4776819;Rivadavia y San Nicolás;9435;Ida;23;1
+-34.6338303;-58.4822041;Rivadavia y Segurola;9435;Ida;24;1
+-34.6320100;-58.4839100;Mercedez y Bacacay;9435;Ida;25;1
+-34.6300470;-58.4848320;Mercedez y Avellaneda;9435;Ida;26;1
+-34.6277120;-58.4859020;Mercedez y Morón;9435;Ida;27;1
+-34.6266320;-58.4876530;Av Gaona y Gualeguaychu;9435;Ida;28;1
+-34.6268720;-58.4893000;Sanabria y Juan B. Justo;9435;Ida;29;1
+-34.6249920;-58.4916500;Sanabria y R.deE.San Martin;9435;Ida;30;1
+-34.6232250;-58.4938600;Sanabria y M Cervantes;9435;Ida;31;1
+-34.6216251;-58.4958780;Sanabria y San Blas;9435;Ida;32;1
+-34.6192589;-58.4988284;Sanabria y Miranda;9435;Ida;33;1
+-34.6171380;-58.5013630;Sanabria y A.Jonte;9435;Ida;34;1
+-34.6144970;-58.5033830;Sanabria y Snato Tomé;9435;Ida;35;1
+-34.6115080;-58.5060470;Sanabria y Nogoyá;9435;Ida;36;1
+-34.6091630;-58.5081070;Sanabria y P.Lozano;9435;Ida;37;1
+-34.6074003;-58.5095894;Sanabria y Simbron;9435;Ida;38;1
+-34.6058638;-58.5109091;Sanabria y Beiró;9435;Ida;39;1
+-34.6074975;-58.5145408;Beiró y Marcos Paz;9435;Ida;40;1
 -34.6854121;-58.3599061;Larralde y O Higgins;213;Ida;80;1
 -34.6838329;-58.3618534;Larralde y Sarmiento;213;Ida;81;1
 -34.6796330;-58.3641470;Eva Peron y Elisalde;213;Ida;83;1
 -34.6767580;-58.3645480;Eva Peron y Guemes;213;Ida;84;1
 -34.6740920;-58.3622500;Pitágoras (Museo);213;Ida;85;1
 -34.6749836;-58.3642191;Guemes y Lanares;213;Ida;86;1
--34.7054008;-58.3362812;B de los Italianos y C Larralde;9433;Vuelta;104;6
--34.7063225;-58.3346343;C Larralde y Mendez;9433;Vuelta;105;6
--34.7071868;-58.3336043;C Larralde y Cotagaita;9433;Vuelta;106;6
--34.7086950;-58.3316839;C Larralde y Condarco;9433;Vuelta;107;6
--34.7103002;-58.3297312;C Larralde y Paisandu;9433;Vuelta;108;6
--34.7116143;-58.3280790;C Larralde y Ascasubi;9433;Vuelta;109;5
--34.7107676;-58.3252788;Onsari y Mansilla;9433;Vuelta;110;5
--34.7097534;-58.3240879;Onsari y Villegas;9433;Vuelta;111;5
--34.7079983;-58.3219743;Onsari y Solier;9433;Vuelta;112;5
--34.7063225;-58.3199251;Onsari y Belgrano;9433;Vuelta;113;5
--34.7046467;-58.3181226;Onsari y Mitre;9433;Vuelta;114;5
--34.7051671;-58.3163470;Mitre y Echeverria;9433;Vuelta;115;5
--34.7064107;-58.3151346;Mitre y Victor Hugo;9433;Vuelta;116;5
--34.7077293;-58.3137238;Mitre y Lynch;9433;Vuelta;117;5
--34.7091933;-58.3122379;Av Los Quilmes y Neuquén;9433;Vuelta;118;5
--34.7111866;-58.3103013;Av Los Quilmes y Pilcomayo;9433;Vuelta;119;5
--34.7128049;-58.3086491;Av Los Quilmes y Los Andes;9433;Vuelta;120;5
--34.7143747;-58.3072007;Av Los Quilmes y Formosa;9433;Vuelta;121;5
--34.7160327;-58.3052909;Av Los Quilmes y Montevideo;9433;Vuelta;122;4
--34.7195514;-58.3039176;Av Los Quilmes y Cerrito;9433;Vuelta;123;4
--34.7248335;-58.3023620;Av Los Quilmes y Zapiola;9433;Vuelta;124;4
--34.7286340;-58.2999480;Calchaquí y La Madrid;9433;Vuelta;125;4
--34.7309883;-58.2982635;Calchaquí y Catamarca;9433;Vuelta;126;4
--34.7327694;-58.2970083;Calchaquí y San juan;9433;Vuelta;127;4
--34.7343300;-58.2958710;Calchaquí y Int Olivieri;9433;Vuelta;128;4
--34.7359964;-58.2960212;Urrestarazu y R Lopez;9433;Vuelta;129;4
--34.7352381;-58.2939345;R Lopez y Elustondo;9433;Vuelta;130;4
--34.7339068;-58.2911021;R Lopez y Acha;9433;Vuelta;131;4
--34.7327826;-58.2889295;R Lopez y L de La Torre;9433;Vuelta;132;4
--34.7318612;-58.2869875;R Lopez y J Gonzales;9433;Vuelta;133;4
--34.7308869;-58.2848525;R Lopez y G Marconi;9433;Vuelta;134;4
--34.7298993;-58.2827818;R Lopez y Av La Plata;9433;Vuelta;135;3
--34.7287751;-58.2806629;R Lopez y Condarco;9433;Vuelta;136;3
--34.7277302;-58.2786244;R Lopez y Martín Rodriguez;9433;Vuelta;137;3
--34.7266544;-58.2765913;R Lopez y Blas Parera;9433;Vuelta;138;3
--34.7256801;-58.2747191;R Lopez y Urquiza;9433;Vuelta;139;3
--34.7247057;-58.2726163;R Lopez y Larrea;9433;Vuelta;140;3
--34.7237886;-58.2707441;R Lopez y A Baranda;9433;Vuelta;141;3
--34.7227613;-58.2686895;R Lopez y B de Irigoyen;9433;Vuelta;142;3
--34.7218089;-58.2668012;R Lopez y V Lopez;9433;Vuelta;143;3
--34.7201378;-58.2656801;I Olivieri y Gran Canaria;9433;Vuelta;144;3
--34.7205920;-58.2623059;Yrigoyen y Colon;9433;Vuelta;145;3
--34.7222631;-58.2611471;Yrigoyen y Videla;9433;Vuelta;146;3
--34.6341350;-58.4250600;Av La Plata y Inclan;9433;Ida;123;11
--34.6317620;-58.4256750;Av La Plata y Pavón;9433;Ida;124;11
--34.6273200;-58.4266780;Av La Plata y San juan;9433;Ida;125;11
--34.6223888;-58.4276694;Av La Plata e Independencia;9433;Ida;126;11
--34.6186232;-58.4283936;Av La Plata y Venezuela;9433;Ida;127;11
--34.6159037;-58.4290159;Av La Plata y Rivadavia;9433;Ida;128;11
--34.6172180;-58.4340480;Rivadavia y Campichuelo;9433;Ida;129;11
+-34.7054008;-58.3362812;B de los Italianos y C Larralde;9433;Vuelta;104;1
+-34.7063225;-58.3346343;C Larralde y Mendez;9433;Vuelta;105;1
+-34.7071868;-58.3336043;C Larralde y Cotagaita;9433;Vuelta;106;1
+-34.7086950;-58.3316839;C Larralde y Condarco;9433;Vuelta;107;1
+-34.7103002;-58.3297312;C Larralde y Paisandu;9433;Vuelta;108;1
+-34.7116143;-58.3280790;C Larralde y Ascasubi;9433;Vuelta;109;1
+-34.7107676;-58.3252788;Onsari y Mansilla;9433;Vuelta;110;1
+-34.7097534;-58.3240879;Onsari y Villegas;9433;Vuelta;111;1
+-34.7079983;-58.3219743;Onsari y Solier;9433;Vuelta;112;1
+-34.7063225;-58.3199251;Onsari y Belgrano;9433;Vuelta;113;1
+-34.7046467;-58.3181226;Onsari y Mitre;9433;Vuelta;114;1
+-34.7051671;-58.3163470;Mitre y Echeverria;9433;Vuelta;115;1
+-34.7064107;-58.3151346;Mitre y Victor Hugo;9433;Vuelta;116;1
+-34.7077293;-58.3137238;Mitre y Lynch;9433;Vuelta;117;1
+-34.7091933;-58.3122379;Av Los Quilmes y Neuquén;9433;Vuelta;118;1
+-34.7111866;-58.3103013;Av Los Quilmes y Pilcomayo;9433;Vuelta;119;1
+-34.7128049;-58.3086491;Av Los Quilmes y Los Andes;9433;Vuelta;120;1
+-34.7143747;-58.3072007;Av Los Quilmes y Formosa;9433;Vuelta;121;1
+-34.7160327;-58.3052909;Av Los Quilmes y Montevideo;9433;Vuelta;122;1
+-34.7195514;-58.3039176;Av Los Quilmes y Cerrito;9433;Vuelta;123;1
+-34.7248335;-58.3023620;Av Los Quilmes y Zapiola;9433;Vuelta;124;1
+-34.7286340;-58.2999480;Calchaquí y La Madrid;9433;Vuelta;125;1
+-34.7309883;-58.2982635;Calchaquí y Catamarca;9433;Vuelta;126;1
+-34.7327694;-58.2970083;Calchaquí y San juan;9433;Vuelta;127;1
+-34.7343300;-58.2958710;Calchaquí y Int Olivieri;9433;Vuelta;128;1
+-34.7359964;-58.2960212;Urrestarazu y R Lopez;9433;Vuelta;129;1
+-34.7352381;-58.2939345;R Lopez y Elustondo;9433;Vuelta;130;1
+-34.7339068;-58.2911021;R Lopez y Acha;9433;Vuelta;131;1
+-34.7327826;-58.2889295;R Lopez y L de La Torre;9433;Vuelta;132;1
+-34.7318612;-58.2869875;R Lopez y J Gonzales;9433;Vuelta;133;1
+-34.7308869;-58.2848525;R Lopez y G Marconi;9433;Vuelta;134;1
+-34.7298993;-58.2827818;R Lopez y Av La Plata;9433;Vuelta;135;1
+-34.7287751;-58.2806629;R Lopez y Condarco;9433;Vuelta;136;1
+-34.7277302;-58.2786244;R Lopez y Martín Rodriguez;9433;Vuelta;137;1
+-34.7266544;-58.2765913;R Lopez y Blas Parera;9433;Vuelta;138;1
+-34.7256801;-58.2747191;R Lopez y Urquiza;9433;Vuelta;139;1
+-34.7247057;-58.2726163;R Lopez y Larrea;9433;Vuelta;140;1
+-34.7237886;-58.2707441;R Lopez y A Baranda;9433;Vuelta;141;1
+-34.7227613;-58.2686895;R Lopez y B de Irigoyen;9433;Vuelta;142;1
+-34.7218089;-58.2668012;R Lopez y V Lopez;9433;Vuelta;143;1
+-34.7201378;-58.2656801;I Olivieri y Gran Canaria;9433;Vuelta;144;1
+-34.7205920;-58.2623059;Yrigoyen y Colon;9433;Vuelta;145;1
+-34.7222631;-58.2611471;Yrigoyen y Videla;9433;Vuelta;146;1
+-34.6341350;-58.4250600;Av La Plata y Inclan;9433;Ida;123;1
+-34.6317620;-58.4256750;Av La Plata y Pavón;9433;Ida;124;1
+-34.6273200;-58.4266780;Av La Plata y San juan;9433;Ida;125;1
+-34.6223888;-58.4276694;Av La Plata e Independencia;9433;Ida;126;1
+-34.6186232;-58.4283936;Av La Plata y Venezuela;9433;Ida;127;1
+-34.6159037;-58.4290159;Av La Plata y Rivadavia;9433;Ida;128;1
+-34.6172180;-58.4340480;Rivadavia y Campichuelo;9433;Ida;129;1
 -34.6768100;-58.3662683;Guemes y villegas (Alto Avell);213;Ida;87;1
 -34.6776300;-58.3694420;Larralde y Larrazabal;213;Ida;88;1
 -34.6768365;-58.3703184;C. Larralde y Velez Sarfield;213;Ida;89;1
@@ -991,7 +1016,7 @@
 -34.6751204;-58.3979398;Rivadavia y Rep.Argentina;213;Ida;103;1
 -34.6758130;-58.3989161;Rivadavia y Colombia;213;Ida;104;1
 -34.6769865;-58.4006757;Rivadavia y Pte Perón;213;Ida;105;1
--34.6186020;-58.4371670;Rivadavia y Acoyte;9433;Ida;130;12
+-34.6186020;-58.4371670;Rivadavia y Acoyte;9433;Ida;130;1
 -34.6762409;-58.4023869;Pte Perón y Oliden;213;Ida;106;1
 -34.6757230;-58.4031220;Pte Perón y Ucrania;213;Ida;107;1
 -34.6747277;-58.4044361;Pte Perón y P de la Patria;213;Ida;108;1
@@ -1003,60 +1028,60 @@
 -34.6677790;-58.4137541;Pte Perón y Lomas Valentinas;213;Ida;114;1
 -34.6666099;-58.4153634;Pte Perón y Crotti;213;Ida;115;1
 -34.6656304;-58.4166992;Pte Perón y La Habana;213;Ida;116;1
--34.6200800;-58.4406298;Rivadavia y Colpayo;9433;Ida;131;12
--34.6224771;-58.4463805;Rivadavia y Paynsandu;9433;Ida;132;12
--34.6238764;-58.4498459;Rivadavia y Miró;9433;Ida;133;12
--34.6254500;-58.4535320;Rivadavia y Curapaligue;9433;Ida;134;12
--34.6269488;-58.4575707;Rivadavia y F.L.Beltrán;9433;Ida;135;12
--34.6277420;-58.4593820;Rivadavia y Gabilán (Metrobus);9433;Ida;136;13
--34.7244500;-58.2598543;Alem y Gaboto;9433;Vuelta;147;3
--34.7246836;-58.2581592;Garibaldi y San Martin;9433;Vuelta;148;3
--34.7241854;-58.2572097;Garibaldi y Moreno;9433;Vuelta;149;3
--34.7232948;-58.2554072;Garibaldi y Brown;9433;Vuelta;150;3
--34.7227789;-58.2544255;Garibaldi y Alvear;9433;Vuelta;151;3
--34.7218133;-58.2525212;Garibaldi y Sarmiento;9433;Vuelta;152;2
--34.7212710;-58.2515609;Garibaldi y Paz;9433;Vuelta;153;2
--34.7208565;-58.2506061;Garibaldi y Pringles;9433;Vuelta;154;2
--34.7203715;-58.2497263;Garibaldi y Belgrano;9433;Vuelta;155;2
--34.7193750;-58.2478327;Garibaldi y Allison Bell;9433;Vuelta;156;2
--34.7183962;-58.2461751;Garibaldi y Cevallos;9433;Vuelta;157;2
--34.7173335;-58.2470709;Cevallos y Otamendi;9433;Vuelta;158;2
--34.7163458;-58.2463950;Otamendi y Monrroe;9433;Vuelta;159;2
--34.7152699;-58.2447052;Otamendi y Mozart;9433;Vuelta;160;2
--34.7142204;-58.2428920;Otamendi y A Lora;9433;Vuelta;161;2
--34.7131224;-58.2411003;Otamendi y Toledo;9433;Vuelta;162;2
--34.7115702;-58.2385039;Otamendi y Tte Brussa;9433;Vuelta;163;2
--34.7104634;-58.2366693;Otamendi y Panizza;9433;Vuelta;164;2
--34.7094447;-58.2348132;Otamendi y J B Justo;9433;Vuelta;165;2
+-34.6200800;-58.4406298;Rivadavia y Colpayo;9433;Ida;131;1
+-34.6224771;-58.4463805;Rivadavia y Paynsandu;9433;Ida;132;1
+-34.6238764;-58.4498459;Rivadavia y Miró;9433;Ida;133;1
+-34.6254500;-58.4535320;Rivadavia y Curapaligue;9433;Ida;134;1
+-34.6269488;-58.4575707;Rivadavia y F.L.Beltrán;9433;Ida;135;1
+-34.6277420;-58.4593820;Rivadavia y Gabilán (Metrobus);9433;Ida;136;1
+-34.7244500;-58.2598543;Alem y Gaboto;9433;Vuelta;147;1
+-34.7246836;-58.2581592;Garibaldi y San Martin;9433;Vuelta;148;1
+-34.7241854;-58.2572097;Garibaldi y Moreno;9433;Vuelta;149;1
+-34.7232948;-58.2554072;Garibaldi y Brown;9433;Vuelta;150;1
+-34.7227789;-58.2544255;Garibaldi y Alvear;9433;Vuelta;151;1
+-34.7218133;-58.2525212;Garibaldi y Sarmiento;9433;Vuelta;152;1
+-34.7212710;-58.2515609;Garibaldi y Paz;9433;Vuelta;153;1
+-34.7208565;-58.2506061;Garibaldi y Pringles;9433;Vuelta;154;1
+-34.7203715;-58.2497263;Garibaldi y Belgrano;9433;Vuelta;155;1
+-34.7193750;-58.2478327;Garibaldi y Allison Bell;9433;Vuelta;156;1
+-34.7183962;-58.2461751;Garibaldi y Cevallos;9433;Vuelta;157;1
+-34.7173335;-58.2470709;Cevallos y Otamendi;9433;Vuelta;158;1
+-34.7163458;-58.2463950;Otamendi y Monrroe;9433;Vuelta;159;1
+-34.7152699;-58.2447052;Otamendi y Mozart;9433;Vuelta;160;1
+-34.7142204;-58.2428920;Otamendi y A Lora;9433;Vuelta;161;1
+-34.7131224;-58.2411003;Otamendi y Toledo;9433;Vuelta;162;1
+-34.7115702;-58.2385039;Otamendi y Tte Brussa;9433;Vuelta;163;1
+-34.7104634;-58.2366693;Otamendi y Panizza;9433;Vuelta;164;1
+-34.7094447;-58.2348132;Otamendi y J B Justo;9433;Vuelta;165;1
 -34.7086465;-58.2334399;Otamendi y Yoldi;9433;Vuelta;166;1
 -34.7072045;-58.2310367;Otamendi y Cervantes;9433;Vuelta;167;1
 -34.7079983;-58.2277966;Cervantes y Olavarría;9433;Vuelta;168;1
 -34.7101238;-58.2241380;Cervantes y Iriarte;9433;Vuelta;169;1
 -34.7115526;-58.2218206;Cervantes y 25 bis;9433;Vuelta;170;1
 -34.7175760;-58.2126045;Cervantes y Echeverría;9433;Vuelta;171;1
--34.7212710;-58.2515609;Garibaldi y Paz;9434;Vuelta;150;2
--34.7208565;-58.2506061;Garibaldi y Pringles;9434;Vuelta;151;2
--34.7203715;-58.2497263;Garibaldi y Belgrano;9434;Vuelta;152;2
--34.7193750;-58.2478327;Garibaldi y Allison Bell;9434;Vuelta;153;2
--34.7183962;-58.2461751;Garibaldi y Cevallos;9434;Vuelta;154;2
--34.7173335;-58.2470709;Cevallos y Otamendi;9434;Vuelta;155;2
--34.7163458;-58.2463950;Otamendi y Monrroe;9434;Vuelta;156;2
--34.7152699;-58.2447052;Otamendi y Mozart;9434;Vuelta;157;2
--34.7142204;-58.2428920;Otamendi y A Lora;9434;Vuelta;158;2
--34.7131224;-58.2411003;Otamendi y Toledo;9434;Vuelta;159;2
--34.7115702;-58.2385039;Otamendi y Tte Brussa;9434;Vuelta;160;2
--34.7104634;-58.2366693;Otamendi y Panizza;9434;Vuelta;161;2
--34.7094447;-58.2348132;Otamendi y J B Justo;9434;Vuelta;162;2
--34.7086465;-58.2334399;Otamendi y Yoldi;9434;Vuelta;163;2
+-34.7212710;-58.2515609;Garibaldi y Paz;9434;Vuelta;150;1
+-34.7208565;-58.2506061;Garibaldi y Pringles;9434;Vuelta;151;1
+-34.7203715;-58.2497263;Garibaldi y Belgrano;9434;Vuelta;152;1
+-34.7193750;-58.2478327;Garibaldi y Allison Bell;9434;Vuelta;153;1
+-34.7183962;-58.2461751;Garibaldi y Cevallos;9434;Vuelta;154;1
+-34.7173335;-58.2470709;Cevallos y Otamendi;9434;Vuelta;155;1
+-34.7163458;-58.2463950;Otamendi y Monrroe;9434;Vuelta;156;1
+-34.7152699;-58.2447052;Otamendi y Mozart;9434;Vuelta;157;1
+-34.7142204;-58.2428920;Otamendi y A Lora;9434;Vuelta;158;1
+-34.7131224;-58.2411003;Otamendi y Toledo;9434;Vuelta;159;1
+-34.7115702;-58.2385039;Otamendi y Tte Brussa;9434;Vuelta;160;1
+-34.7104634;-58.2366693;Otamendi y Panizza;9434;Vuelta;161;1
+-34.7094447;-58.2348132;Otamendi y J B Justo;9434;Vuelta;162;1
+-34.7086465;-58.2334399;Otamendi y Yoldi;9434;Vuelta;163;1
 -34.7072045;-58.2310367;Otamendi y Cervantes;9434;Vuelta;164;1
 -34.7080071;-58.2278395;Cervantes y Olavarría;9434;Vuelta;165;1
 -34.7101767;-58.2240522;Cervantes y Iriarte;9434;Vuelta;166;1
 -34.7127167;-58.2201040;Cervantes y 25 bis;9434;Vuelta;167;1
 -34.7176113;-58.2125187;Cervantes y Echaverria;9434;Vuelta;168;1
--34.6294825;-58.4651023;Rivadavia y Pedernera;9433;Ida;137;13
--34.6309391;-58.4708422;Rivadavia y Argeritch;9433;Ida;138;13
--34.6317999;-58.4740287;Rivadavia y Cuenca;9433;Ida;139;13
--34.6327709;-58.4776819;Rivadavia y San Nicolás;9433;Ida;140;13
+-34.6294825;-58.4651023;Rivadavia y Pedernera;9433;Ida;137;1
+-34.6309391;-58.4708422;Rivadavia y Argeritch;9433;Ida;138;1
+-34.6317999;-58.4740287;Rivadavia y Cuenca;9433;Ida;139;1
+-34.6327709;-58.4776819;Rivadavia y San Nicolás;9433;Ida;140;1
 -34.6625594;-58.4171551;R de Escalada y A L Palacios;213;Ida;117;1
 -34.6514838;-58.4162700;Av Saenz y Esquiú  (metrobus);213;Ida;118;1
 -34.6480450;-58.4170370;Av La Plata y Saenz;213;Ida;119;1
@@ -1110,7 +1135,7 @@
 -34.6404287;-58.4233725;Av La Plata y Caceros;286;Ida;1;1
 -34.6387350;-58.4238520;Av La Plata y Rondeau;286;Ida;1;1
 -34.6341350;-58.4250600;Av La Plata y Inclan;286;Ida;1;1
--34.6338303;-58.4822041;Rivadavia y Segurola;9433;Ida;141;13
+-34.6338303;-58.4822041;Rivadavia y Segurola;9433;Ida;141;1
 -34.6317620;-58.4256750;Av La Plata y Pavón;286;Ida;1;1
 -34.6273200;-58.4266780;Av La Plata y San juan;286;Ida;1;1
 -34.6223888;-58.4276694;Av La Plata e Independencia;286;Ida;1;1
@@ -1190,15 +1215,20 @@
 -34.6174665;-58.5296202;Beiró y Gral Paz;288;Ida;1;1
 -34.6191176;-58.5312724;Av Gral Paz y San Roque;288;Ida;1;1
 -34.6228214;-58.5313421;Roca y R A Siria;288;Ida;1;1
--34.6309391;-58.4708422;Rivadavia y Argeritch;9432;Ida;138;13
--34.6058638;-58.5109091;Sanabria y Beiró;9434;Ida;156;15
--34.6074931;-58.5145247;Beiró y Marcos Paz;9434;Ida;157;15
--34.6096079;-58.5178721;Beiró y Desaguadero;9434;Ida;158;15
--34.6109766;-58.5201842;Beiró y Bermudez;9434;Ida;159;15
--34.6138200;-58.5248970;Beiró y L.de Vega;9434;Ida;160;15
--34.6158066;-58.5274637;Beiró y Moliere;9434;Ida;161;15
+-34.6058638;-58.5109091;Sanabria y Beiró;9434;Ida;156;1
+-34.6074931;-58.5145247;Beiró y Marcos Paz;9434;Ida;157;1
+-34.6096079;-58.5178721;Beiró y Desaguadero;9434;Ida;158;1
+-34.6109766;-58.5201842;Beiró y Bermudez;9434;Ida;159;1
+-34.6138200;-58.5248970;Beiró y L.de Vega;9434;Ida;160;1
+-34.6158066;-58.5274637;Beiró y Moliere;9434;Ida;161;1
 -34.6058638;-58.5109091;Sanabria y Beiró;286;Ida;1;1
 -34.6075063;-58.5145569;Beiró y Marcos Paz;286;Ida;1;1
+-34.6191176;-58.5312724;Av Gral Paz y San Roque;9432;Ida;163;1
+-34.6228214;-58.5313421;Roca y R A Siria;9432;Ida;164;1
+-34.6240177;-58.5326779;Roca y Mansoni;9432;Ida;165;1
+-34.6251670;-58.5340070;Roca y Barragán;9432;Ida;166;1
+-34.6267650;-58.5358100;Roca y San ignacio;9432;Ida;167;1
+-34.6285500;-58.5348670;Bergamini y Croacia;9432;Ida;168;1
 -34.6096079;-58.5178721;Beiró y Desaguadero;286;Ida;1;1
 -34.6110750;-58.5202920;Beiró y Bermudez;286;Ida;1;1
 -34.6138200;-58.5248970;Beiró y L.de Vega;286;Ida;1;1
@@ -1747,33 +1777,33 @@
 -34.7208565;-58.2506061;Garibaldi y Pringles;287;Vuelta;1;1
 -34.7203715;-58.2497263;Garibaldi y Belgrano;287;Vuelta;1;1
 -34.7193750;-58.2478327;Garibaldi y Allison Bell;287;Vuelta;1;1
--34.6320100;-58.4839100;Mercedez y Bacacay;9433;Ida;142;13
--34.6300470;-58.4848320;Mercedez y Avellaneda;9433;Ida;143;13
--34.6277120;-58.4859020;Mercedez y Morón;9433;Ida;144;13
--34.6266320;-58.4876530;Av Gaona y Gualeguaychu;9433;Ida;145;13
--34.6268720;-58.4893000;Sanabria y Juan B. Justo;9433;Ida;146;14
--34.6249920;-58.4916500;Sanabria y R.deE.San Martin;9433;Ida;147;14
--34.6232250;-58.4938600;Sanabria y M Cervantes;9433;Ida;148;14
--34.6216251;-58.4958780;Sanabria y San Blas;9433;Ida;149;14
--34.6192589;-58.4988284;Sanabria y Miranda;9433;Ida;150;14
--34.6171380;-58.5013630;Sanabria y A.Jonte;9433;Ida;151;14
--34.6144970;-58.5033830;Sanabria y Snato Tomé;9433;Ida;152;14
--34.6115080;-58.5060470;Sanabria y Nogoyá;9433;Ida;153;14
--34.6091630;-58.5081070;Sanabria y P.Lozano;9433;Ida;154;14
--34.6074003;-58.5095894;Sanabria y Simbron;9433;Ida;155;14
--34.6058638;-58.5109091;Sanabria y Beiró;9433;Ida;156;15
--34.6075063;-58.5145569;Beiró y Marcos Paz;9433;Ida;157;15
--34.6096079;-58.5178721;Beiró y Desaguadero;9433;Ida;158;15
--34.6110750;-58.5202920;Beiró y Bermudez;9433;Ida;159;15
--34.6138200;-58.5248970;Beiró y L.de Vega;9433;Ida;160;15
--34.6158066;-58.5274637;Beiró y Moliere;9433;Ida;161;15
--34.6174665;-58.5296202;Beiró y Gral Paz;9433;Ida;162;15
--34.6191176;-58.5312724;Av Gral Paz y San Roque;9433;Ida;163;15
--34.6228214;-58.5313421;Roca y R A de Siria;9433;Ida;164;15
--34.6240177;-58.5326779;Roca y E Manzoni;9433;Ida;165;15
--34.6251670;-58.5340070;Roca y Barragán;9433;Ida;166;15
--34.6267650;-58.5358100;Roca y San Ignacio;9433;Ida;167;15
--34.6285500;-58.5348670;Bergamini y Croacia;9433;Ida;168;15
+-34.6320100;-58.4839100;Mercedez y Bacacay;9433;Ida;142;1
+-34.6300470;-58.4848320;Mercedez y Avellaneda;9433;Ida;143;1
+-34.6277120;-58.4859020;Mercedez y Morón;9433;Ida;144;1
+-34.6266320;-58.4876530;Av Gaona y Gualeguaychu;9433;Ida;145;1
+-34.6268720;-58.4893000;Sanabria y Juan B. Justo;9433;Ida;146;1
+-34.6249920;-58.4916500;Sanabria y R.deE.San Martin;9433;Ida;147;1
+-34.6232250;-58.4938600;Sanabria y M Cervantes;9433;Ida;148;1
+-34.6216251;-58.4958780;Sanabria y San Blas;9433;Ida;149;1
+-34.6192589;-58.4988284;Sanabria y Miranda;9433;Ida;150;1
+-34.6171380;-58.5013630;Sanabria y A.Jonte;9433;Ida;151;1
+-34.6144970;-58.5033830;Sanabria y Snato Tomé;9433;Ida;152;1
+-34.6115080;-58.5060470;Sanabria y Nogoyá;9433;Ida;153;1
+-34.6091630;-58.5081070;Sanabria y P.Lozano;9433;Ida;154;1
+-34.6074003;-58.5095894;Sanabria y Simbron;9433;Ida;155;1
+-34.6058638;-58.5109091;Sanabria y Beiró;9433;Ida;156;1
+-34.6075063;-58.5145569;Beiró y Marcos Paz;9433;Ida;157;1
+-34.6096079;-58.5178721;Beiró y Desaguadero;9433;Ida;158;1
+-34.6110750;-58.5202920;Beiró y Bermudez;9433;Ida;159;1
+-34.6138200;-58.5248970;Beiró y L.de Vega;9433;Ida;160;1
+-34.6158066;-58.5274637;Beiró y Moliere;9433;Ida;161;1
+-34.6174665;-58.5296202;Beiró y Gral Paz;9433;Ida;162;1
+-34.6191176;-58.5312724;Av Gral Paz y San Roque;9433;Ida;163;1
+-34.6228214;-58.5313421;Roca y R A de Siria;9433;Ida;164;1
+-34.6240177;-58.5326779;Roca y E Manzoni;9433;Ida;165;1
+-34.6251670;-58.5340070;Roca y Barragán;9433;Ida;166;1
+-34.6267650;-58.5358100;Roca y San Ignacio;9433;Ida;167;1
+-34.6285500;-58.5348670;Bergamini y Croacia;9433;Ida;168;1
 -34.7183962;-58.2461751;Garibaldi y Cevallos;286;Vuelta;1;1
 -34.7223170;-58.2557270;Alem y Brown;287;Ida;1;1
 -34.7233200;-58.2576070;Alem y Moreno;287;Ida;1;1
@@ -1837,9 +1867,9 @@
 -34.6333359;-58.4252930;Av La Plata y Santander;288;Vuelta;1;1
 -34.6365447;-58.4245098;Av La Plata Zaraza;288;Vuelta;1;1
 -34.6398373;-58.4235871;Av La Plata y Cobo;288;Vuelta;1;1
--34.6174665;-58.5296202;Beiró y Gral Paz;9434;Ida;162;15
--34.6191176;-58.5312724;Av Gral Paz y San Roque;9434;Ida;163;15
--34.6228214;-58.5313421;Roca y R A Siria;9434;Ida;164;15
+-34.6174665;-58.5296202;Beiró y Gral Paz;9434;Ida;162;1
+-34.6191176;-58.5312724;Av Gral Paz y San Roque;9434;Ida;163;1
+-34.6228214;-58.5313421;Roca y R A Siria;9434;Ida;164;1
 -34.7048143;-58.3184499;Onsari y Brandsen;286;Ida;1;1
 -34.7057845;-58.3195657;Onsari y Belgrano;286;Ida;1;1
 -34.7077822;-58.3219206;Onsari y Solier;286;Ida;1;1
@@ -2035,63 +2065,63 @@
 -34.9589625;-57.9709375;"66 y 142";9060;Vuelta;1;1
 -34.9580129;-57.9699397;"66 y 141";9060;Vuelta;1;1
 -34.9565181;-57.9681695;"66 y 139";9060;Vuelta;1;1
--34.7052950;-58.3337599;Arredondo y De La Peña;9434;Ida;67;6
--34.7040116;-58.3352673;Arredondo y B de Los Italianos;9434;Ida;68;6
--34.7025298;-58.3371127;Arredondo y Chascomus;9434;Ida;69;6
--34.7011979;-58.3388615;Arredondo y C Uruguayo;9434;Ida;70;6
--34.6998440;-58.3405834;Arredondo y Pierres;9434;Ida;71;6
--34.6983577;-58.3424127;Arredondo y P Palos;9434;Ida;72;6
--34.6968317;-58.3442259;Arredondo y Pedernera;9434;Ida;73;6
--34.6956408;-58.3456206;Arredondo y El Salvador;9434;Ida;74;6
--34.6944985;-58.3470368;Arredondo y Suipacha;9434;Ida;75;6
--34.6932282;-58.3485442;Arredondo y Deheza;9434;Ida;76;7
--34.6916800;-58.3504432;Arredondo y Molina;9434;Ida;77;7
--34.6905773;-58.3517790;Arredondo y Sarrat;9434;Ida;78;7
--34.6905068;-58.3535814;Madariaga y C. Larralde;9434;Ida;79;7
--34.6927563;-58.3563817;Madariaga y  Heredia;9434;Ida;80;7
--34.6950233;-58.3585811;Madariaga y  Casacuberta;9434;Ida;81;7
--34.6962054;-58.3595896;Madariaga y Pitagoras;9434;Ida;82;7
--34.6976829;-58.3610219;Madariaga y Cangallo;9434;Ida;83;7
--34.6993324;-58.3627224;Madariaga y Venezuela;9434;Ida;84;7
--34.7004394;-58.3638972;Madariaga y C Gral Belgrano;9434;Ida;85;7
--34.6998748;-58.3667994;Bustamante y Ferre;9434;Ida;86;7
--34.6977887;-58.3697820;Bustamante y Salta;9434;Ida;87;7
--34.6966288;-58.3711660;Bustamante y Basavilbaso;9434;Ida;88;8
--34.6947543;-58.3733654;Bustamante y Sarmiento;9434;Ida;89;8
--34.6926857;-58.3757633;Bustamante y Mambertti;9434;Ida;90;8
--34.6917594;-58.3768576;Bustamante y Donovan;9434;Ida;91;8
--34.6896290;-58.3794433;Bustamante y LaCarra;9434;Ida;92;8
--34.6864708;-58.3835793;Bustamante y Puente Gerli;9434;Ida;93;8
--34.6845563;-58.3861488;Brasil y Yrigoyen;9434;Ida;94;8
--34.6861576;-58.3870983;Yrigoyen y Colombia;9434;Ida;95;8
--34.6879573;-58.3878976;Yrigoyen y Jean Jaure;9434;Ida;96;8
--34.6868898;-58.3895767;Jean Jaures y Rio de Janeiro;9434;Ida;97;8
--34.6855400;-58.3913362;Jean Jaures y Jujuy;9434;Ida;98;8
--34.6847063;-58.3924842;Jean Jaures y S del Estero;9434;Ida;99;8
--34.6835418;-58.3940935;Jean Jaures y San Martin;9434;Ida;100;9
--34.6824698;-58.3951020;Jean Jaures y Catamarca;9434;Ida;101;9
--34.6813891;-58.3960515;Jean Jaures y Fernandez;9434;Ida;102;9
--34.6801407;-58.3970976;Jean Jaures y La Rioja;9434;Ida;103;9
--34.6786540;-58.3984441;Jean Jaures y H Primo;9434;Ida;104;9
--34.6769865;-58.4006757;Rivadavia y Peron;9434;Ida;105;9
--34.6762409;-58.4023869;Pte Perón y Oliden;9434;Ida;106;9
--34.6757230;-58.4031220;Pte Perón Ucrania;9434;Ida;107;9
--34.6747277;-58.4044361;Pte Peron y P de la Patria;9434;Ida;108;9
--34.6740307;-58.4053749;Pte Perón y Balbín;9434;Ida;109;9
--34.6727204;-58.4071344;Pte Perón y Rucchi;9434;Ida;110;9
--34.6714542;-58.4088832;Pte Perón y Burgos;9434;Ida;111;9
--34.6701880;-58.4105462;Pte Perón y Armenia;9434;Ida;112;9
--34.6689924;-58.4121609;Pte Perón y Valparaíso;9434;Ida;113;9
--34.6677790;-58.4137541;Pte Perón y Lomas Valentinas;9434;Ida;114;9
--34.6666099;-58.4153634;Pte Perón y Crotti;9434;Ida;115;9
--34.6656304;-58.4166992;Pte Perón y La Habana;9434;Ida;116;9
--34.6625594;-58.4171551;R de Escalada y A L Palacios;9434;Ida;117;10
--34.6514838;-58.4162700;Av Saenz y Esquiú;9434;Ida;118;10
--34.6480450;-58.4170370;Av La Plata y Saenz;9434;Ida;119;10
--34.6431350;-58.4225570;Av La Plata y Chiclana;9434;Ida;120;10
--34.6404287;-58.4233725;Av La Plata y Caceros;9434;Ida;121;11
--34.6387350;-58.4238520;Av La Plata y Rondeau;9434;Ida;122;11
--34.6341350;-58.4250600;Av La Plata y Inclan;9434;Ida;123;11
+-34.7052950;-58.3337599;Arredondo y De La Peña;9434;Ida;67;1
+-34.7040116;-58.3352673;Arredondo y B de Los Italianos;9434;Ida;68;1
+-34.7025298;-58.3371127;Arredondo y Chascomus;9434;Ida;69;1
+-34.7011979;-58.3388615;Arredondo y C Uruguayo;9434;Ida;70;1
+-34.6998440;-58.3405834;Arredondo y Pierres;9434;Ida;71;1
+-34.6983577;-58.3424127;Arredondo y P Palos;9434;Ida;72;1
+-34.6968317;-58.3442259;Arredondo y Pedernera;9434;Ida;73;1
+-34.6956408;-58.3456206;Arredondo y El Salvador;9434;Ida;74;1
+-34.6944985;-58.3470368;Arredondo y Suipacha;9434;Ida;75;1
+-34.6932282;-58.3485442;Arredondo y Deheza;9434;Ida;76;1
+-34.6916800;-58.3504432;Arredondo y Molina;9434;Ida;77;1
+-34.6905773;-58.3517790;Arredondo y Sarrat;9434;Ida;78;1
+-34.6905068;-58.3535814;Madariaga y C. Larralde;9434;Ida;79;1
+-34.6927563;-58.3563817;Madariaga y  Heredia;9434;Ida;80;1
+-34.6950233;-58.3585811;Madariaga y  Casacuberta;9434;Ida;81;1
+-34.6962054;-58.3595896;Madariaga y Pitagoras;9434;Ida;82;1
+-34.6976829;-58.3610219;Madariaga y Cangallo;9434;Ida;83;1
+-34.6993324;-58.3627224;Madariaga y Venezuela;9434;Ida;84;1
+-34.7004394;-58.3638972;Madariaga y C Gral Belgrano;9434;Ida;85;1
+-34.6998748;-58.3667994;Bustamante y Ferre;9434;Ida;86;1
+-34.6977887;-58.3697820;Bustamante y Salta;9434;Ida;87;1
+-34.6966288;-58.3711660;Bustamante y Basavilbaso;9434;Ida;88;1
+-34.6947543;-58.3733654;Bustamante y Sarmiento;9434;Ida;89;1
+-34.6926857;-58.3757633;Bustamante y Mambertti;9434;Ida;90;1
+-34.6917594;-58.3768576;Bustamante y Donovan;9434;Ida;91;1
+-34.6896290;-58.3794433;Bustamante y LaCarra;9434;Ida;92;1
+-34.6864708;-58.3835793;Bustamante y Puente Gerli;9434;Ida;93;1
+-34.6845563;-58.3861488;Brasil y Yrigoyen;9434;Ida;94;1
+-34.6861576;-58.3870983;Yrigoyen y Colombia;9434;Ida;95;1
+-34.6879573;-58.3878976;Yrigoyen y Jean Jaure;9434;Ida;96;1
+-34.6868898;-58.3895767;Jean Jaures y Rio de Janeiro;9434;Ida;97;1
+-34.6855400;-58.3913362;Jean Jaures y Jujuy;9434;Ida;98;1
+-34.6847063;-58.3924842;Jean Jaures y S del Estero;9434;Ida;99;1
+-34.6835418;-58.3940935;Jean Jaures y San Martin;9434;Ida;100;1
+-34.6824698;-58.3951020;Jean Jaures y Catamarca;9434;Ida;101;1
+-34.6813891;-58.3960515;Jean Jaures y Fernandez;9434;Ida;102;1
+-34.6801407;-58.3970976;Jean Jaures y La Rioja;9434;Ida;103;1
+-34.6786540;-58.3984441;Jean Jaures y H Primo;9434;Ida;104;1
+-34.6769865;-58.4006757;Rivadavia y Peron;9434;Ida;105;1
+-34.6762409;-58.4023869;Pte Perón y Oliden;9434;Ida;106;1
+-34.6757230;-58.4031220;Pte Perón Ucrania;9434;Ida;107;1
+-34.6747277;-58.4044361;Pte Peron y P de la Patria;9434;Ida;108;1
+-34.6740307;-58.4053749;Pte Perón y Balbín;9434;Ida;109;1
+-34.6727204;-58.4071344;Pte Perón y Rucchi;9434;Ida;110;1
+-34.6714542;-58.4088832;Pte Perón y Burgos;9434;Ida;111;1
+-34.6701880;-58.4105462;Pte Perón y Armenia;9434;Ida;112;1
+-34.6689924;-58.4121609;Pte Perón y Valparaíso;9434;Ida;113;1
+-34.6677790;-58.4137541;Pte Perón y Lomas Valentinas;9434;Ida;114;1
+-34.6666099;-58.4153634;Pte Perón y Crotti;9434;Ida;115;1
+-34.6656304;-58.4166992;Pte Perón y La Habana;9434;Ida;116;1
+-34.6625594;-58.4171551;R de Escalada y A L Palacios;9434;Ida;117;1
+-34.6514838;-58.4162700;Av Saenz y Esquiú;9434;Ida;118;1
+-34.6480450;-58.4170370;Av La Plata y Saenz;9434;Ida;119;1
+-34.6431350;-58.4225570;Av La Plata y Chiclana;9434;Ida;120;1
+-34.6404287;-58.4233725;Av La Plata y Caceros;9434;Ida;121;1
+-34.6387350;-58.4238520;Av La Plata y Rondeau;9434;Ida;122;1
+-34.6341350;-58.4250600;Av La Plata y Inclan;9434;Ida;123;1
 -34.9543109;-57.9662168;"137 y 66";9060;Vuelta;1;1
 -34.9528336;-57.9681695;"137 y 64";9060;Vuelta;1;1
 -34.9512332;-57.9702830;"137 y 62";9060;Vuelta;1;1
@@ -2209,10 +2239,10 @@
 -34.6514838;-58.4162700;Av Saenz y Esquiú  (metrobus);99999;Ida;1;1
 -34.6480416;-58.4170532;Av La Plata y Saenz;99999;Ida;1;1
 -34.6475518;-58.4182334;Espera Av LaPlata;99999;Ida;1;1
--34.6240177;-58.5326779;Roca y E Manzoni;9434;Ida;165;15
--34.6251670;-58.5340070;Roca y Barragán;9434;Ida;166;15
--34.6267650;-58.5358100;Roca y San Ignacio;9434;Ida;167;15
--34.6285500;-58.5348670;Bergamini y Croacia;9434;Ida;168;15
+-34.6240177;-58.5326779;Roca y E Manzoni;9434;Ida;165;1
+-34.6251670;-58.5340070;Roca y Barragán;9434;Ida;166;1
+-34.6267650;-58.5358100;Roca y San Ignacio;9434;Ida;167;1
+-34.6285500;-58.5348670;Bergamini y Croacia;9434;Ida;168;1
 -34.9440747;-57.9669034;"131 y 60";9060;Vuelta;1;1
 -34.9417705;-57.9684269;"31 y 58";9060;Vuelta;1;1
 -34.9406272;-57.9698324;"31 y 56";9060;Vuelta;1;1
@@ -2769,45 +2799,15 @@
 -34.6857606;-58.3406532;Parada nueva 61;237;Vuelta;1;1
 -34.6841196;-58.3421659;Parada nueva 62;237;Vuelta;1;1
 -34.6341350;-58.4250600;Av La Plata y Inclan;213;Ida;123;1
--34.6317999;-58.4740287;Rivadavia y Cuenca;9432;Ida;139;13
--34.6327709;-58.4776819;Rivadavia y San Nicolás;9432;Ida;140;13
--34.6338303;-58.4822041;Rivadavia y Segurola;9432;Ida;141;13
--34.6320100;-58.4839100;Mercedez y Bacacay;9432;Ida;142;13
--34.6300470;-58.4848320;Mercedez y Avellaneda;9432;Ida;143;13
 -34.6317620;-58.4256750;Av La Plata y Pavón;213;Ida;124;1
 -34.6273200;-58.4266780;Av La Plata y San juan;213;Ida;125;1
 -34.6223888;-58.4276694;Av La Plata e Independencia;213;Ida;126;1
--34.6277120;-58.4859020;Mercedez y Morón;9432;Ida;144;13
--34.6266320;-58.4876530;Av Gaona y Gualeguaychu;9432;Ida;145;13
 -34.6186232;-58.4283936;Av La Plata y Venezuela;213;Ida;127;1
--34.6268720;-58.4893000;Sanabria y Juan B. Justo;9432;Ida;146;14
--34.6249920;-58.4916500;Sanabria y R.deE.San Martin;9432;Ida;147;14
--34.6232250;-58.4938600;Sanabria y M Cervantes;9432;Ida;148;14
--34.6216251;-58.4958780;Sanabria y San Blas;9432;Ida;149;14
 -34.6159037;-58.4290159;Av La Plata y Rivadavia;213;Ida;128;1
--34.6192589;-58.4988284;Sanabria y Miranda;9432;Ida;150;14
--34.6171380;-58.5013630;Sanabria y A.Jonte;9432;Ida;151;14
--34.6144970;-58.5033830;Sanabria y Snato Tomé;9432;Ida;152;14
--34.6115080;-58.5060470;Sanabria y Nogoyá;9432;Ida;153;14
--34.6091630;-58.5081070;Sanabria y P.Lozano;9432;Ida;154;14
--34.6074003;-58.5095894;Sanabria y Simbron;9432;Ida;155;14
--34.6058638;-58.5109091;Sanabria y Beiró;9432;Ida;156;15
--34.6075151;-58.5145569;Beiró y Marcos Paz;9432;Ida;157;15
--34.6096079;-58.5178721;Beiró y Desaguadero;9432;Ida;158;15
--34.6110750;-58.5202920;Beiró y Bermudez;9432;Ida;159;15
--34.6138200;-58.5248970;Beiró y L.de Vega;9432;Ida;160;15
--34.6158066;-58.5274637;Beiró y Moliere;9432;Ida;161;15
--34.6174665;-58.5296202;Beiró y Gral Paz;9432;Ida;162;15
 -34.6172180;-58.4340480;Rivadavia y Campichuelo;213;Ida;129;1
 -34.6186020;-58.4371670;Rivadavia y Acoyte;213;Ida;130;1
 -34.6200800;-58.4406298;Rivadavia y Colpayo;213;Ida;131;1
--34.6191176;-58.5312724;Av Gral Paz y San Roque;9432;Ida;163;15
--34.6228214;-58.5313421;Roca y R A Siria;9432;Ida;164;15
--34.6240177;-58.5326779;Roca y Mansoni;9432;Ida;165;15
 -34.6225521;-58.4463751;Rivadavia y Paynsandu;213;Ida;132;1
--34.6251670;-58.5340070;Roca y Barragán;9432;Ida;166;15
--34.6267650;-58.5358100;Roca y San ignacio;9432;Ida;167;15
--34.6285500;-58.5348670;Bergamini y Croacia;9432;Ida;168;15
 -34.6238764;-58.4498459;Rivadavia y Miró;213;Ida;133;1
 -34.6254500;-58.4535320;Rivadavia y Curapaligue;213;Ida;134;1
 -34.6269488;-58.4575707;Rivadavia y F.L.Beltrán;213;Ida;135;1

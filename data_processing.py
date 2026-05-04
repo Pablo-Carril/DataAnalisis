@@ -11,8 +11,14 @@ from spatial_utils import distancia_metros, haversine_np
 @st.cache_data
 def cargar_datos(archivo):
     df = pd.read_parquet(archivo)
+    # Eliminamos columnas que no sirven para el análisis antes de cualquier proceso
+    cols_to_drop = [
+        "Turno", "Servicio", "Sección destino", "Legajo", "archivo", 
+        "Tipo Trx", "integracion?", "Fecha", "Hora", "Minutos", "Segundos"
+    ]
+    df = df.drop(columns=cols_to_drop, errors='ignore')
+
     df['Fecha Hora'] = pd.to_datetime(df['Fecha Hora'])
-    if 'Fecha' in df.columns: df = df.drop(columns=['Fecha'])
     df['Fecha'] = df['Fecha Hora'].dt.date
     df['Hora_Int'] = df['Fecha Hora'].dt.hour
     df = df[(df['Latitud'] != 0) & (df['Longitud'] != 0)].dropna(subset=['Latitud', 'Longitud'])
@@ -29,10 +35,14 @@ def cargar_informacion_paradas():
     df_p['Latitud'] = pd.to_numeric(df_p['Latitud'], errors='coerce')
     df_p['Longitud'] = pd.to_numeric(df_p['Longitud'], errors='coerce')
     df_p['Ramal_Cod'] = pd.to_numeric(df_p['Ramal'], errors='coerce')
+    df_p['Seccion'] = pd.to_numeric(df_p['Seccion'], errors='coerce') # Ensure 'Seccion' is numeric
     return df_p, mapping
 
 @st.cache_data
 def calcular_vectores_flujo(df, df_ruta=None):
+    if df is None or df.empty:
+        return pd.DataFrame()
+
     df = df.sort_values(['Tarjeta', 'Fecha Hora'])
     df[['Latitud','Longitud']] = df[['Longitud','Latitud']].to_numpy()
     lat, lon = df['Latitud'].to_numpy(), df['Longitud'].to_numpy()
@@ -51,32 +61,67 @@ def calcular_vectores_flujo(df, df_ruta=None):
         fechas, sentidos, lats, lons = card_df['Fecha'].to_numpy(), card_df['Sentido'].to_numpy(), card_df['Latitud'].to_numpy(), card_df['Longitud'].to_numpy()
         fechas_horas, r_dists = card_df['Fecha Hora'].to_numpy(), card_df['Route_Dist'].to_numpy()
         num_rows = len(card_df)
-        dest_lat, dest_lon, dest_sentido, dest_fecha = [np.nan]*num_rows, [np.nan]*num_rows, [None]*num_rows, [pd.NaT]*num_rows
+        
+        # Listas para almacenar resultados
+        dest_lat, dest_lon, dest_sentido, dest_fecha, dest_fecha_hora = [np.nan]*num_rows, [np.nan]*num_rows, [None]*num_rows, [pd.NaT]*num_rows, [pd.NaT]*num_rows
+        dist_route_km = [np.nan]*num_rows # Distancia por ruta (si disponible) o lineal
+        dist_linear_km = [np.nan]*num_rows # Distancia Haversine (siempre)
+        
         min_time_diff = pd.Timedelta(minutes=20)
+        max_dist_m = 60000
+        min_dist_m = 100
 
         for i in range(num_rows):
             current_fecha, current_sentido, current_fecha_hour = fechas[i], sentidos[i], fechas_horas[i]
             is_last = (i == num_rows - 1 or fechas[i+1] != current_fecha)
             found_t0 = False
+            
             for j in range(i+1, num_rows):
                 if fechas[j] != current_fecha: break
                 if fechas_horas[j] - current_fecha_hour < min_time_diff: continue
+                
                 if sentidos[j] != current_sentido:
                     if abs(lats[i] - lats[j]) < 0.5 and abs(lons[i] - lons[j]) < 0.5:
-                        dist = distancia_metros(lats[i], lons[i], lats[j], lons[j])
-                        if 50 < dist < 60000:
-                            dest_lat[i], dest_lon[i], dest_sentido[i], dest_fecha[i] = lats[j], lons[j], sentidos[j], fechas[j]
-                            found_t0 = True; break
+                        # Optimización: Usar distancia en ruta si está disponible (es mucho más rápida)
+                        if not np.isnan(r_dists[i]) and not np.isnan(r_dists[j]):
+                            dist = abs(r_dists[j] - r_dists[i]) * 1000.0
+                        else:
+                            dist = distancia_metros(lats[i], lons[i], lats[j], lons[j])
+                        
+                        if min_dist_m < dist < max_dist_m:
+                            dest_lat[i], dest_lon[i], dest_sentido[i], dest_fecha[i], dest_fecha_hora[i] = lats[j], lons[j], sentidos[j], fechas[j], fechas_horas[j]
+                            dist_linear_km[i] = dist / 1000.0 # Convertir a KM
+                            dist_route_km[i] = abs(r_dists[j] - r_dists[i]) if not np.isnan(r_dists[i]) and not np.isnan(r_dists[j]) else dist_linear_km[i]
+                            found_t0 = True
+                            break
+            
             if not found_t0 and is_last:
                 time_limit = current_fecha_hour + pd.Timedelta(hours=16)
                 for j in range(i+1, num_rows):
+                    if fechas[j] == current_fecha: continue
                     if fechas_horas[j] > time_limit: break
                     if fechas[j] > current_fecha:
                         dist = abs(r_dists[j] - r_dists[i])*1000 if not np.isnan(r_dists[i]) and not np.isnan(r_dists[j]) else distancia_metros(lats[i], lons[i], lats[j], lons[j])
-                        if 50 < dist < 60000:
-                            dest_lat[i], dest_lon[i], dest_sentido[i], dest_fecha[i] = lats[j], lons[j], sentidos[j], fechas[j]
+                        if min_dist_m < dist < max_dist_m: 
+                            dest_lat[i], dest_lon[i], dest_sentido[i], dest_fecha[i], dest_fecha_hora[i] = lats[j], lons[j], sentidos[j], fechas[j], fechas_horas[j]
+                            
+                            dist_linear_km[i] = distancia_metros(lats[i], lons[i], lats[j], lons[j]) / 1000.0 # Siempre Haversine en KM
+                            
+                            if not np.isnan(r_dists[i]) and not np.isnan(r_dists[j]):
+                                dist_route_km[i] = abs(r_dists[j] - r_dists[i]) # r_dists ya está en KM
+                            else:
+                                dist_route_km[i] = dist_linear_km[i] # Fallback a lineal si no hay ruta
                             break
-        return pd.DataFrame({'Lat_Destino': dest_lat, 'Lon_Destino': dest_lon, 'Sentido_Siguiente': dest_sentido, 'Fecha_Siguiente': dest_fecha}, index=card_df.index)
+        return pd.DataFrame({
+            'Lat_Destino': dest_lat, 
+            'Lon_Destino': dest_lon, 
+            'Sentido_Siguiente': dest_sentido, 
+            'Fecha_Siguiente': dest_fecha,
+            'Fecha Hora_Siguiente': dest_fecha_hora, # Nueva columna
+            'distancia': dist_route_km, # Nueva columna
+            'distancia lineal': dist_linear_km # Nueva columna
+        }, index=card_df.index)
+
 
     destinations = df.groupby('Tarjeta', sort=False, group_keys=False).apply(find_destinations_for_card)
     df_with_dest = df.join(destinations)
@@ -163,6 +208,69 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia", kde_mod
         df_mapped = pd.DataFrame({'lat_ori': df_p.loc[idx_ori, 'Latitud'].values, 'lon_ori': df_p.loc[idx_ori, 'Longitud'].values,
                                  'lat_des': df_p.loc[idx_des, 'Latitud'].values, 'lon_des': df_p.loc[idx_des, 'Longitud'].values, 'Sentido': df['Sentido'].values})
         return df_mapped.groupby(['lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido']).size().reset_index(name='Pasajeros')
+
+    elif criterio == "Por Sección":
+        if df_paradas is None or df_paradas.empty:
+            st.warning("La agrupación por sección requiere información de paradas.")
+            return pd.DataFrame()
+
+        # Ensure 'Seccion' is numeric and handle potential NaNs
+        df_paradas_copy = df_paradas.copy()
+        df_paradas_copy['Seccion'] = pd.to_numeric(df_paradas_copy['Seccion'], errors='coerce').fillna(-1).astype(int)
+        df_paradas_copy = df_paradas_copy[df_paradas_copy['Seccion'] != -1] # Remove invalid sections
+
+        if df_paradas_copy.empty:
+            return pd.DataFrame()
+
+        # Create KDTree for efficient nearest stop lookup
+        stop_coords = df_paradas_copy[['Latitud', 'Longitud']].values
+        tree = KDTree(stop_coords)
+
+        # Find nearest stop for each transaction origin and destination
+        _, idx_ori_stop = tree.query(df[['Latitud', 'Longitud']].values)
+        _, idx_des_stop = tree.query(df[['Lat_Destino', 'Lon_Destino']].values)
+
+        # Get the section ID for the nearest stops
+        # Use .iloc to ensure correct indexing after KDTree query
+        section_ori_ids = df_paradas_copy.iloc[idx_ori_stop]['Seccion'].values
+        section_des_ids = df_paradas_copy.iloc[idx_des_stop]['Seccion'].values
+
+        # Group sections into larger bins if n_paradas (interpreted as n_sections_to_group) > 1
+        if n_paradas > 1:
+            section_ori_ids = (section_ori_ids // n_paradas) * n_paradas
+            section_des_ids = (section_des_ids // n_paradas) * n_paradas
+
+        # Calculamos los centroides basados en la tabla de paradas de referencia
+        ref_stops = df_paradas_copy.copy()
+        if n_paradas > 1:
+            ref_stops['Grouped_Seccion'] = (ref_stops['Seccion'] // n_paradas) * n_paradas
+        else:
+            ref_stops['Grouped_Seccion'] = ref_stops['Seccion']
+
+        section_centroids = ref_stops.groupby('Grouped_Seccion')[['Latitud', 'Longitud']].mean()
+
+        # Map the grouped section IDs from transactions to their centroid coordinates
+        lat_ori_grouped = section_centroids.loc[section_ori_ids, 'Latitud'].values
+        lon_ori_grouped = section_centroids.loc[section_ori_ids, 'Longitud'].values
+        lat_des_grouped = section_centroids.loc[section_des_ids, 'Latitud'].values
+        lon_des_grouped = section_centroids.loc[section_des_ids, 'Longitud'].values
+
+        df_mapped = pd.DataFrame({
+            'lat_ori': lat_ori_grouped,
+            'lon_ori': lon_ori_grouped,
+            'lat_des': lat_des_grouped,
+            'lon_des': lon_des_grouped,
+            'Sentido': df['Sentido'].values
+        })
+
+        # Group by the section coordinates
+        df_zonas = df_mapped.groupby([
+            'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
+        ]).size().reset_index(name='Pasajeros')
+
+        return df_zonas
+
+    return pd.DataFrame()
 
 @st.cache_data
 def calcular_estadisticas_nodos(df_zonas):
