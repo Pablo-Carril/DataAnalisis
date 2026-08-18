@@ -23,7 +23,7 @@ css_style = """
             }
             /* FORZAR ALTURA DEL MAPA */
             div[data-testid="stDeckGlJsonChart"] {
-                height: 550px !important;
+                height: 750px !important;
             }
             /* Modificamos el botón de la pestaña */
             div[data-baseweb="tab-list"] button div {
@@ -62,7 +62,7 @@ st.title("📊 Mapa de Flujos de Pasajeros")
 #archivo_subido = st.sidebar.file_uploader("Cargar archivo Parquet", type=["parquet"])
 
 st.sidebar.header("Selección de Línea")
-linea_seleccionada = st.sidebar.selectbox("Seleccionar Línea", ["Línea 85", "Línea 98"], index=0)
+linea_seleccionada = st.sidebar.selectbox("Seleccionar Línea", ["Línea 98", "Línea 85"], index=0)
 
 if linea_seleccionada == "Línea 85":
     archivo_subido = "Transacciones saes octubre.parquet"
@@ -91,6 +91,7 @@ if archivo_subido:
     label_slider = "Tamaño"
     val_default = 100
     kde_mode = "Unidos" # Valor por defecto para evitar NameError
+    n_secciones_agrupar = 1 # Inicialización para evitar errores
     n_paradas_agrupar = 1
     if criterio_agrupacion == 'Distancia':
         label_slider = "Agrupación (mts):"
@@ -106,16 +107,26 @@ if archivo_subido:
     elif criterio_agrupacion == 'Por Parada':
         n_paradas_agrupar = st.sidebar.slider("Paradas a agrupar:", 1, 10, value=1)
         metros_sel = 100 # Valor dummy para evitar errores
-    elif criterio_agrupacion == 'Por Sección': # New block for "Por Sección"
-        n_secciones_agrupar = st.sidebar.slider("Secciones a agrupar:", 1, 10, value=1)
-        metros_sel = 100 # Dummy value, not directly used for section grouping distance
+    elif criterio_agrupacion == 'Por Sección':
+        n_secciones_agrupar = 1
+        metros_sel = 100 
     
     else:
         label_slider = "Radio del Cluster (mts):"
         val_default = 200
         metros_sel = st.sidebar.select_slider(f"{label_slider}", options=[100, 150, 170, 180, 190, 200, 210, 220, 230, 240, 260, 300], value=val_default)
 
+    st.sidebar.markdown("---")
+    # Nuevo Toggle para activar la clasificación por rangos en cualquier modo
+    color_por_rango = st.sidebar.checkbox("Clasificar por Rangos de Demanda", value=False, help="Activa la paleta cian-violeta y permite filtrar por nivel de carga.")
     
+    rango_demanda = "Todos"
+    if color_por_rango:
+        rango_demanda = st.sidebar.selectbox(
+            "Nivel a Visualizar:",
+            ["Todos", "Muy Baja (0-20%)", "Baja (20-40%)", "Media (40-60%)", "Alta (60-80%)", "Muy Alta (80-100%)"],
+            index=0
+        )
     
     #st.sidebar.markdown("---")
     # Botón para resetear la vista del mapa
@@ -169,8 +180,29 @@ if archivo_subido:
     if ramal_sel != "Todos":
         df_filtrado = df_filtrado[df_filtrado['Ramal'] == ramal_sel]
     
+    # --- CARGA Y PREPARACIÓN DE PARADAS (Necesario para Snapping Temprano) ---
+    df_paradas_all, dict_ramales = cargar_informacion_paradas()
+    df_paradas_sel = pd.DataFrame()
+    if ramal_sel != "Todos" and ramal_sel in dict_ramales:
+        codigo_buscado = dict_ramales[ramal_sel]
+        df_paradas_sel = df_paradas_all[df_paradas_all['Ramal_Cod'] == codigo_buscado].copy()
+        if sentido_sel != "Ambos":
+            df_paradas_sel = df_paradas_sel[df_paradas_sel['Sentido'] == sentido_sel]
+        
+        if not df_paradas_sel.empty:
+            df_paradas_sel['Seccion'] = pd.to_numeric(df_paradas_sel['Seccion'], errors='coerce')
+            df_paradas_sel = df_paradas_sel.dropna(subset=['Seccion'])
+
+        # Sincronizar paradas con la ruta para obtener Km_Posicion
+        if not df_ruta.empty and not df_paradas_sel.empty:
+            r_lats, r_lons, r_cum = df_ruta['Latitud'].values, df_ruta['Longitud'].values, df_ruta['Dist_Acum'].values
+            p_lats, p_lons = df_paradas_sel['Latitud'].values, df_paradas_sel['Longitud'].values
+            d_sq = (p_lats[:, None] - r_lats[None, :])**2 + (p_lons[:, None] - r_lons[None, :])**2
+            df_paradas_sel['Km_Posicion'] = r_cum[np.argmin(d_sq, axis=1)]
+
     with st.spinner('Procesando vectores de flujo...'):
-        df_flujos = calcular_vectores_flujo(df_filtrado, df_ruta=df_ruta)
+        # Pasamos df_paradas_sel para que el proyecto haga snap a ellas desde la inferencia de destino
+        df_flujos = calcular_vectores_flujo(df_filtrado, df_ruta=df_ruta, df_paradas=df_paradas_sel)
 
     # --- LÓGICA DE VISTA DE MAPA ESTABLE ---
     # Se define qué filtros fuerzan un reseteo del centro del mapa.
@@ -191,31 +223,30 @@ if archivo_subido:
         elif st.session_state.view_state is None: # Fallback solo para la primera carga si no hay datos
              st.session_state.view_state = pdk.ViewState(latitude=-34.921, longitude=-57.954, zoom=12, pitch=45, bearing=0)
 
+    layer_etiquetas_seccion = None
     if not df_flujos.empty:
-        # --- CARGA Y FILTRADO DE PARADAS ---
-        df_paradas_all, dict_ramales = cargar_informacion_paradas()
-        df_paradas_sel = pd.DataFrame()
-        if ramal_sel != "Todos" and ramal_sel in dict_ramales:
-            codigo_buscado = dict_ramales[ramal_sel]
-            df_paradas_sel = df_paradas_all[df_paradas_all['Ramal_Cod'] == codigo_buscado].copy()
-            if sentido_sel != "Ambos":
-                df_paradas_sel = df_paradas_sel[df_paradas_sel['Sentido'] == sentido_sel]
-            
-            # Ensure 'Seccion' column is numeric in df_paradas_sel for consistency
-            if 'Seccion' in df_paradas_sel.columns:
-                df_paradas_sel['Seccion'] = pd.to_numeric(df_paradas_sel['Seccion'], errors='coerce')
-                # Drop rows where 'Seccion' is NaN after conversion, or fill with a default
-                df_paradas_sel = df_paradas_sel.dropna(subset=['Seccion'])
-                if df_paradas_sel.empty:
-                    st.sidebar.warning("No hay paradas con información de sección válida para el ramal y sentido seleccionados.")
-
-
-            # Snapping de paradas a ruta para posicionamiento lineal
-            if not df_ruta.empty and not df_paradas_sel.empty:
-                r_lats, r_lons, r_cum = df_ruta['Latitud'].values, df_ruta['Longitud'].values, df_ruta['Dist_Acum'].values
-                p_lats, p_lons = df_paradas_sel['Latitud'].values, df_paradas_sel['Longitud'].values
-                dists_sq = (p_lats[:, None] - r_lats[None, :])**2 + (p_lons[:, None] - r_lons[None, :])**2
-                df_paradas_sel['Km_Posicion'] = r_cum[np.argmin(dists_sq, axis=1)]
+        if not df_paradas_sel.empty:
+            # --- CAPA DE ETIQUETAS DE SECCIÓN ---
+            layer_etiquetas_seccion = None
+            if not df_paradas_sel.empty and 'Seccion' in df_paradas_sel.columns:
+                # Si estamos agrupando por sección, las etiquetas deben coincidir con los grupos
+                df_labels = df_paradas_sel.dropna(subset=['Seccion']).copy()
+                if criterio_agrupacion == "Por Sección":
+                    df_labels['Seccion'] = (df_labels['Seccion'] // n_secciones_agrupar) * n_secciones_agrupar
+                
+                df_secciones_label = df_labels.sort_values('Orden').groupby('Seccion').first().reset_index()
+                df_secciones_label['Seccion_Str'] = df_secciones_label['Seccion'].astype(int).astype(str)
+                layer_etiquetas_seccion = pdk.Layer(
+                    "TextLayer",
+                    df_secciones_label,
+                    get_position=["Longitud", "Latitud"],
+                    get_text="Seccion_Str",
+                    get_size=22,
+                    get_color=[255, 255, 255],
+                    get_alignment_baseline="'bottom'",
+                    background_color=[0, 0, 0, 160],
+                    id="section_labels_layer"
+                )
 
         # Filtros de Mapa aplicados sobre los vectores
         # Optimización: Filtrado directo sin copia inicial
@@ -242,6 +273,27 @@ if archivo_subido:
             if not df_zonas.empty and 'Pasajeros' in df_zonas.columns:
                 df_zonas = df_zonas[df_zonas['Pasajeros'] >= min_pasajeros].reset_index(drop=True)
 
+            # --- FILTRO POR RANGO DE DEMANDA ---
+            # Se aplica para que el selector 'Nivel a Visualizar' tenga efecto en el mapa y métricas.
+            if color_por_rango and rango_demanda != "Todos" and not df_zonas.empty:
+                max_p_ref_filter = df_zonas['Pasajeros'].max()
+                if max_p_ref_filter > 0:
+                    df_zonas['ratio_tmp'] = df_zonas['Pasajeros'] / max_p_ref_filter
+                    if rango_demanda == "Muy Baja (0-20%)":
+                        df_zonas = df_zonas[df_zonas['ratio_tmp'] < 0.2]
+                    elif rango_demanda == "Baja (20-40%)":
+                        df_zonas = df_zonas[(df_zonas['ratio_tmp'] >= 0.2) & (df_zonas['ratio_tmp'] < 0.4)]
+                    elif rango_demanda == "Media (40-60%)":
+                        df_zonas = df_zonas[(df_zonas['ratio_tmp'] >= 0.4) & (df_zonas['ratio_tmp'] < 0.6)]
+                    elif rango_demanda == "Alta (60-80%)":
+                        df_zonas = df_zonas[(df_zonas['ratio_tmp'] >= 0.6) & (df_zonas['ratio_tmp'] < 0.8)]
+                    elif rango_demanda == "Muy Alta (80-100%)":
+                        df_zonas = df_zonas[df_zonas['ratio_tmp'] >= 0.8]
+                    
+                    if 'ratio_tmp' in df_zonas.columns:
+                        df_zonas = df_zonas.drop(columns=['ratio_tmp'])
+                    df_zonas = df_zonas.reset_index(drop=True)
+
             if not df_ruta.empty:
                 path_data = pd.DataFrame({ # This is for the reference route path
                     'path': [df_ruta[['Longitud', 'Latitud']].values.tolist()]
@@ -255,6 +307,10 @@ if archivo_subido:
                     width_min_pixels=3,
                     id='ruta_referencia_layer'
                 ))
+            
+            # Añadir etiquetas de sección si están disponibles
+            if layer_etiquetas_seccion:
+                capas.append(layer_etiquetas_seccion)
 
             # --- CÁLCULO DE DISTANCIAS Y FILTRO ---
             if not df_ruta.empty and not df_zonas.empty:
@@ -326,10 +382,37 @@ if archivo_subido:
             
             # 1. Capa de Arcos (Flujos)
             if not df_zonas.empty:
-                max_p = int(df_zonas['Pasajeros'].max())
-                log_max_p = np.log1p(max_p) if max_p > 0 else 1
-                
+                max_p_display = int(df_zonas['Pasajeros'].max())
+                log_max_p = np.log1p(max_p_display) if max_p_display > 0 else 1
+
+                # --- FUNCIÓN DE COLOR COMPARTIDA (Consolidada) ---
+                def get_color_shared(p):
+                    ratio = p / max_p_display if max_p_display > 0 else 0
+                    alpha = int(40 + (215 * ratio))
+                    
+                    if color_por_rango:
+                        # 5 Grupos discretos: Cian -> Azul Claro -> Azul -> Púrpura -> Violeta
+                        if ratio < 0.2: return [0, 255, 255, alpha]   # Cian
+                        elif ratio < 0.4: return [0, 128, 255, alpha] # Azul Claro
+                        elif ratio < 0.6: return [0, 0, 255, alpha]   # Azul
+                        elif ratio < 0.8: return [138, 43, 226, alpha] # AzulVioleta
+                        else: return [148, 0, 211, alpha]             # Violeta Oscuro
+
+                    # Gradiente continuo original
+                    if ratio < 0.2: # Cian a Azul
+                        r, g, b = 0, int(255 * (1 - (ratio / 0.2))), 255
+                    elif ratio < 0.4: # Azul a Verde
+                        r, g, b = 0, int(255 * ((ratio - 0.2) / 0.2)), int(255 * (1 - ((ratio - 0.2) / 0.2)))
+                    elif ratio < 0.6: # Verde a Amarillo
+                        r, g, b = int(255 * ((ratio - 0.4) / 0.2)), 255, 0
+                    elif ratio < 0.8: # Amarillo a Naranja
+                        r, g, b = 255, int(255 - (90 * ((ratio - 0.6) / 0.2))), 0
+                    else: # Naranja a Rojo
+                        r, g, b = 255, int(165 * (1 - ((ratio - 0.8) / 0.2))), 0
+                    return [r, g, b, alpha]
+
                 def color_log(x):
+                    if color_por_rango: return get_color_shared(x)
                     ratio = np.log1p(x) / log_max_p if log_max_p > 0 else 0
                     return [255, int(165 * (1 - ratio)), 0, 200]
 
@@ -432,26 +515,6 @@ if archivo_subido:
 
             # 3. Renderizado del mapa si hay capas que mostrar
             if capas:
-                max_p_display = int(df_zonas['Pasajeros'].max()) if not df_zonas.empty else 0
-
-                # --- FUNCIÓN DE COLOR COMPARTIDA (Gradiente de Matiz) ---
-                def get_color_shared(p):
-                    # Usamos max_p_display que está disponible en este scope
-                    ratio = p / max_p_display if max_p_display > 0 else 0
-                    alpha = int(40 + (215 * ratio))
-                    
-                    if ratio < 0.2: # Cian a Azul
-                        r, g, b = 0, int(255 * (1 - (ratio / 0.2))), 255
-                    elif ratio < 0.4: # Azul a Verde
-                        r, g, b = 0, int(255 * ((ratio - 0.2) / 0.2)), int(255 * (1 - ((ratio - 0.2) / 0.2)))
-                    elif ratio < 0.6: # Verde a Amarillo
-                        r, g, b = int(255 * ((ratio - 0.4) / 0.2)), 255, 0
-                    elif ratio < 0.8: # Amarillo a Naranja
-                        r, g, b = 255, int(255 - (90 * ((ratio - 0.6) / 0.2))), 0
-                    else: # Naranja a Rojo
-                        r, g, b = 255, int(165 * (1 - ((ratio - 0.8) / 0.2))), 0
-                    return [r, g, b, alpha]
-
                 # --- CREACIÓN DE PESTAÑAS DE VISUALIZACIÓN ---
                 tab1, tab2, tab3, tab4 = st.tabs(["🗺️ Mapa 3D (Arcos)", "🛰️ Vista 2D (Vectores)", "📈 Vista Lineal 1D", "📊 Matriz OD"])
 
@@ -459,7 +522,7 @@ if archivo_subido:
                     
                     st.pydeck_chart(pdk.Deck(
                         map_provider="carto",
-                        map_style="light",
+                        map_style="road",
                         initial_view_state=st.session_state.view_state, # Usamos SIEMPRE la vista guardada
                         layers=capas,
                         tooltip={
@@ -473,6 +536,15 @@ if archivo_subido:
                         },
                         # height=700 se maneja por CSS ahora, pero dejamos un valor base
                     ), key="deck_map_3d", use_container_width=True)
+                    st.write("")
+                    st.write("")
+                    st.write("")
+                    st.write("")
+                    st.write("")
+                    st.write("")
+                    st.write("")
+                    st.write("")
+                    st.write("")
                     st.write("")
                     st.write("")
                     st.write(" **Arcos**: Suben (Naranja/Rojo) -> Bajan (Azul) | **Nodos**: Verde (Subida) - Amarillo (Bajada)")
@@ -495,6 +567,24 @@ if archivo_subido:
 
                         # --- LEYENDA DE COLORES ---
                         def generar_leyenda_html(max_val):
+                            if color_por_rango:
+                                step = max_val / 5
+                                html_string = f"""
+                                <div style="font-family: 'Source Sans Pro', sans-serif; font-size: 0.8rem; color: #FFF; margin-bottom: 10px; border: 1px solid #EAEAEA; padding: 5px 10px; border-radius: 5px;">
+                                    <strong style="color: #FFF;">Rangos de Pasajeros (Cian a Violeta):</strong>
+                                    <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                        <div style="flex: 1; background: #00FFFF; height: 12px; border-radius: 2px;"></div>
+                                        <div style="flex: 1; background: #0080FF; height: 12px; border-radius: 2px;"></div>
+                                        <div style="flex: 1; background: #0000FF; height: 12px; border-radius: 2px;"></div>
+                                        <div style="flex: 1; background: #8A2BE2; height: 12px; border-radius: 2px;"></div>
+                                        <div style="flex: 1; background: #9400D3; height: 12px; border-radius: 2px;"></div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #AAA; margin-top: 2px;">
+                                        <span>0</span><span>{int(step)}</span><span>{int(step*2)}</span><span>{int(step*3)}</span><span>{int(step*4)}</span><span>{int(max_val)}</span>
+                                    </div>
+                                </div>"""
+                                return html_string
+
                             color_stops = "cyan, blue, lime, yellow, orange, red"
                             html_string = f"""
                             <div style="
@@ -539,6 +629,9 @@ if archivo_subido:
                                 width_min_pixels=2,
                                 id='ruta_referencia_layer_2d'
                             ))
+                        
+                        if layer_etiquetas_seccion:
+                            capas_2d.append(layer_etiquetas_seccion)
                         
                         # Capa de Líneas (vectores principales)
                         if not df_paradas_sel.empty:
@@ -654,7 +747,7 @@ if archivo_subido:
                         # st.subheader(f"Vectores de flujo en 2D (Origen-Destino)")
                         st.pydeck_chart(
                             pdk.Deck(
-                                map_provider="carto", map_style="light", 
+                                map_provider="carto", map_style="road", 
                                 initial_view_state=view_state_2d,
                                 layers=capas_2d, 
                                 tooltip={
@@ -673,6 +766,17 @@ if archivo_subido:
                         # Mostrar leyenda debajo del mapa
                         st.write("") # dejo un espacio
                         st.write("") # dejo un espacio
+                        st.write("")
+                        st.write("")
+                        st.write("")
+                        st.write("")
+                        st.write("")
+                        st.write("")
+                        st.write("")
+                        st.write("")
+                        st.write("")
+                        st.write("")
+                        st.write("")
                         st.markdown(generar_leyenda_html(max_p_2d), unsafe_allow_html=True)
                     else:
                         st.info("No hay datos de flujos para mostrar en la vista 2D.")
@@ -890,12 +994,31 @@ if archivo_subido:
                                 # Flechas (Ahora PathLayer para uniones limpias)
                                 pdk.Layer("PathLayer", pd.DataFrame(arrows_data), get_path="path", get_color="color", get_width="width", width_units='pixels', rounded=True),
                             ]
+
+                            # Capa de Secciones (Etiquetas) - Tab 3
+                            if not df_paradas_sel.empty and 'Seccion' in df_paradas_sel.columns:
+                                df_l_1d = df_paradas_sel.dropna(subset=['Seccion']).copy()
+                                if criterio_agrupacion == "Por Sección":
+                                    df_l_1d['Seccion'] = (df_l_1d['Seccion'] // n_secciones_agrupar) * n_secciones_agrupar
+                                
+                                df_s_linear = df_l_1d.sort_values('Orden').groupby('Seccion').first().reset_index()
+                                def get_x_linear_local(km): return BASE_LON + (km if is_southbound else (max_km_ruta - km)) * SCALE_X
+                                # Posicionar arriba de los flujos superiores (dinámico según el apilamiento)
+                                label_y = BASE_LAT + (max_lvl_top + 6) * SCALE_Y
+                                df_s_linear['pos'] = df_s_linear['Km_Posicion'].apply(lambda k: [get_x_linear_local(k), label_y])
+                                df_s_linear['text'] = df_s_linear['Seccion'].astype(int).astype(str)
+                                
+                                layers_1d.append(pdk.Layer(
+                                    "TextLayer", df_s_linear, get_position="pos", get_text="text",
+                                    get_size=22, get_color=[255, 255, 255], get_alignment_baseline="'bottom'", get_text_anchor="'middle'", background_color=[0, 0, 0, 160]
+                                ))
+
                             if stops_1d_layer:
                                 layers_1d.append(stops_1d_layer)
 
                             # Vista Centrada en el medio del recorrido
                             cx = BASE_LON + (ruta_cum.max() * SCALE_X) / 2
-                            view_1d = pdk.ViewState(latitude=BASE_LAT, longitude=cx, zoom=11, pitch=0, bearing=0)
+                            view_1d = pdk.ViewState(latitude=BASE_LAT, longitude=cx, zoom=11, pitch=0, bearing=0, max_pitch=0, min_pitch=0, max_rotation=0, min_rotation=0)
 
                             st.pydeck_chart(pdk.Deck(
                                 map_provider=None, # Sin mapa base, solo canvas blanco
@@ -907,6 +1030,17 @@ if archivo_subido:
                                     "style": {"color": "white", "backgroundColor": "#333"}
                                 }
                             ), use_container_width=True)
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
 
                     else:
                         st.info("Se requiere cargar una ruta de referencia (ACTrec) para visualizar el gráfico 1D.")
@@ -996,10 +1130,30 @@ if archivo_subido:
                             nodes_x['tooltip_od'] = nodes_x.apply(lambda r: f"<b>Destino (Bajadas):</b> {r['Bajaron']}<br/><b>%:</b> {r['Porcentaje_Bajaron_Str']}", axis=1)
                             
                             layers_od = [
-                                # Fondo blanco para contraste
+                                # Fondo blanco para contraste (debe ir primero para estar al fondo)
                                 pdk.Layer("PolygonLayer", pd.DataFrame({'poly': [[[-0.05, 0.05], [max_km_od*SCALE_OD + 0.05, 0.05], [max_km_od*SCALE_OD + 0.05, -max_km_od*SCALE_OD - 0.05], [-0.05, -max_km_od*SCALE_OD - 0.05]]]}), get_polygon="poly", get_fill_color=[255, 255, 255]),
                                 # Ejes de referencia (Y y X)
                                 pdk.Layer("PathLayer", pd.DataFrame({'path': [[[0, 0.01], [0, -max_km_od*SCALE_OD - 0.01]], [[-0.01, 0], [max_km_od*SCALE_OD + 0.01, 0]] ]}), get_path="path", get_color=[50, 50, 50], get_width=2, width_units='pixels'),
+                                # Ejes con números de sección
+                                *(
+                                    [pdk.Layer("TextLayer",
+                                              (df_paradas_sel.dropna(subset=['Seccion']).copy().assign(
+                                                  Seccion=lambda x: (x['Seccion'] // n_secciones_agrupar) * n_secciones_agrupar if criterio_agrupacion == "Por Sección" else x['Seccion']
+                                              ).sort_values('Orden').groupby('Seccion').first().reset_index()).assign(
+                                                  pos_y=lambda d: d['Km_Posicion'].apply(lambda km: [-0.001, -km * SCALE_OD]), # Desplazar a la izquierda del eje
+                                                  text=lambda d: d['Seccion'].astype(int).astype(str)
+                                              ),
+                          get_position="pos_y", get_text="text", get_size=22, get_color=[255, 255, 255], get_text_anchor="'end'", get_alignment_baseline="'center'", background_color=[0, 0, 0, 160]), 
+                                     pdk.Layer("TextLayer",
+                                              (df_paradas_sel.dropna(subset=['Seccion']).copy().assign(
+                                                  Seccion=lambda x: (x['Seccion'] // n_secciones_agrupar) * n_secciones_agrupar if criterio_agrupacion == "Por Sección" else x['Seccion']
+                                              ).sort_values('Orden').groupby('Seccion').first().reset_index()).assign(
+                                                  pos_x=lambda d: d['Km_Posicion'].apply(lambda km: [km * SCALE_OD, 0.001]), # Desplazar hacia arriba (fuera del cuadrante)
+                                                  text=lambda d: d['Seccion'].astype(int).astype(str)
+                                              ),
+                          get_position="pos_x", get_text="text", get_size=22, get_color=[255, 255, 255], get_alignment_baseline="'bottom'", get_text_anchor="'middle'", background_color=[0, 0, 0, 160])] 
+                                    if not df_paradas_sel.empty and 'Seccion' in df_paradas_sel.columns else []
+                                ),
                                 # Flujos OD
                                 pdk.Layer("PathLayer", pd.DataFrame(paths_od), get_path="path", get_color="color", get_width="width", width_units='pixels', pickable=True),
                                 # Nodos Origen (Y)
@@ -1011,11 +1165,22 @@ if archivo_subido:
                             # Centrar vista en el cuadrante inferior derecho del punto (0,0)
                             v_lat, v_lon = -(max_km_od * SCALE_OD)/2, (max_km_od * SCALE_OD)/2
                             st.pydeck_chart(pdk.Deck(
-                                map_provider=None, map_style=None,
-                                initial_view_state=pdk.ViewState(latitude=v_lat, longitude=v_lon, zoom=10, pitch=0, bearing=0),
+                                map_provider=None, map_style=None, # Sin mapa base
+                                initial_view_state=pdk.ViewState(latitude=v_lat, longitude=v_lon, zoom=10, pitch=0, bearing=0, max_pitch=0, min_pitch=0, max_rotation=0, min_rotation=0), # Bloquear rotación y 3D
                                 layers=layers_od,
                                 tooltip={"html": "{tooltip_od}"}
                             ), use_container_width=True)
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            st.write("")
                             
                             st.info("Eje Y (Vertical): Orígenes por Km de Ruta | Eje X (Horizontal): Destinos por Km de Ruta. (0,0) en esquina superior izquierda.")
                     else:
@@ -1048,7 +1213,9 @@ if archivo_subido:
                     if 'Km_Recorridos' in df_export.columns:
                         df_export = df_export.rename(columns={'Km_Recorridos': 'distancia'})
                     
-                    cols_export = ['Ramal', 'Sentido', 'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'distancia', 'Pasajeros', 'Porcentaje'] # Porcentaje is now float
+                    # Añadimos dinámicamente nombres y secciones a la exportación
+                    extras = [c for c in ['nombre_ori', 'nombre_des', 'seccion_ori', 'seccion_des'] if c in df_export.columns]
+                    cols_export = ['Ramal', 'Sentido'] + extras + ['lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'distancia', 'Pasajeros', 'Porcentaje']
                     cols_final = [c for c in cols_export if c in df_export.columns]
                     
                     csv_flujos = df_export[cols_final].to_csv(index=False, sep=';', decimal=',')
@@ -1063,7 +1230,8 @@ if archivo_subido:
 
                     # Exportar estadísticas de Nodos (Subidas y Bajadas por ubicación)
                     if not df_nodos.empty:
-                        cols_nodos = ['lat', 'lon', 'Km_Posicion', 'Subieron', 'Bajaron', 'Porcentaje_Actividad', 'Porcentaje_Subieron', 'Porcentaje_Bajaron']
+                        extras_n = [c for c in ['nombre', 'seccion'] if c in df_nodos.columns]
+                        cols_nodos = ['lat', 'lon'] + extras_n + ['Km_Posicion', 'Subieron', 'Bajaron', 'Porcentaje_Actividad', 'Porcentaje_Subieron', 'Porcentaje_Bajaron']
                         cols_nodos_final = [c for c in cols_nodos if c in df_nodos.columns]
                         csv_nodos = df_nodos[cols_nodos_final].to_csv(index=False, sep=';', decimal=',')
                         # Export nodes

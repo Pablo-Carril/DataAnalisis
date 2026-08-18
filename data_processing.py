@@ -27,7 +27,9 @@ def cargar_datos(archivo):
 @st.cache_data
 def cargar_informacion_paradas():
     if not os.path.exists("Ramales.csv") or not os.path.exists("Paradas_SQL_todas.csv"):
+        print("cargando ramales y paradas: no se encuentra")
         return pd.DataFrame(), {}
+    print("cargando ramales y paradas: OK")
     df_r = pd.read_csv("Ramales.csv", sep=';')
     df_r.columns = [c.lstrip('\ufeff').strip() for c in df_r.columns]
     mapping = dict(zip(df_r['Ramal'], df_r['Codigo']))
@@ -39,7 +41,7 @@ def cargar_informacion_paradas():
     return df_p, mapping
 
 @st.cache_data
-def calcular_vectores_flujo(df, df_ruta=None):
+def calcular_vectores_flujo(df, df_ruta=None, df_paradas=None):
     if df is None or df.empty:
         return pd.DataFrame()
 
@@ -49,11 +51,21 @@ def calcular_vectores_flujo(df, df_ruta=None):
     lat[lat != 0], lon[lon != 0] = -np.abs(lat[lat != 0]), -np.abs(lon[lon != 0])
     df['Latitud'], df['Longitud'] = lat, lon
 
-    if df_ruta is not None and not df_ruta.empty:
-        r_lats, r_lons, r_cum = df_ruta['Latitud'].values, df_ruta['Longitud'].values, df_ruta['Dist_Acum'].values
+    # Determinar referencia para snapping (Paradas tienen prioridad)
+    ref_df = df_paradas if (df_paradas is not None and not df_paradas.empty) else df_ruta
+    
+    if ref_df is not None and not ref_df.empty:
+        ref_lats, ref_lons = ref_df['Latitud'].values, ref_df['Longitud'].values
+        ref_cum = ref_df['Km_Posicion'].values if 'Km_Posicion' in ref_df.columns else ref_df['Dist_Acum'].values
+        
         tx_lats, tx_lons = df['Latitud'].values, df['Longitud'].values
-        dists_sq = (tx_lats[:, None] - r_lats[None, :])**2 + (tx_lons[:, None] - r_lons[None, :])**2
-        df['Route_Dist'] = r_cum[np.argmin(dists_sq, axis=1)]
+        dists_sq = (tx_lats[:, None] - ref_lats[None, :])**2 + (tx_lons[:, None] - ref_lons[None, :])**2
+        min_idx = np.argmin(dists_sq, axis=1)
+        
+        # Ajustar transacciones a la ubicación exacta de la parada/traza
+        df['Latitud'] = ref_lats[min_idx]
+        df['Longitud'] = ref_lons[min_idx]
+        df['Route_Dist'] = ref_cum[min_idx]
     else:
         df['Route_Dist'] = np.nan
 
@@ -128,41 +140,57 @@ def calcular_vectores_flujo(df, df_ruta=None):
     return df_with_dest[(df_with_dest['Lat_Destino'].notna()) & (df_with_dest['Lat_Destino'] != 0)].copy()
 
 @st.cache_data
-def snap_to_route(df, df_ruta):
+def snap_to_route(df, df_ruta, df_paradas=None):
     df_snapped = df.copy()
-    if df_ruta is None or df_ruta.empty: return df_snapped
-    tree = KDTree(df_ruta[['Latitud', 'Longitud']].values)
+    # Prioridad a paradas para el snapping de flujos
+    ref_df = df_paradas if (df_paradas is not None and not df_paradas.empty) else df_ruta
+    if ref_df is None or ref_df.empty: return df_snapped
+    
+    tree = KDTree(ref_df[['Latitud', 'Longitud']].values)
     _, idx_ori = tree.query(df_snapped[['Latitud', 'Longitud']].values)
     _, idx_des = tree.query(df_snapped[['Lat_Destino', 'Lon_Destino']].values)
-    ruta_cum = df_ruta['Dist_Acum'].values
+    
+    dist_vals = ref_df['Km_Posicion'].values if 'Km_Posicion' in ref_df.columns else ref_df['Dist_Acum'].values
+    
     df_snapped['idx_ori'], df_snapped['idx_des'] = idx_ori, idx_des
-    df_snapped['dist_acum_ori'], df_snapped['dist_acum_des'] = ruta_cum[idx_ori], ruta_cum[idx_des]
+    df_snapped['dist_acum_ori'], df_snapped['dist_acum_des'] = dist_vals[idx_ori], dist_vals[idx_des]
+    
+    # Actualizar coordenadas de flujos a la referencia (snap físico)
+    df_snapped['Latitud'] = ref_df['Latitud'].values[idx_ori]
+    df_snapped['Longitud'] = ref_df['Longitud'].values[idx_ori]
+    df_snapped['Lat_Destino'] = ref_df['Latitud'].values[idx_des]
+    df_snapped['Lon_Destino'] = ref_df['Longitud'].values[idx_des]
+    
     return df_snapped
 
 @st.cache_data
 def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia", kde_mode="Unidos", df_paradas=None, n_paradas=1):
     if criterio == "Distancia":
         if df_ruta.empty: return pd.DataFrame()
-        df_s = snap_to_route(df, df_ruta)
+        df_s = snap_to_route(df, df_ruta, df_paradas=df_paradas)
+        ref_snap = df_paradas if (df_paradas is not None and not df_paradas.empty) else df_ruta
         km_bin = metros_sel / 1000.0
         dist_b_ori, dist_b_des = (df_s['dist_acum_ori'] / km_bin).round() * km_bin, (df_s['dist_acum_des'] / km_bin).round() * km_bin
-        idx_b_ori = np.argmin(np.abs(dist_b_ori.values[:, None] - df_ruta['Dist_Acum'].values[None, :]), axis=1)
-        idx_b_des = np.argmin(np.abs(dist_b_des.values[:, None] - df_ruta['Dist_Acum'].values[None, :]), axis=1)
-        df_mapped = pd.DataFrame({'lat_ori': df_ruta['Latitud'].values[idx_b_ori], 'lon_ori': df_ruta['Longitud'].values[idx_b_ori],
-                                 'lat_des': df_ruta['Latitud'].values[idx_b_des], 'lon_des': df_ruta['Longitud'].values[idx_b_des], 'Sentido': df['Sentido'].values})
+        ref_cum = ref_snap['Km_Posicion'].values if 'Km_Posicion' in ref_snap.columns else ref_snap['Dist_Acum'].values
+        idx_b_ori = np.argmin(np.abs(dist_b_ori.values[:, None] - ref_cum[None, :]), axis=1)
+        idx_b_des = np.argmin(np.abs(dist_b_des.values[:, None] - ref_cum[None, :]), axis=1)
+        df_mapped = pd.DataFrame({'lat_ori': ref_snap['Latitud'].values[idx_b_ori], 'lon_ori': ref_snap['Longitud'].values[idx_b_ori],
+                                 'lat_des': ref_snap['Latitud'].values[idx_b_des], 'lon_des': ref_snap['Longitud'].values[idx_b_des], 'Sentido': df['Sentido'].values})
         return df_mapped.groupby(['lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido']).size().reset_index(name='Pasajeros')
 
     elif criterio == "Clusters":
         if df_ruta.empty: return pd.DataFrame()
-        df_s = snap_to_route(df, df_ruta)
+        df_s = snap_to_route(df, df_ruta, df_paradas=df_paradas)
+        ref_snap = df_paradas if (df_paradas is not None and not df_paradas.empty) else df_ruta
         all_dists = np.concatenate([df_s['dist_acum_ori'].values, df_s['dist_acum_des'].values])
         db = DBSCAN(eps=metros_sel/1000.0, min_samples=5).fit(all_dists.reshape(-1, 1))
         df_d = pd.DataFrame({'dist_km': all_dists, 'label': db.labels_})
         valid = df_d[df_d['label'] != -1]
         if valid.empty: return pd.DataFrame()
         centroids_1d = valid.groupby('label')['dist_km'].mean()
-        c_idx = np.argmin(np.abs(centroids_1d.values[:, None] - df_ruta['Dist_Acum'].values[None, :]), axis=1)
-        c_coords = pd.DataFrame({'lat': df_ruta['Latitud'].values[c_idx], 'lon': df_ruta['Longitud'].values[c_idx]}, index=centroids_1d.index)
+        ref_cum = ref_snap['Km_Posicion'].values if 'Km_Posicion' in ref_snap.columns else ref_snap['Dist_Acum'].values
+        c_idx = np.argmin(np.abs(centroids_1d.values[:, None] - ref_cum[None, :]), axis=1)
+        c_coords = pd.DataFrame({'lat': ref_snap['Latitud'].values[c_idx], 'lon': ref_snap['Longitud'].values[c_idx]}, index=centroids_1d.index)
         n = len(df); labels_ori, labels_des = db.labels_[:n], db.labels_[n:]
         mask = (labels_ori != -1) & (labels_des != -1)
         df_v = df[mask].copy()
@@ -172,11 +200,13 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia", kde_mod
 
     elif criterio == "KDE":
         if df_ruta.empty: return pd.DataFrame()
-        df_s = snap_to_route(df, df_ruta)
+        df_s = snap_to_route(df, df_ruta, df_paradas=df_paradas)
+        ref_snap = df_paradas if (df_paradas is not None and not df_paradas.empty) else df_ruta
         d_ori, d_des = df_s['dist_acum_ori'].dropna().values, df_s['dist_acum_des'].dropna().values
         bandwidth = metros_sel / 1000.0
         kde = KernelDensity(bandwidth=bandwidth, kernel='gaussian')
-        grid = np.linspace(0, df_ruta['Dist_Acum'].max(), int(df_ruta['Dist_Acum'].max() * 100))
+        max_d = ref_snap['Km_Posicion'].max() if 'Km_Posicion' in ref_snap.columns else df_ruta['Dist_Acum'].max()
+        grid = np.linspace(0, max_d, int(max_d * 100))
         if kde_mode == "Separados":
             p_ori, p_des = np.array([]), np.array([])
             if len(d_ori) > 2: kde.fit(d_ori.reshape(-1,1)); p_ori = grid[find_peaks(kde.score_samples(grid.reshape(-1,1)))[0]]
@@ -185,9 +215,10 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia", kde_mod
         else:
             valid = np.concatenate([d_ori, d_des])
             kde.fit(valid.reshape(-1,1)); peak_locs = grid[find_peaks(kde.score_samples(grid.reshape(-1,1)))[0]]
-        if len(peak_locs) == 0: peak_locs = np.array([0, df_ruta['Dist_Acum'].max()])
-        p_idx = np.argmin(np.abs(peak_locs[:, None] - df_ruta['Dist_Acum'].values[None, :]), axis=1)
-        hubs = pd.DataFrame({'lat': df_ruta['Latitud'].values[p_idx], 'lon': df_ruta['Longitud'].values[p_idx]})
+        if len(peak_locs) == 0: peak_locs = np.array([0, max_d])
+        ref_cum = ref_snap['Km_Posicion'].values if 'Km_Posicion' in ref_snap.columns else ref_snap['Dist_Acum'].values
+        p_idx = np.argmin(np.abs(peak_locs[:, None] - ref_cum[None, :]), axis=1)
+        hubs = pd.DataFrame({'lat': ref_snap['Latitud'].values[p_idx], 'lon': ref_snap['Longitud'].values[p_idx]})
         idx_p_ori = np.argmin(np.abs(df_s['dist_acum_ori'].values[:, None] - peak_locs[None, :]), axis=1)
         idx_p_des = np.argmin(np.abs(df_s['dist_acum_des'].values[:, None] - peak_locs[None, :]), axis=1)
         df_m = df.copy()
@@ -201,13 +232,22 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia", kde_mod
         tree = KDTree(df_p[['Latitud', 'Longitud']].values)
         _, idx_ori = tree.query(df[['Latitud', 'Longitud']].values)
         _, idx_des = tree.query(df[['Lat_Destino', 'Lon_Destino']].values)
+        
+        # Obtenemos nombres de paradas
+        nombres_ori = df_p.loc[idx_ori, 'Nombre parada'].values
+        nombres_des = df_p.loc[idx_des, 'Nombre parada'].values
+
         if n_paradas > 1:
             idx_ori, idx_des = (idx_ori // n_paradas) * n_paradas, (idx_des // n_paradas) * n_paradas
             max_i = len(df_p) - 1
             idx_ori, idx_des = np.clip(idx_ori, 0, max_i), np.clip(idx_des, 0, max_i)
-        df_mapped = pd.DataFrame({'lat_ori': df_p.loc[idx_ori, 'Latitud'].values, 'lon_ori': df_p.loc[idx_ori, 'Longitud'].values,
-                                 'lat_des': df_p.loc[idx_des, 'Latitud'].values, 'lon_des': df_p.loc[idx_des, 'Longitud'].values, 'Sentido': df['Sentido'].values})
-        return df_mapped.groupby(['lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido']).size().reset_index(name='Pasajeros')
+        
+        df_mapped = pd.DataFrame({
+            'lat_ori': df_p.loc[idx_ori, 'Latitud'].values, 'lon_ori': df_p.loc[idx_ori, 'Longitud'].values, 'nombre_ori': nombres_ori,
+            'lat_des': df_p.loc[idx_des, 'Latitud'].values, 'lon_des': df_p.loc[idx_des, 'Longitud'].values, 'nombre_des': nombres_des,
+            'Sentido': df['Sentido'].values
+        })
+        return df_mapped.groupby(['lat_ori', 'lon_ori', 'nombre_ori', 'lat_des', 'lon_des', 'nombre_des', 'Sentido']).size().reset_index(name='Pasajeros')
 
     elif criterio == "Por Sección":
         if df_paradas is None or df_paradas.empty:
@@ -247,25 +287,28 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia", kde_mod
         else:
             ref_stops['Grouped_Seccion'] = ref_stops['Seccion']
 
-        section_centroids = ref_stops.groupby('Grouped_Seccion')[['Latitud', 'Longitud']].mean()
+        # Usamos .first() en lugar de .mean() para que los nodos coincidan con la posición del número (etiqueta)
+        section_locations = ref_stops.sort_values('Orden').groupby('Grouped_Seccion')[['Latitud', 'Longitud']].first()
 
         # Map the grouped section IDs from transactions to their centroid coordinates
-        lat_ori_grouped = section_centroids.loc[section_ori_ids, 'Latitud'].values
-        lon_ori_grouped = section_centroids.loc[section_ori_ids, 'Longitud'].values
-        lat_des_grouped = section_centroids.loc[section_des_ids, 'Latitud'].values
-        lon_des_grouped = section_centroids.loc[section_des_ids, 'Longitud'].values
+        lat_ori_grouped = section_locations.loc[section_ori_ids, 'Latitud'].values
+        lon_ori_grouped = section_locations.loc[section_ori_ids, 'Longitud'].values
+        lat_des_grouped = section_locations.loc[section_des_ids, 'Latitud'].values
+        lon_des_grouped = section_locations.loc[section_des_ids, 'Longitud'].values
 
         df_mapped = pd.DataFrame({
             'lat_ori': lat_ori_grouped,
             'lon_ori': lon_ori_grouped,
+            'seccion_ori': section_ori_ids,
             'lat_des': lat_des_grouped,
             'lon_des': lon_des_grouped,
+            'seccion_des': section_des_ids,
             'Sentido': df['Sentido'].values
         })
 
         # Group by the section coordinates
         df_zonas = df_mapped.groupby([
-            'lat_ori', 'lon_ori', 'lat_des', 'lon_des', 'Sentido'
+            'lat_ori', 'lon_ori', 'seccion_ori', 'lat_des', 'lon_des', 'seccion_des', 'Sentido'
         ]).size().reset_index(name='Pasajeros')
 
         return df_zonas
@@ -275,9 +318,29 @@ def agrupar_por_zonas(df, df_ruta, metros_sel=100, criterio="Distancia", kde_mod
 @st.cache_data
 def calcular_estadisticas_nodos(df_zonas):
     if df_zonas.empty: return pd.DataFrame()
-    sub = df_zonas.groupby(['lat_ori', 'lon_ori'])['Pasajeros'].sum().reset_index().rename(columns={'lat_ori': 'lat', 'lon_ori': 'lon', 'Pasajeros': 'Subieron'})
-    baj = df_zonas.groupby(['lat_des', 'lon_des'])['Pasajeros'].sum().reset_index().rename(columns={'lat_des': 'lat', 'lon_des': 'lon', 'Pasajeros': 'Bajaron'})
-    nodos = pd.merge(sub, baj, on=['lat', 'lon'], how='outer').fillna(0)
+    
+    # Columnas dinámicas para agrupar nodos (preservando nombre/sección si existen)
+    ori_cols, des_cols = ['lat_ori', 'lon_ori'], ['lat_des', 'lon_des']
+    if 'nombre_ori' in df_zonas.columns: ori_cols.append('nombre_ori')
+    if 'nombre_des' in df_zonas.columns: des_cols.append('nombre_des')
+    if 'seccion_ori' in df_zonas.columns: ori_cols.append('seccion_ori')
+    if 'seccion_des' in df_zonas.columns: des_cols.append('seccion_des')
+
+    sub = df_zonas.groupby(ori_cols)['Pasajeros'].sum().reset_index()
+    rename_sub = {'lat_ori': 'lat', 'lon_ori': 'lon', 'Pasajeros': 'Subieron', 'nombre_ori': 'nombre', 'seccion_ori': 'seccion'}
+    sub = sub.rename(columns={k: v for k, v in rename_sub.items() if k in sub.columns})
+
+    baj = df_zonas.groupby(des_cols)['Pasajeros'].sum().reset_index()
+    rename_des = {'lat_des': 'lat', 'lon_des': 'lon', 'Pasajeros': 'Bajaron', 'nombre_des': 'nombre', 'seccion_des': 'seccion'}
+    baj = baj.rename(columns={k: v for k, v in rename_des.items() if k in baj.columns})
+
+    # Columnas base para el merge
+    merge_on = ['lat', 'lon']
+    if 'nombre' in sub.columns and 'nombre' in baj.columns: merge_on.append('nombre')
+    if 'seccion' in sub.columns and 'seccion' in baj.columns: merge_on.append('seccion')
+
+    nodos = pd.merge(sub, baj, on=merge_on, how='outer').fillna(0)
+    
     nodos['Subieron'], nodos['Bajaron'] = nodos['Subieron'].astype(int), nodos['Bajaron'].astype(int)
     nodos['Total_Actividad'] = nodos['Subieron'] + nodos['Bajaron']
     t_act, t_sub, t_baj = nodos['Total_Actividad'].sum(), nodos['Subieron'].sum(), nodos['Bajaron'].sum()
