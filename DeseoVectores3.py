@@ -6,7 +6,7 @@ import os
 
 from spatial_utils import calcular_distancia_traza_vectorizado
 from data_processing import (cargar_datos, cargar_informacion_paradas, calcular_vectores_flujo, 
-                             agrupar_por_zonas, calcular_estadisticas_nodos, cargar_ruta_referencia)
+                             agrupar_por_zonas, calcular_estadisticas_nodos, cargar_recorridos_todos, procesar_ruta_filtrada)
 
 # Inyectar CSS para ocultar el menú 
 css_style = """
@@ -145,60 +145,53 @@ if archivo_subido:
     mostrar_puntos = st.sidebar.toggle("Mostrar Puntos Originales", value=False, key="toggle_ptos")
     ocultar_retrocesos = st.sidebar.checkbox("Ocultar retrocesos (Ida < 0km)", value=True)
 
-    # --- Carga dinámica de la ruta de referencia ---
-    df_ruta = pd.DataFrame()
-    nombre_archivo_ruta = ""
-    # Solo intentamos cargar una ruta si se ha seleccionado un ramal y un sentido específicos.
-    if ramal_sel != "Todos" and sentido_sel != "Ambos":
-        # Intentamos detectar el archivo con o sin el ID de línea (9433)
-        posibles_nombres = [
-           # f"Ramal_{ramal_sel}_{sentido_sel}_9433.ACTrec",
-            f"Ramal_{ramal_sel}_{sentido_sel}.ACTrec"
-        ]
-        
-        for nombre in posibles_nombres:
-            if os.path.exists(nombre):
-                nombre_archivo_ruta = nombre
-                break
-        
-        if nombre_archivo_ruta:
-            df_ruta = cargar_ruta_referencia(nombre_archivo_ruta)
-            if df_ruta.empty:
-                st.sidebar.error(f"El archivo existe pero falló la lectura: {nombre_archivo_ruta}")
-        else:
-            st.sidebar.warning(f"No se encontró archivo de ruta (ej. {posibles_nombres[0]})")
-            st.sidebar.info(f"Carpeta actual: {os.getcwd()}")
-            
-    elif ramal_sel == "Todos" or sentido_sel == "Ambos":
-        st.sidebar.info("Seleccione un Ramal y Sentido para visualizar la ruta y agrupar los flujos sobre ella.")
-
-    # Aplicación de filtros
+    # Aplicación de filtros a datos base
     df_filtrado = df_raw.copy()
     if fecha_sel != "Todo el mes":
         fecha_obj = pd.to_datetime(fecha_sel).date()
         df_filtrado = df_filtrado[df_filtrado['Fecha'] == fecha_obj]
     if ramal_sel != "Todos":
         df_filtrado = df_filtrado[df_filtrado['Ramal'] == ramal_sel]
-    
-    # --- CARGA Y PREPARACIÓN DE PARADAS (Necesario para Snapping Temprano) ---
-    df_paradas_all, dict_ramales = cargar_informacion_paradas()
-    df_paradas_sel = pd.DataFrame()
-    if ramal_sel != "Todos" and ramal_sel in dict_ramales:
-        codigo_buscado = dict_ramales[ramal_sel]
-        df_paradas_sel = df_paradas_all[df_paradas_all['Ramal_Cod'] == codigo_buscado].copy()
-        if sentido_sel != "Ambos":
-            df_paradas_sel = df_paradas_sel[df_paradas_sel['Sentido'] == sentido_sel]
         
-        if not df_paradas_sel.empty:
-            df_paradas_sel['Seccion'] = pd.to_numeric(df_paradas_sel['Seccion'], errors='coerce')
-            df_paradas_sel = df_paradas_sel.dropna(subset=['Seccion'])
+    # --- CARGA Y PREPARACIÓN DE PARADAS Y RECORRIDOS ---
+    df_paradas_all, dict_ramales = cargar_informacion_paradas()
+    df_recorridos_all = cargar_recorridos_todos()
+    
+    df_paradas_sel = pd.DataFrame()
+    df_ruta = pd.DataFrame()
+    
+    if ramal_sel != "Todos" and sentido_sel != "Ambos":
+        if ramal_sel in dict_ramales:
+            codigo_buscado = dict_ramales[ramal_sel]
+            
+            # Filtro Paradas
+            df_paradas_sel = df_paradas_all[df_paradas_all['Ramal_Cod'] == codigo_buscado].copy()
+            df_paradas_sel = df_paradas_sel[df_paradas_sel['Sentido'] == sentido_sel]
+            
+            # Filtro Recorridos
+            if not df_recorridos_all.empty:
+                df_ruta_sel = df_recorridos_all[(df_recorridos_all['Ramal_Cod'] == codigo_buscado) & (df_recorridos_all['Sentido'] == sentido_sel)].copy()
+                if not df_ruta_sel.empty:
+                    df_ruta = procesar_ruta_filtrada(df_ruta_sel)
+                else:
+                    st.sidebar.warning(f"No se encontraron recorridos unificados para el Ramal '{ramal_sel}' y Sentido '{sentido_sel}'.")
+            else:
+                st.sidebar.error("No se pudo cargar el archivo unificado de recorridos (Recorridos_Todos_con_punto.csv).")
+        else:
+            st.sidebar.warning(f"El ramal '{ramal_sel}' no se encuentra en Ramales.csv")
+    elif ramal_sel == "Todos" or sentido_sel == "Ambos":
+        st.sidebar.info("Seleccione un Ramal y Sentido para visualizar la ruta y agrupar los flujos sobre ella.")
+        
+    if not df_paradas_sel.empty:
+        df_paradas_sel['Seccion'] = pd.to_numeric(df_paradas_sel['Seccion'], errors='coerce')
+        df_paradas_sel = df_paradas_sel.dropna(subset=['Seccion'])
 
-        # Sincronizar paradas con la ruta para obtener Km_Posicion
-        if not df_ruta.empty and not df_paradas_sel.empty:
-            r_lats, r_lons, r_cum = df_ruta['Latitud'].values, df_ruta['Longitud'].values, df_ruta['Dist_Acum'].values
-            p_lats, p_lons = df_paradas_sel['Latitud'].values, df_paradas_sel['Longitud'].values
-            d_sq = (p_lats[:, None] - r_lats[None, :])**2 + (p_lons[:, None] - r_lons[None, :])**2
-            df_paradas_sel['Km_Posicion'] = r_cum[np.argmin(d_sq, axis=1)]
+    # Sincronizar paradas con la ruta para obtener Km_Posicion
+    if not df_ruta.empty and not df_paradas_sel.empty:
+        r_lats, r_lons, r_cum = df_ruta['Latitud'].values, df_ruta['Longitud'].values, df_ruta['Dist_Acum'].values
+        p_lats, p_lons = df_paradas_sel['Latitud'].values, df_paradas_sel['Longitud'].values
+        d_sq = (p_lats[:, None] - r_lats[None, :])**2 + (p_lons[:, None] - r_lons[None, :])**2
+        df_paradas_sel['Km_Posicion'] = r_cum[np.argmin(d_sq, axis=1)]
 
     with st.spinner('Procesando vectores de flujo...'):
         # Pasamos df_paradas_sel para que el proyecto haga snap a ellas desde la inferencia de destino
@@ -1192,11 +1185,17 @@ if archivo_subido:
                     col1_dl, col2_dl, col3_dl = st.columns(3)
 
                     # 1. Auditoría de Inferencia (Individual)
-                    # df_flujos es el DataFrame antes de la agrupación, que contiene los datos individuales
-                    if not df_flujos.empty:
+                    # Utilizamos df_mapa en lugar de df_flujos para exportar sólo los datos filtrados por UI
+                    if 'df_mapa' in locals() and not df_mapa.empty:
+                        df_audit_export = df_mapa.copy()
+                        if 'distancia' in df_audit_export.columns:
+                            df_audit_export = df_audit_export[
+                                (df_audit_export['distancia'] >= dist_rango[0]) & 
+                                (df_audit_export['distancia'] <= dist_rango[1])
+                            ]
                         cols_audit = ['Tarjeta', 'Fecha Hora', 'Sentido', 'Fecha Hora_Siguiente', 'Sentido_Siguiente', 'distancia', 'distancia lineal']
-                        cols_audit_final = [c for c in cols_audit if c in df_flujos.columns]
-                        df_audit = df_flujos[cols_audit_final].copy()
+                        cols_audit_final = [c for c in cols_audit if c in df_audit_export.columns]
+                        df_audit = df_audit_export[cols_audit_final].copy()
                         csv_audit = df_audit.to_csv(index=False, sep=';', decimal=',')
                         with col1_dl: # Usamos la primera columna para el botón de auditoría
                             st.download_button(

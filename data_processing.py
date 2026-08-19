@@ -350,11 +350,28 @@ def calcular_estadisticas_nodos(df_zonas):
     return nodos
 
 @st.cache_data
-def cargar_ruta_referencia(archivo):
+def cargar_recorridos_todos():
+    archivo = "Recorridos_Todos_con_punto.csv"
+    if not os.path.exists(archivo):
+        print(f"No se encuentra {archivo}")
+        return pd.DataFrame()
     try:
-        df = pd.read_csv(archivo, sep=';', decimal=',', names=['Ramal', 'Sentido', 'Latitud', 'Longitud', 'Orden'])
-        df = df.sort_values('Orden').reset_index(drop=True)
+        df = pd.read_csv(archivo, sep=';', decimal='.')
+        df['Latitud'] = pd.to_numeric(df['Latitud'], errors='coerce')
+        df['Longitud'] = pd.to_numeric(df['Longitud'], errors='coerce')
+        df['Ramal_Cod'] = pd.to_numeric(df['Ramal'], errors='coerce')
+        return df
+    except Exception as e:
+        print(f"Error al cargar {archivo}: {e}")
+        return pd.DataFrame()
+
+def procesar_ruta_filtrada(df):
+    if df is None or df.empty:
+        return pd.DataFrame()
+    df = df.sort_values('Orden').reset_index(drop=True)
+    if len(df) > 1:
         dists = haversine_np(df['Longitud'].values[:-1], df['Latitud'].values[:-1], df['Longitud'].values[1:], df['Latitud'].values[1:])
         df['Dist_Acum'] = np.concatenate(([0], np.cumsum(dists)))
-        return df
-    except: return pd.DataFrame()
+    else:
+        df['Dist_Acum'] = 0.0
+    return df
