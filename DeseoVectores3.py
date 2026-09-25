@@ -6,7 +6,8 @@ import os
 
 from spatial_utils import calcular_distancia_traza_vectorizado
 from data_processing import (cargar_datos, cargar_informacion_paradas, calcular_vectores_flujo, 
-                             agrupar_por_zonas, calcular_estadisticas_nodos, cargar_recorridos_todos, procesar_ruta_filtrada)
+                             agrupar_por_zonas, calcular_estadisticas_nodos, cargar_recorridos_todos, procesar_ruta_filtrada,
+                             snap_to_route)
 
 # Inyectar CSS para ocultar el menú 
 css_style = """
@@ -72,8 +73,11 @@ else:
 if archivo_subido:
     df_raw = cargar_datos(archivo_subido)
     
+    with st.spinner('Realizando inferencia global de destinos...'):
+        df_inferido = calcular_vectores_flujo(df_raw)
+        
     st.sidebar.header("Filtros de Datos")
-    fechas_disponibles = sorted(df_raw['Fecha'].unique())
+    fechas_disponibles = sorted(df_inferido['Fecha'].unique())
     opciones_fecha = ["Todo el mes"] + [str(f) for f in fechas_disponibles]
     fecha_sel = st.sidebar.selectbox("Seleccionar Período", opciones_fecha)
 
@@ -146,7 +150,7 @@ if archivo_subido:
     ocultar_retrocesos = st.sidebar.checkbox("Ocultar retrocesos (Ida < 0km)", value=True)
 
     # Aplicación de filtros a datos base
-    df_filtrado = df_raw.copy()
+    df_filtrado = df_inferido.copy()
     if fecha_sel != "Todo el mes":
         fecha_obj = pd.to_datetime(fecha_sel).date()
         df_filtrado = df_filtrado[df_filtrado['Fecha'] == fecha_obj]
@@ -193,9 +197,16 @@ if archivo_subido:
         d_sq = (p_lats[:, None] - r_lats[None, :])**2 + (p_lons[:, None] - r_lons[None, :])**2
         df_paradas_sel['Km_Posicion'] = r_cum[np.argmin(d_sq, axis=1)]
 
-    with st.spinner('Procesando vectores de flujo...'):
-        # Pasamos df_paradas_sel para que el proyecto haga snap a ellas desde la inferencia de destino
-        df_flujos = calcular_vectores_flujo(df_filtrado, df_ruta=df_ruta, df_paradas=df_paradas_sel)
+    with st.spinner('Ajustando vectores a la traza seleccionada...'):
+        # Ya tenemos df_filtrado con destinos inferidos globalmente.
+        # Ahora ajustamos (snap) las coordenadas a la ruta del ramal seleccionado.
+        # Solo lo hacemos si hay una ruta definida (ramal específico).
+        if not df_ruta.empty:
+            df_flujos = snap_to_route(df_filtrado, df_ruta=df_ruta, df_paradas=df_paradas_sel)
+        else:
+            df_flujos = df_filtrado.copy()
+            df_flujos['dist_acum_ori'] = 0.0
+            df_flujos['dist_acum_des'] = df_flujos['distancia']
 
     # --- LÓGICA DE VISTA DE MAPA ESTABLE ---
     # Se define qué filtros fuerzan un reseteo del centro del mapa.
